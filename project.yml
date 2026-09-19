@@ -1,0 +1,114 @@
+name: Indecisive
+options:
+  bundleIdPrefix: com.indecisive
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_PREVIEWS: YES
+    DEVELOPMENT_ASSET_PATHS: ""
+
+packages:
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    from: "1.17.0"
+
+targets:
+  Indecisive:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Indecisive/App
+      - path: Indecisive/Model
+      - path: Indecisive/Logic
+      - path: Indecisive/Skins
+      - path: Indecisive/Features
+      - path: Indecisive/Resources
+    info:
+      path: Indecisive/Info.plist
+      properties:
+        CFBundleDisplayName: "Rand-o-matic"
+        LSRequiresIPhoneOS: true
+        LSApplicationCategoryType: "public.app-category.productivity"
+        # The app is fully offline with no custom cryptography — declaring
+        # this up front means every TestFlight/App Store Connect upload
+        # skips the export-compliance question instead of stopping to ask
+        # it every time. Revisit if networking or crypto is ever added.
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        # `armv7` is a 32-bit-CPU requirement left over from an old
+        # template; no iOS 17+ device (this app's deployment target) has
+        # one, and the binary itself is arm64-only — App Store Connect
+        # rejects that mismatch.
+        UIRequiredDeviceCapabilities: [arm64]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIAppFonts:
+          - "Baloo2[wght].ttf"
+          - "Nunito[wght].ttf"
+          - "SpaceGrotesk[wght].ttf"
+          - "WorkSans[wght].ttf"
+          - "DMMono-Regular.ttf"
+          - "DMMono-Medium.ttf"
+          - "LilitaOne-Regular.ttf"
+          - "TitanOne-Regular.ttf"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app
+        PRODUCT_NAME: Indecisive
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_EMIT_LOC_STRINGS: YES
+        CODE_SIGN_STYLE: Automatic
+        # Pinned at the target level: the project-level default above
+        # wasn't enough to keep this iPhone-only (xcodegen 2.46.0 still
+        # emitted "1,2" here without an explicit target-level override —
+        # see the sibling comment on DEVELOPMENT_TEAM for why anything
+        # Xcode/xcodegen can silently drift needs pinning explicitly).
+        TARGETED_DEVICE_FAMILY: "1"
+        # Xcode resolved this automatically the first time the project was
+        # opened with a signed-in Apple Developer account. It lives only in
+        # the generated .xcodeproj by default, so without pinning it here,
+        # the next `xcodegen generate` would silently drop it and archiving
+        # would fail signing until someone re-picks the team in Xcode.
+        DEVELOPMENT_TEAM: 29DR9P3A6R
+    scheme:
+      testTargets:
+        - IndecisiveTests
+        - IndecisiveUITests
+      gatherCoverageData: true
+
+  IndecisiveTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: IndecisiveTests
+    dependencies:
+      - target: Indecisive
+      - package: SnapshotTesting
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+
+  IndecisiveUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: IndecisiveUITests
+    dependencies:
+      - target: Indecisive
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        TEST_TARGET_NAME: Indecisive

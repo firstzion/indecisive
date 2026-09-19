@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Nunito:wght@400..900&family=Lilita+One&family=Space+Grotesk:wght@400..700&family=Titan+One&family=Work+Sans:wght@400..800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#EDEAE3; }
+  a { color:#F0503C; text-decoration:none; border-bottom:1.5px solid rgba(240,80,60,.4); }
+  a:hover { color:#17130F; border-bottom-color:#17130F; }
+  @keyframes pfm-pop { 0%{transform:scale(.72) rotate(-6deg);opacity:0} 55%{transform:scale(1.08) rotate(2deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+  @keyframes pfm-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes pfm-spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+  @keyframes pfm-wiggle { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+  @keyframes pfm-fall { 0%{transform:translateY(-40px) rotate(0);opacity:0} 15%{opacity:1} 100%{transform:translateY(620px) rotate(520deg);opacity:0} }
+  @keyframes pfm-glow { 0%,100%{opacity:.45} 50%{opacity:1} }
+</style>
+</helmet>
+
+<section style="padding:72px 72px 96px;display:flex;flex-direction:column;gap:40px;font-family:'Work Sans',sans-serif">
+
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:760px">
+    <div style="font:500 12px 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#8A8177">Turn 1 · three directions</div>
+    <h1 style="margin:0;font:400 46px 'Titan One',cursive;color:#17130F;letter-spacing:-.01em">PickForMe</h1>
+    <p style="margin:0;font:400 17px/1.5 'Work Sans',sans-serif;color:#57504A;text-wrap:pretty">Same three screens in each direction — home, list detail, and the reveal. iOS bones stay standard; the toy lives in the motif, palette and type. Tell me which of <a href="#1a">1a</a>, <a href="#1b">1b</a>, <a href="#1c">1c</a> to run with.</p>
+  </div>
+
+  <div style="display:flex;gap:64px;align-items:flex-start;flex-wrap:wrap">
+
+    <!-- ============ 1A · GUMBALL ============ -->
+    <div id="1a" style="display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:12px;background:#FF3B5C;color:#fff;font:800 14px 'Nunito',sans-serif">1a</span>
+        <div>
+          <div style="font:700 22px 'Baloo 2',cursive;color:#17130F">Gumball</div>
+          <div style="font:400 14px 'Work Sans',sans-serif;color:#6B635C">Cream ground, candy capsules, every list gets its own flavour.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:28px;align-items:flex-start">
+
+        <!-- A · Home -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">Home</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#FFF8EC;box-shadow:0 0 0 11px #17130F,0 30px 60px -22px rgba(23,19,15,.45);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#17130F;z-index:5"></div>
+            <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:700 15px 'Nunito',sans-serif;color:#2B1B12">
+              <span>9:41</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#2B1B12"></div><div style="width:3px;height:7px;border-radius:1px;background:#2B1B12"></div><div style="width:3px;height:9px;border-radius:1px;background:#2B1B12"></div><div style="width:3px;height:11px;border-radius:1px;background:#2B1B12"></div></div>
+                <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #2B1B12;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#2B1B12"></div></div>
+              </div>
+            </div>
+            <div style="padding:14px 20px 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+              <div>
+                <h2 style="margin:0;font:800 36px/1.05 'Baloo 2',cursive;color:#2B1B12;letter-spacing:-.02em">PickForMe</h2>
+                <div style="margin-top:2px;font:600 14px 'Nunito',sans-serif;color:#7E6553">5 lists · infinite indecision</div>
+              </div>
+              <div style="width:40px;height:40px;border-radius:20px;background:#FF3B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:700 26px 'Nunito',sans-serif;line-height:0;box-shadow:0 6px 14px -4px rgba(255,59,92,.6)">+</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:8px 20px 0;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 3px 0 rgba(43,27,18,.06)">
+                <div style="width:46px;height:46px;border-radius:23px;flex:none;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.8), rgba(255,255,255,0) 46%), #FF3B5C"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 19px 'Baloo 2',cursive;color:#2B1B12">Lunch Places</div>
+                  <div style="font:600 13px 'Nunito',sans-serif;color:#7E6553">14 things to eat</div>
+                </div>
+                <span style="font:700 22px 'Nunito',sans-serif;color:#D6C4B4">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 3px 0 rgba(43,27,18,.06)">
+                <div style="width:46px;height:46px;border-radius:23px;flex:none;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.8), rgba(255,255,255,0) 46%), #7B5CFF"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 19px 'Baloo 2',cursive;color:#2B1B12">Movie Night</div>
+                  <div style="font:600 13px 'Nunito',sans-serif;color:#7E6553">23 maybes</div>
+                </div>
+                <span style="font:700 22px 'Nunito',sans-serif;color:#D6C4B4">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 3px 0 rgba(43,27,18,.06)">
+                <div style="width:46px;height:46px;border-radius:23px;flex:none;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.8), rgba(255,255,255,0) 46%), #35D6A6"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 19px 'Baloo 2',cursive;color:#2B1B12">Next Book to Read</div>
+                  <div style="font:600 13px 'Nunito',sans-serif;color:#7E6553">9 on the pile</div>
+                </div>
+                <span style="font:700 22px 'Nunito',sans-serif;color:#D6C4B4">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 3px 0 rgba(43,27,18,.06)">
+                <div style="width:46px;height:46px;border-radius:23px;flex:none;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.8), rgba(255,255,255,0) 46%), #FF7AB8"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 19px 'Baloo 2',cursive;color:#2B1B12">Makeup of the Day</div>
+                  <div style="font:600 13px 'Nunito',sans-serif;color:#7E6553">31 looks</div>
+                </div>
+                <span style="font:700 22px 'Nunito',sans-serif;color:#D6C4B4">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 3px 0 rgba(43,27,18,.06)">
+                <div style="width:46px;height:46px;border-radius:23px;flex:none;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.8), rgba(255,255,255,0) 46%), #FFB020"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 19px 'Baloo 2',cursive;color:#2B1B12">Weekend Adventure</div>
+                  <div style="font:600 13px 'Nunito',sans-serif;color:#7E6553">7 escapes</div>
+                </div>
+                <span style="font:700 22px 'Nunito',sans-serif;color:#D6C4B4">›</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:8px;border:2.5px dashed #E3D2C0;border-radius:22px;padding:15px;font:700 16px 'Baloo 2',cursive;color:#8E7460">
+                <span style="font-size:20px">+</span> New list
+              </div>
+            </div>
+            <div style="padding:14px 20px 34px;display:flex;justify-content:center">
+              <div style="font:600 13px 'Nunito',sans-serif;color:#8E7460">Can't decide? That's the whole point.</div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(43,27,18,.3)"></div>
+          </div>
+        </div>
+
+        <!-- A · Detail -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">List detail</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#FFF8EC;box-shadow:0 0 0 11px #17130F,0 30px 60px -22px rgba(23,19,15,.45);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#17130F;z-index:5"></div>
+            <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:700 15px 'Nunito',sans-serif;color:#2B1B12">
+              <span>9:41</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#2B1B12"></div><div style="width:3px;height:7px;border-radius:1px;background:#2B1B12"></div><div style="width:3px;height:9px;border-radius:1px;background:#2B1B12"></div><div style="width:3px;height:11px;border-radius:1px;background:#2B1B12"></div></div>
+                <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #2B1B12;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#2B1B12"></div></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 10px;border-bottom:1px solid rgba(43,27,18,.08)">
+              <div style="display:flex;align-items:center;gap:2px;font:700 16px 'Nunito',sans-serif;color:#FF3B5C"><span style="font-size:26px;line-height:.8">‹</span>Lists</div>
+              <div style="font:700 17px 'Baloo 2',cursive;color:#2B1B12">Lunch Places</div>
+              <div style="font:700 16px 'Nunito',sans-serif;color:#FF3B5C">Edit</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:16px 20px 12px">
+              <div style="width:52px;height:52px;border-radius:26px;flex:none;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.8), rgba(255,255,255,0) 46%), #FF3B5C;animation:pfm-float 3.4s ease-in-out infinite"></div>
+              <div>
+                <div style="font:800 26px 'Baloo 2',cursive;color:#2B1B12;line-height:1.1">14 things to eat</div>
+                <div style="font:600 13px 'Nunito',sans-serif;color:#7E6553">Last pick: Pho Palace, Tuesday</div>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;padding:0 20px;overflow:hidden">
+              <div style="background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 3px 0 rgba(43,27,18,.06)">
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #F4EBE0"><div style="width:9px;height:9px;border-radius:5px;background:#FFB020;flex:none"></div><span style="font:600 17px 'Nunito',sans-serif;color:#2B1B12">Taco Truck on 9th</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #F4EBE0"><div style="width:9px;height:9px;border-radius:5px;background:#35D6A6;flex:none"></div><span style="font:600 17px 'Nunito',sans-serif;color:#2B1B12">Sushi Counter</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #F4EBE0"><div style="width:9px;height:9px;border-radius:5px;background:#FF3B5C;flex:none"></div><span style="font:600 17px 'Nunito',sans-serif;color:#2B1B12">Pho Palace</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #F4EBE0"><div style="width:9px;height:9px;border-radius:5px;background:#7B5CFF;flex:none"></div><span style="font:600 17px 'Nunito',sans-serif;color:#2B1B12">Green Bowl Salads</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #F4EBE0"><div style="width:9px;height:9px;border-radius:5px;background:#FF7AB8;flex:none"></div><span style="font:600 17px 'Nunito',sans-serif;color:#2B1B12">Big Jim's Burgers</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px"><div style="width:9px;height:9px;border-radius:5px;background:#FFB020;flex:none"></div><span style="font:600 17px 'Nunito',sans-serif;color:#2B1B12">The Dumpling Cart</span></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:12px;border:2.5px dashed #E3D2C0;border-radius:20px;padding:14px 18px;font:700 16px 'Baloo 2',cursive;color:#8E7460">
+                <span style="font-size:20px">+</span> Add something tasty
+              </div>
+            </div>
+            <div style="padding:16px 20px 40px;display:flex;flex-direction:column;align-items:center;gap:10px;background:linear-gradient(to top, #FFF8EC 60%, rgba(255,248,236,0))">
+              <div style="font:600 13px 'Nunito',sans-serif;color:#8E7460;letter-spacing:.04em">Let fate decide</div>
+              <div style="width:100%;height:66px;border-radius:33px;background:#FF3B5C;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 10px 24px -8px rgba(255,59,92,.75), inset 0 -4px 0 rgba(0,0,0,.12)">
+                <div style="width:26px;height:26px;border-radius:13px;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.95), rgba(255,255,255,.2) 50%), #FFB020"></div>
+                <span style="font:800 24px 'Baloo 2',cursive;color:#fff;letter-spacing:.01em">Pick For Me</span>
+              </div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(43,27,18,.3)"></div>
+          </div>
+        </div>
+
+        <!-- A · Reveal -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">The reveal</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#FF3B5C;box-shadow:0 0 0 11px #17130F,0 30px 60px -22px rgba(23,19,15,.45);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#17130F;z-index:6"></div>
+            <sc-if value="{{ confetti }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;inset:0;overflow:hidden;z-index:1">
+                <div style="position:absolute;left:8%;top:0;width:10px;height:16px;border-radius:3px;background:#FFB020;animation:pfm-fall 3.1s linear infinite"></div>
+                <div style="position:absolute;left:22%;top:0;width:12px;height:12px;border-radius:6px;background:#35D6A6;animation:pfm-fall 3.8s linear .4s infinite"></div>
+                <div style="position:absolute;left:36%;top:0;width:9px;height:18px;border-radius:3px;background:#FFF8EC;animation:pfm-fall 3.3s linear .9s infinite"></div>
+                <div style="position:absolute;left:50%;top:0;width:14px;height:14px;border-radius:7px;background:#7B5CFF;animation:pfm-fall 4.2s linear .2s infinite"></div>
+                <div style="position:absolute;left:63%;top:0;width:10px;height:16px;border-radius:3px;background:#FF7AB8;animation:pfm-fall 3.5s linear 1.3s infinite"></div>
+                <div style="position:absolute;left:77%;top:0;width:12px;height:12px;border-radius:6px;background:#FFB020;animation:pfm-fall 3.9s linear .7s infinite"></div>
+                <div style="position:absolute;left:90%;top:0;width:9px;height:18px;border-radius:3px;background:#35D6A6;animation:pfm-fall 3.2s linear 1.6s infinite"></div>
+                <div style="position:absolute;left:15%;top:0;width:11px;height:11px;border-radius:6px;background:#FFF8EC;animation:pfm-fall 4.5s linear 2.1s infinite"></div>
+                <div style="position:absolute;left:69%;top:0;width:10px;height:17px;border-radius:3px;background:#7B5CFF;animation:pfm-fall 4.1s linear 2.6s infinite"></div>
+              </div>
+            </sc-if>
+            <div style="position:relative;z-index:3;display:flex;flex-direction:column;flex:1">
+              <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:700 15px 'Nunito',sans-serif;color:#fff">
+                <span>9:41</span>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#fff"></div><div style="width:3px;height:7px;border-radius:1px;background:#fff"></div><div style="width:3px;height:9px;border-radius:1px;background:#fff"></div><div style="width:3px;height:11px;border-radius:1px;background:#fff"></div></div>
+                  <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #fff;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#fff"></div></div>
+                </div>
+              </div>
+              <div style="padding:6px 18px 0;display:flex;align-items:center;justify-content:space-between">
+                <div style="font:700 16px 'Nunito',sans-serif;color:rgba(255,255,255,.9)">Lunch Places</div>
+                <div style="width:32px;height:32px;border-radius:16px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font:700 16px 'Nunito',sans-serif;color:#fff">✕</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 28px">
+                <div style="font:800 15px 'Nunito',sans-serif;color:#FFD9E1;letter-spacing:.18em;text-transform:uppercase">And the winner is…</div>
+                <div style="position:relative;width:176px;height:176px;animation:pfm-pop .7s cubic-bezier(.34,1.56,.64,1) both">
+                  <div style="position:absolute;inset:0;border-radius:88px;background:#FFF8EC;box-shadow:0 14px 0 rgba(23,19,15,.18)"></div>
+                  <div style="position:absolute;left:0;right:0;top:0;height:88px;border-radius:88px 88px 0 0;background:radial-gradient(circle at 34% 40%, rgba(255,255,255,.85), rgba(255,255,255,0) 55%), #FFB020;transform:translateY(-14px) rotate(-7deg);transform-origin:bottom center"></div>
+                  <div style="position:absolute;left:28px;right:28px;bottom:34px;text-align:center;font:400 34px 'Titan One',cursive;color:#FF3B5C;line-height:1">?!</div>
+                </div>
+                <div style="text-align:center;background:#FFF8EC;border-radius:28px;padding:22px 24px;box-shadow:0 12px 0 rgba(23,19,15,.16);animation:pfm-pop .8s cubic-bezier(.34,1.56,.64,1) .12s both">
+                  <div style="font:800 40px/1.05 'Baloo 2',cursive;color:#2B1B12;letter-spacing:-.02em;text-wrap:balance">{{ winner }}</div>
+                  <div style="margin-top:6px;font:600 14px 'Nunito',sans-serif;color:#7E6553">Chosen out of 14. No takebacks.</div>
+                </div>
+              </div>
+              <div style="padding:0 24px 42px;display:flex;flex-direction:column;gap:12px">
+                <div style="height:62px;border-radius:31px;background:#FFF8EC;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 0 rgba(23,19,15,.18);font:800 22px 'Baloo 2',cursive;color:#FF3B5C">Sold, let's go</div>
+                <div style="height:56px;border-radius:28px;border:2.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;gap:10px;font:800 19px 'Baloo 2',cursive;color:#fff">
+                  <span style="display:inline-block;width:18px;height:18px;border-radius:9px;background:#FFB020;animation:pfm-wiggle 1.2s ease-in-out infinite"></span>Nope, roll again
+                </div>
+              </div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(255,255,255,.6);z-index:6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 1B · MAGIC 8-BALL ============ -->
+    <div id="1b" style="display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:12px;background:#1B1440;color:#C8FF4D;font:800 14px 'Space Grotesk',sans-serif">1b</span>
+        <div>
+          <div style="font:400 22px 'Lilita One',cursive;color:#17130F;letter-spacing:.01em">Midnight 8-Ball</div>
+          <div style="font:400 14px 'Work Sans',sans-serif;color:#6B635C">Dark arcade cabinet, neon answers, the ball does the talking.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:28px;align-items:flex-start">
+
+        <!-- B · Home -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">Home</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#140F2E;box-shadow:0 0 0 11px #0B0818,0 30px 60px -22px rgba(11,8,24,.6);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#0B0818;z-index:5"></div>
+            <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:500 15px 'Space Grotesk',sans-serif;color:#F2EEFF">
+              <span>9:41</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:7px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:9px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:11px;border-radius:1px;background:#F2EEFF"></div></div>
+                <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #F2EEFF;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#F2EEFF"></div></div>
+              </div>
+            </div>
+            <div style="padding:14px 22px 14px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+              <div>
+                <h2 style="margin:0;font:400 34px/1.05 'Lilita One',cursive;color:#C8FF4D;letter-spacing:.005em">PICKFORME</h2>
+                <div style="margin-top:4px;font:400 13px 'Space Grotesk',sans-serif;color:#9186C4;letter-spacing:.06em">ASK. SHAKE. OBEY.</div>
+              </div>
+              <div style="width:40px;height:40px;border-radius:20px;background:#C8FF4D;color:#140F2E;display:flex;align-items:center;justify-content:center;font:500 26px 'Space Grotesk',sans-serif;line-height:0">+</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:2px 22px 0;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:14px;background:#241B52;border-radius:20px;padding:15px 16px;border:1px solid #362A72">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;background:#0B0818;display:flex;align-items:center;justify-content:center"><div style="width:22px;height:22px;background:#FF4FD8;transform:rotate(45deg);border-radius:3px"></div></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:400 19px 'Lilita One',cursive;color:#F2EEFF;letter-spacing:.01em">Lunch Places</div>
+                  <div style="font:400 13px 'Space Grotesk',sans-serif;color:#9186C4">14 items</div>
+                </div>
+                <span style="font:500 20px 'Space Grotesk',sans-serif;color:#5C4E9E">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#241B52;border-radius:20px;padding:15px 16px;border:1px solid #362A72">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;background:#0B0818;display:flex;align-items:center;justify-content:center"><div style="width:22px;height:22px;background:#4DE1FF;transform:rotate(45deg);border-radius:3px"></div></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:400 19px 'Lilita One',cursive;color:#F2EEFF;letter-spacing:.01em">Movie Night</div>
+                  <div style="font:400 13px 'Space Grotesk',sans-serif;color:#9186C4">23 items</div>
+                </div>
+                <span style="font:500 20px 'Space Grotesk',sans-serif;color:#5C4E9E">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#241B52;border-radius:20px;padding:15px 16px;border:1px solid #362A72">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;background:#0B0818;display:flex;align-items:center;justify-content:center"><div style="width:22px;height:22px;background:#C8FF4D;transform:rotate(45deg);border-radius:3px"></div></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:400 19px 'Lilita One',cursive;color:#F2EEFF;letter-spacing:.01em">Next Book to Read</div>
+                  <div style="font:400 13px 'Space Grotesk',sans-serif;color:#9186C4">9 items</div>
+                </div>
+                <span style="font:500 20px 'Space Grotesk',sans-serif;color:#5C4E9E">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#241B52;border-radius:20px;padding:15px 16px;border:1px solid #362A72">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;background:#0B0818;display:flex;align-items:center;justify-content:center"><div style="width:22px;height:22px;background:#FF4FD8;transform:rotate(45deg);border-radius:3px"></div></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:400 19px 'Lilita One',cursive;color:#F2EEFF;letter-spacing:.01em">Makeup of the Day</div>
+                  <div style="font:400 13px 'Space Grotesk',sans-serif;color:#9186C4">31 items</div>
+                </div>
+                <span style="font:500 20px 'Space Grotesk',sans-serif;color:#5C4E9E">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#241B52;border-radius:20px;padding:15px 16px;border:1px solid #362A72">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;background:#0B0818;display:flex;align-items:center;justify-content:center"><div style="width:22px;height:22px;background:#4DE1FF;transform:rotate(45deg);border-radius:3px"></div></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:400 19px 'Lilita One',cursive;color:#F2EEFF;letter-spacing:.01em">Weekend Adventure</div>
+                  <div style="font:400 13px 'Space Grotesk',sans-serif;color:#9186C4">7 items</div>
+                </div>
+                <span style="font:500 20px 'Space Grotesk',sans-serif;color:#5C4E9E">›</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:8px;border:2px dashed #3E3183;border-radius:20px;padding:15px;font:400 17px 'Lilita One',cursive;color:#7C6FC0;letter-spacing:.02em">
+                <span style="font-size:19px">+</span> Start a new list
+              </div>
+            </div>
+            <div style="padding:16px 22px 38px;display:flex;align-items:center;justify-content:center;gap:10px">
+              <div style="width:26px;height:26px;border-radius:13px;background:#0B0818;border:1px solid #362A72;display:flex;align-items:center;justify-content:center;font:400 12px 'Lilita One',cursive;color:#F2EEFF">8</div>
+              <div style="font:400 12px 'Space Grotesk',sans-serif;color:#7C6FC0;letter-spacing:.08em">THE BALL HAS SPOKEN 412 TIMES</div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(242,238,255,.45)"></div>
+          </div>
+        </div>
+
+        <!-- B · Detail -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">List detail</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#140F2E;box-shadow:0 0 0 11px #0B0818,0 30px 60px -22px rgba(11,8,24,.6);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#0B0818;z-index:5"></div>
+            <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:500 15px 'Space Grotesk',sans-serif;color:#F2EEFF">
+              <span>9:41</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:7px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:9px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:11px;border-radius:1px;background:#F2EEFF"></div></div>
+                <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #F2EEFF;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#F2EEFF"></div></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 10px;border-bottom:1px solid #2C2265">
+              <div style="display:flex;align-items:center;gap:2px;font:500 16px 'Space Grotesk',sans-serif;color:#C8FF4D"><span style="font-size:26px;line-height:.8">‹</span>Lists</div>
+              <div style="font:400 17px 'Lilita One',cursive;color:#F2EEFF;letter-spacing:.01em">Lunch Places</div>
+              <div style="font:500 16px 'Space Grotesk',sans-serif;color:#C8FF4D">Edit</div>
+            </div>
+            <div style="padding:20px 22px 14px;display:flex;align-items:center;gap:14px">
+              <div style="width:58px;height:58px;border-radius:29px;flex:none;background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.35), rgba(255,255,255,0) 50%), #0B0818;display:flex;align-items:center;justify-content:center;animation:pfm-float 3.6s ease-in-out infinite">
+                <div style="width:26px;height:26px;background:#F2EEFF;transform:rotate(45deg);border-radius:4px;display:flex;align-items:center;justify-content:center"><span style="transform:rotate(-45deg);font:400 13px 'Lilita One',cursive;color:#0B0818">8</span></div>
+              </div>
+              <div>
+                <div style="font:400 26px 'Lilita One',cursive;color:#F2EEFF;line-height:1.1;letter-spacing:.01em">14 CANDIDATES</div>
+                <div style="font:400 13px 'Space Grotesk',sans-serif;color:#9186C4">Ball last said: Pho Palace</div>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;padding:0 22px;overflow:hidden">
+              <div style="background:#241B52;border-radius:20px;overflow:hidden;border:1px solid #362A72">
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #322766"><span style="font:400 12px 'DM Mono',monospace;color:#5C4E9E;width:16px">01</span><span style="font:400 17px 'Space Grotesk',sans-serif;color:#F2EEFF">Taco Truck on 9th</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #322766"><span style="font:400 12px 'DM Mono',monospace;color:#5C4E9E;width:16px">02</span><span style="font:400 17px 'Space Grotesk',sans-serif;color:#F2EEFF">Sushi Counter</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #322766"><span style="font:400 12px 'DM Mono',monospace;color:#5C4E9E;width:16px">03</span><span style="font:400 17px 'Space Grotesk',sans-serif;color:#F2EEFF">Pho Palace</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #322766"><span style="font:400 12px 'DM Mono',monospace;color:#5C4E9E;width:16px">04</span><span style="font:400 17px 'Space Grotesk',sans-serif;color:#F2EEFF">Green Bowl Salads</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #322766"><span style="font:400 12px 'DM Mono',monospace;color:#5C4E9E;width:16px">05</span><span style="font:400 17px 'Space Grotesk',sans-serif;color:#F2EEFF">Big Jim's Burgers</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:15px 18px"><span style="font:400 12px 'DM Mono',monospace;color:#5C4E9E;width:16px">06</span><span style="font:400 17px 'Space Grotesk',sans-serif;color:#F2EEFF">The Dumpling Cart</span></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:12px;border:2px dashed #3E3183;border-radius:18px;padding:14px 18px;font:400 17px 'Lilita One',cursive;color:#7C6FC0;letter-spacing:.02em">
+                <span style="font-size:19px">+</span> Throw one in the ring
+              </div>
+            </div>
+            <div style="padding:16px 22px 40px;display:flex;flex-direction:column;align-items:center;gap:10px">
+              <div style="font:400 12px 'Space Grotesk',sans-serif;color:#7C6FC0;letter-spacing:.14em">THE 8-BALL KNOWS</div>
+              <div style="width:100%;height:68px;border-radius:34px;background:#C8FF4D;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 0 34px -6px rgba(200,255,77,.45)">
+                <div style="width:26px;height:26px;border-radius:13px;background:#0B0818;display:flex;align-items:center;justify-content:center;font:400 13px 'Lilita One',cursive;color:#C8FF4D">8</div>
+                <span style="font:400 24px 'Lilita One',cursive;color:#140F2E;letter-spacing:.02em">PICK FOR ME</span>
+              </div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(242,238,255,.45)"></div>
+          </div>
+        </div>
+
+        <!-- B · Reveal -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">The reveal</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#0B0818;box-shadow:0 0 0 11px #0B0818,0 30px 60px -22px rgba(11,8,24,.6);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#0B0818;z-index:6"></div>
+            <div style="position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);width:420px;height:420px;border-radius:210px;background:radial-gradient(circle, rgba(200,255,77,.22), rgba(200,255,77,0) 62%);animation:pfm-glow 2.6s ease-in-out infinite;z-index:1"></div>
+            <sc-if value="{{ confetti }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;inset:0;overflow:hidden;z-index:2">
+                <div style="position:absolute;left:12%;top:0;width:8px;height:8px;border-radius:4px;background:#C8FF4D;animation:pfm-fall 3.4s linear infinite"></div>
+                <div style="position:absolute;left:28%;top:0;width:10px;height:10px;background:#FF4FD8;transform:rotate(45deg);animation:pfm-fall 4s linear .5s infinite"></div>
+                <div style="position:absolute;left:44%;top:0;width:8px;height:8px;border-radius:4px;background:#4DE1FF;animation:pfm-fall 3.6s linear 1s infinite"></div>
+                <div style="position:absolute;left:60%;top:0;width:10px;height:10px;background:#C8FF4D;transform:rotate(45deg);animation:pfm-fall 4.3s linear .3s infinite"></div>
+                <div style="position:absolute;left:74%;top:0;width:8px;height:8px;border-radius:4px;background:#FF4FD8;animation:pfm-fall 3.8s linear 1.4s infinite"></div>
+                <div style="position:absolute;left:88%;top:0;width:10px;height:10px;background:#4DE1FF;transform:rotate(45deg);animation:pfm-fall 4.1s linear .8s infinite"></div>
+              </div>
+            </sc-if>
+            <div style="position:relative;z-index:4;display:flex;flex-direction:column;flex:1">
+              <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:500 15px 'Space Grotesk',sans-serif;color:#F2EEFF">
+                <span>9:41</span>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:7px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:9px;border-radius:1px;background:#F2EEFF"></div><div style="width:3px;height:11px;border-radius:1px;background:#F2EEFF"></div></div>
+                  <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #F2EEFF;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#F2EEFF"></div></div>
+                </div>
+              </div>
+              <div style="padding:6px 18px 0;display:flex;align-items:center;justify-content:space-between">
+                <div style="font:400 15px 'Space Grotesk',sans-serif;color:#9186C4">Lunch Places</div>
+                <div style="width:32px;height:32px;border-radius:16px;background:#241B52;display:flex;align-items:center;justify-content:center;font:500 15px 'Space Grotesk',sans-serif;color:#F2EEFF">✕</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:0 26px">
+                <div style="font:400 13px 'Space Grotesk',sans-serif;color:#C8FF4D;letter-spacing:.24em">THE BALL HAS SPOKEN</div>
+                <div style="position:relative;width:250px;height:250px;border-radius:125px;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.28), rgba(255,255,255,0) 52%), #140F2E;border:1px solid #362A72;box-shadow:0 0 60px -10px rgba(200,255,77,.3);display:flex;align-items:center;justify-content:center;animation:pfm-pop .75s cubic-bezier(.34,1.56,.64,1) both">
+                  <div style="width:168px;height:168px;background:#0B0818;transform:rotate(45deg);border-radius:14px;display:flex;align-items:center;justify-content:center;border:2px solid #C8FF4D">
+                    <div style="transform:rotate(-45deg);width:148px;text-align:center;font:400 30px/1.05 'Lilita One',cursive;color:#C8FF4D;letter-spacing:.01em;text-wrap:balance">{{ winnerUpper }}</div>
+                  </div>
+                </div>
+                <div style="text-align:center;font:400 14px/1.5 'Space Grotesk',sans-serif;color:#9186C4">Beat 13 other contenders.<br>Arguing with a ball is undignified.</div>
+              </div>
+              <div style="padding:0 24px 44px;display:flex;flex-direction:column;gap:12px">
+                <div style="height:62px;border-radius:31px;background:#C8FF4D;display:flex;align-items:center;justify-content:center;font:400 22px 'Lilita One',cursive;color:#140F2E;letter-spacing:.02em;box-shadow:0 0 34px -8px rgba(200,255,77,.5)">LOCK IT IN</div>
+                <div style="height:56px;border-radius:28px;border:1.5px solid #3E3183;background:#180F38;display:flex;align-items:center;justify-content:center;gap:10px;font:400 19px 'Lilita One',cursive;color:#F2EEFF;letter-spacing:.02em">
+                  <span style="display:inline-block;width:16px;height:16px;background:#FF4FD8;transform:rotate(45deg);border-radius:3px;animation:pfm-wiggle 1.3s ease-in-out infinite"></span>SHAKE AGAIN
+                </div>
+              </div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(242,238,255,.45);z-index:6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 1C · CARNIVAL WHEEL ============ -->
+    <div id="1c" style="display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:12px;background:#FFC93C;color:#17130F;font:800 14px 'Work Sans',sans-serif;border:2.5px solid #17130F">1c</span>
+        <div>
+          <div style="font:400 22px 'Titan One',cursive;color:#17130F">Prize Wheel</div>
+          <div style="font:400 14px 'Work Sans',sans-serif;color:#6B635C">Fairground stickers, hard black outlines, wedges everywhere.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:28px;align-items:flex-start">
+
+        <!-- C · Home -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">Home</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#FBF3E4;box-shadow:0 0 0 11px #17130F,0 30px 60px -22px rgba(23,19,15,.45);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#17130F;z-index:5"></div>
+            <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:600 15px 'Work Sans',sans-serif;color:#17130F">
+              <span>9:41</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:7px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:9px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:11px;border-radius:1px;background:#17130F"></div></div>
+                <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #17130F;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#17130F"></div></div>
+              </div>
+            </div>
+            <div style="padding:12px 20px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <div>
+                <h2 style="margin:0;font:400 33px/1.05 'Titan One',cursive;color:#17130F">PickForMe</h2>
+                <div style="margin-top:4px;font:600 13px 'Work Sans',sans-serif;color:#7C7167;letter-spacing:.04em">Step right up, pick a wheel</div>
+              </div>
+              <div style="width:44px;height:44px;border-radius:14px;background:#F0503C;color:#FBF3E4;display:flex;align-items:center;justify-content:center;font:700 26px 'Work Sans',sans-serif;line-height:0;border:3px solid #17130F;box-shadow:3px 3px 0 #17130F">+</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:2px 20px 0;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border:3px solid #17130F;border-radius:18px;padding:13px 15px;box-shadow:4px 4px 0 #17130F">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;border:3px solid #17130F;background:conic-gradient(#F0503C 0 90deg,#FFC93C 0 180deg,#1F9E8E 0 270deg,#FBF3E4 0 360deg)"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 18px 'Work Sans',sans-serif;color:#17130F">Lunch Places</div>
+                  <div style="font:600 13px 'Work Sans',sans-serif;color:#6E655B">14 wedges</div>
+                </div>
+                <span style="font:700 22px 'Work Sans',sans-serif;color:#17130F">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border:3px solid #17130F;border-radius:18px;padding:13px 15px;box-shadow:4px 4px 0 #17130F">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;border:3px solid #17130F;background:conic-gradient(#1F9E8E 0 72deg,#FFC93C 0 144deg,#F0503C 0 216deg,#FBF3E4 0 288deg,#FFC93C 0 360deg)"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 18px 'Work Sans',sans-serif;color:#17130F">Movie Night</div>
+                  <div style="font:600 13px 'Work Sans',sans-serif;color:#6E655B">23 wedges</div>
+                </div>
+                <span style="font:700 22px 'Work Sans',sans-serif;color:#17130F">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border:3px solid #17130F;border-radius:18px;padding:13px 15px;box-shadow:4px 4px 0 #17130F">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;border:3px solid #17130F;background:conic-gradient(#FFC93C 0 60deg,#F0503C 0 120deg,#FBF3E4 0 180deg,#1F9E8E 0 240deg,#FFC93C 0 300deg,#F0503C 0 360deg)"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 18px 'Work Sans',sans-serif;color:#17130F">Next Book to Read</div>
+                  <div style="font:600 13px 'Work Sans',sans-serif;color:#6E655B">9 wedges</div>
+                </div>
+                <span style="font:700 22px 'Work Sans',sans-serif;color:#17130F">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border:3px solid #17130F;border-radius:18px;padding:13px 15px;box-shadow:4px 4px 0 #17130F">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;border:3px solid #17130F;background:conic-gradient(#F0503C 0 120deg,#1F9E8E 0 240deg,#FFC93C 0 360deg)"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 18px 'Work Sans',sans-serif;color:#17130F">Makeup of the Day</div>
+                  <div style="font:600 13px 'Work Sans',sans-serif;color:#6E655B">31 wedges</div>
+                </div>
+                <span style="font:700 22px 'Work Sans',sans-serif;color:#17130F">›</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#fff;border:3px solid #17130F;border-radius:18px;padding:13px 15px;box-shadow:4px 4px 0 #17130F">
+                <div style="width:44px;height:44px;border-radius:22px;flex:none;border:3px solid #17130F;background:conic-gradient(#FBF3E4 0 45deg,#1F9E8E 0 90deg,#FFC93C 0 135deg,#F0503C 0 180deg,#FBF3E4 0 225deg,#1F9E8E 0 270deg,#FFC93C 0 315deg,#F0503C 0 360deg)"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 18px 'Work Sans',sans-serif;color:#17130F">Weekend Adventure</div>
+                  <div style="font:600 13px 'Work Sans',sans-serif;color:#6E655B">7 wedges</div>
+                </div>
+                <span style="font:700 22px 'Work Sans',sans-serif;color:#17130F">›</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:8px;border:3px dashed #C9B89C;border-radius:18px;padding:14px;font:700 16px 'Work Sans',sans-serif;color:#7C7167">
+                <span style="font-size:20px">+</span> Build a new wheel
+              </div>
+            </div>
+            <div style="padding:16px 20px 36px;display:flex;justify-content:center">
+              <div style="font:600 13px 'Work Sans',sans-serif;color:#7C7167">Everybody wins. Eventually.</div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(23,19,15,.35)"></div>
+          </div>
+        </div>
+
+        <!-- C · Detail -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">List detail</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#FBF3E4;box-shadow:0 0 0 11px #17130F,0 30px 60px -22px rgba(23,19,15,.45);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#17130F;z-index:5"></div>
+            <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:600 15px 'Work Sans',sans-serif;color:#17130F">
+              <span>9:41</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:7px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:9px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:11px;border-radius:1px;background:#17130F"></div></div>
+                <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #17130F;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#17130F"></div></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 10px;border-bottom:3px solid #17130F">
+              <div style="display:flex;align-items:center;gap:2px;font:700 16px 'Work Sans',sans-serif;color:#F0503C"><span style="font-size:26px;line-height:.8">‹</span>Lists</div>
+              <div style="font:400 17px 'Titan One',cursive;color:#17130F">Lunch Places</div>
+              <div style="font:700 16px 'Work Sans',sans-serif;color:#F0503C">Edit</div>
+            </div>
+            <div style="padding:18px 20px 14px;display:flex;align-items:center;gap:14px">
+              <div style="width:58px;height:58px;border-radius:29px;flex:none;border:3px solid #17130F;background:conic-gradient(#F0503C 0 60deg,#FFC93C 0 120deg,#FBF3E4 0 180deg,#1F9E8E 0 240deg,#FFC93C 0 300deg,#F0503C 0 360deg);animation:pfm-spin 9s linear infinite"></div>
+              <div>
+                <div style="font:400 24px 'Titan One',cursive;color:#17130F;line-height:1.15">14 wedges loaded</div>
+                <div style="font:600 13px 'Work Sans',sans-serif;color:#6E655B">Last spin landed on Pho Palace</div>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;padding:0 20px;overflow:hidden">
+              <div style="background:#fff;border:3px solid #17130F;border-radius:18px;overflow:hidden;box-shadow:4px 4px 0 #17130F">
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:2px solid #17130F"><div style="width:14px;height:14px;background:#F0503C;border:2px solid #17130F;border-radius:3px;flex:none"></div><span style="font:600 17px 'Work Sans',sans-serif;color:#17130F">Taco Truck on 9th</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:2px solid #17130F"><div style="width:14px;height:14px;background:#FFC93C;border:2px solid #17130F;border-radius:3px;flex:none"></div><span style="font:600 17px 'Work Sans',sans-serif;color:#17130F">Sushi Counter</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:2px solid #17130F"><div style="width:14px;height:14px;background:#1F9E8E;border:2px solid #17130F;border-radius:3px;flex:none"></div><span style="font:600 17px 'Work Sans',sans-serif;color:#17130F">Pho Palace</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:2px solid #17130F"><div style="width:14px;height:14px;background:#F0503C;border:2px solid #17130F;border-radius:3px;flex:none"></div><span style="font:600 17px 'Work Sans',sans-serif;color:#17130F">Green Bowl Salads</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:2px solid #17130F"><div style="width:14px;height:14px;background:#FFC93C;border:2px solid #17130F;border-radius:3px;flex:none"></div><span style="font:600 17px 'Work Sans',sans-serif;color:#17130F">Big Jim's Burgers</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px"><div style="width:14px;height:14px;background:#1F9E8E;border:2px solid #17130F;border-radius:3px;flex:none"></div><span style="font:600 17px 'Work Sans',sans-serif;color:#17130F">The Dumpling Cart</span></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:12px;border:3px dashed #C9B89C;border-radius:18px;padding:13px 16px;font:700 16px 'Work Sans',sans-serif;color:#7C7167">
+                <span style="font-size:20px">+</span> Add a wedge
+              </div>
+            </div>
+            <div style="padding:16px 20px 38px;display:flex;flex-direction:column;align-items:center;gap:10px">
+              <div style="font:600 13px 'Work Sans',sans-serif;color:#6E655B;letter-spacing:.06em">Give it a whirl</div>
+              <div style="width:100%;height:68px;border-radius:20px;background:#F0503C;border:3px solid #17130F;box-shadow:5px 5px 0 #17130F;display:flex;align-items:center;justify-content:center;gap:12px">
+                <div style="width:26px;height:26px;border-radius:13px;border:2.5px solid #17130F;background:conic-gradient(#FFC93C 0 90deg,#FBF3E4 0 180deg,#FFC93C 0 270deg,#FBF3E4 0 360deg);animation:pfm-spin 2.4s linear infinite"></div>
+                <span style="font:400 23px 'Titan One',cursive;color:#FBF3E4">PICK FOR ME</span>
+              </div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(23,19,15,.35)"></div>
+          </div>
+        </div>
+
+        <!-- C · Reveal -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ captions }}" hint-placeholder-val="{{ true }}"><div style="font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8A8177">The reveal</div></sc-if>
+          <div style="position:relative;width:393px;height:852px;border-radius:46px;overflow:hidden;background:#FFC93C;box-shadow:0 0 0 11px #17130F,0 30px 60px -22px rgba(23,19,15,.45);display:flex;flex-direction:column;flex:none">
+            <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:35px;border-radius:20px;background:#17130F;z-index:6"></div>
+            <sc-if value="{{ confetti }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;inset:0;overflow:hidden;z-index:1">
+                <div style="position:absolute;left:9%;top:0;width:12px;height:12px;background:#F0503C;border:2px solid #17130F;animation:pfm-fall 3.3s linear infinite"></div>
+                <div style="position:absolute;left:24%;top:0;width:12px;height:12px;border-radius:7px;background:#1F9E8E;border:2px solid #17130F;animation:pfm-fall 4s linear .6s infinite"></div>
+                <div style="position:absolute;left:40%;top:0;width:12px;height:12px;background:#FBF3E4;border:2px solid #17130F;animation:pfm-fall 3.5s linear 1.1s infinite"></div>
+                <div style="position:absolute;left:57%;top:0;width:12px;height:12px;border-radius:7px;background:#F0503C;border:2px solid #17130F;animation:pfm-fall 4.4s linear .25s infinite"></div>
+                <div style="position:absolute;left:72%;top:0;width:12px;height:12px;background:#1F9E8E;border:2px solid #17130F;animation:pfm-fall 3.7s linear 1.5s infinite"></div>
+                <div style="position:absolute;left:88%;top:0;width:12px;height:12px;border-radius:7px;background:#FBF3E4;border:2px solid #17130F;animation:pfm-fall 4.2s linear .9s infinite"></div>
+              </div>
+            </sc-if>
+            <div style="position:relative;z-index:3;display:flex;flex-direction:column;flex:1">
+              <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font:600 15px 'Work Sans',sans-serif;color:#17130F">
+                <span>9:41</span>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="display:flex;align-items:flex-end;gap:2px"><div style="width:3px;height:5px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:7px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:9px;border-radius:1px;background:#17130F"></div><div style="width:3px;height:11px;border-radius:1px;background:#17130F"></div></div>
+                  <div style="width:23px;height:12px;border-radius:3.5px;border:1.5px solid #17130F;padding:1.5px"><div style="width:72%;height:100%;border-radius:1.5px;background:#17130F"></div></div>
+                </div>
+              </div>
+              <div style="padding:6px 18px 0;display:flex;align-items:center;justify-content:space-between">
+                <div style="font:700 15px 'Work Sans',sans-serif;color:#17130F">Lunch Places</div>
+                <div style="width:32px;height:32px;border-radius:10px;background:#FBF3E4;border:2.5px solid #17130F;display:flex;align-items:center;justify-content:center;font:700 15px 'Work Sans',sans-serif;color:#17130F">✕</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:0 26px">
+                <div style="font:400 16px 'Titan One',cursive;color:#17130F;letter-spacing:.06em">WE HAVE A WINNER</div>
+                <div style="position:relative;width:212px;height:212px;animation:pfm-pop .7s cubic-bezier(.34,1.56,.64,1) both">
+                  <div style="position:absolute;inset:0;border-radius:106px;border:4px solid #17130F;background:conic-gradient(#F0503C 0 60deg,#FBF3E4 0 120deg,#1F9E8E 0 180deg,#FBF3E4 0 240deg,#F0503C 0 300deg,#FBF3E4 0 360deg);box-shadow:6px 6px 0 #17130F"></div>
+                  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:46px;background:#FFC93C;border:4px solid #17130F;display:flex;align-items:center;justify-content:center;font:400 30px 'Titan One',cursive;color:#17130F">!</div>
+                  <div style="position:absolute;left:50%;top:-16px;transform:translateX(-50%);width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:24px solid #17130F"></div>
+                </div>
+                <div style="width:100%;text-align:center;background:#FBF3E4;border:4px solid #17130F;border-radius:20px;padding:20px 18px;box-shadow:6px 6px 0 #17130F;animation:pfm-pop .8s cubic-bezier(.34,1.56,.64,1) .12s both">
+                  <div style="font:400 34px/1.1 'Titan One',cursive;color:#17130F;text-wrap:balance">{{ winner }}</div>
+                  <div style="margin-top:8px;font:600 13px 'Work Sans',sans-serif;color:#7C7167">The wheel does not negotiate.</div>
+                </div>
+              </div>
+              <div style="padding:0 24px 40px;display:flex;gap:12px">
+                <div style="flex:1;height:60px;border-radius:18px;background:#1F9E8E;border:3px solid #17130F;box-shadow:4px 4px 0 #17130F;display:flex;align-items:center;justify-content:center;font:400 19px 'Titan One',cursive;color:#FBF3E4">EATING IT</div>
+                <div style="flex:1;height:60px;border-radius:18px;background:#FBF3E4;border:3px solid #17130F;box-shadow:4px 4px 0 #17130F;display:flex;align-items:center;justify-content:center;font:400 19px 'Titan One',cursive;color:#17130F">SPIN AGAIN</div>
+              </div>
+            </div>
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(23,19,15,.4);z-index:6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;winnerName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Pho Palace&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Reveal&quot;},&quot;confetti&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Reveal&quot;},&quot;captions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const winner = this.props.winnerName ?? "Pho Palace";
+    return {
+      winner,
+      winnerUpper: winner.toUpperCase(),
+      confetti: this.props.confetti ?? true,
+      captions: this.props.captions ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

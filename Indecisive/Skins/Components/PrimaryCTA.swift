@@ -1,0 +1,97 @@
+import SwiftUI
+
+/// The big "Pick For Me" button. Gumball gets a soft colored shadow, the
+/// 8-Ball a colored glow, and the Wheel a thick ink border with a hard
+/// offset "sticker" shadow.
+struct PrimaryCTAStyle: ButtonStyle {
+    let skin: Skin
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 12) {
+            PrimaryCTAGlyph(skin: skin)
+            configuration.label
+                .font(skin.type.display(skin.id == .gumball ? 24 : 22, weight: .extrabold))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .foregroundStyle(skin.palette.onAccent)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        // minHeight, not a fixed height: at the largest Dynamic Type sizes
+        // the label needs more room than the design's base height allows
+        // (PLAN.md Phase 6: "the CTA grows").
+        .frame(minHeight: skin.shape.ctaHeight)
+        .background(skin.palette.accent)
+        .clipShape(RoundedRectangle(cornerRadius: skin.shape.ctaCornerRadius, style: .continuous))
+        .overlay {
+            if skin.shape.ctaBorderWidth > 0 {
+                RoundedRectangle(cornerRadius: skin.shape.ctaCornerRadius, style: .continuous)
+                    .strokeBorder(skin.palette.primaryText, lineWidth: skin.shape.ctaBorderWidth)
+            }
+        }
+        .indShadow(skin.shape.ctaShadow, cornerRadius: skin.shape.ctaCornerRadius)
+        .opacity(configuration.isPressed ? 0.85 : 1)
+        .scaleEffect(configuration.isPressed ? 0.98 : 1)
+        .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+/// The little glyph inside the CTA: a gumball, a mini 8-ball, or a spinning
+/// wedge — a tiny preview of "the toy" living right on the button that
+/// triggers it.
+struct PrimaryCTAGlyph: View {
+    let skin: Skin
+    var size: CGFloat = 26
+
+    @State private var spinAngle = 0.0
+    @Environment(\.indReducedMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            switch skin.id {
+            case .gumball:
+                Circle().fill(
+                    RadialGradient(
+                        // 0xFFB020 is a standalone decorative highlight,
+                        // not meant to track Gumball's own flavour swatch
+                        // set (`palette.flavors[4]` happens to share this
+                        // exact value, likely not by coincidence, but this
+                        // glyph isn't showing "a flavour" so it keeps its
+                        // own literal rather than reading that array).
+                        colors: [.white.opacity(0.95), Color(hex: 0xFFB020)],
+                        center: UnitPoint(x: 0.32, y: 0.26),
+                        startRadius: 0,
+                        endRadius: size * 0.55
+                    )
+                )
+
+            case .eightBall:
+                Circle()
+                    // The 8-ball's own shell black — same paint as
+                    // `revealBackground` (see also `ListBadge`, `HeroBadge`,
+                    // `RevealCentrepiece`), not a one-off.
+                    .fill(skin.palette.revealBackground)
+                    .overlay {
+                        Text("8")
+                            .font(skin.type.display(size * 0.5))
+                            .foregroundStyle(skin.palette.accent)
+                    }
+
+            case .prizeWheel:
+                // The mini wheel's two wedge colors are the Wheel's own
+                // reveal-background yellow and background cream — the same
+                // two loudest colors the real reveal screen uses.
+                WheelFill(wedgeCount: 4, colors: [skin.palette.revealBackground, skin.palette.background])
+                    .overlay { Circle().strokeBorder(skin.palette.primaryText, lineWidth: 2.5) }
+                    .rotationEffect(.degrees(spinAngle))
+                    .onAppear {
+                        guard !reduceMotion else { return }
+                        withAnimation(.linear(duration: 2.4).repeatForever(autoreverses: false)) {
+                            spinAngle = 360
+                        }
+                    }
+            }
+        }
+        .frame(width: size, height: size)
+    }
+}
