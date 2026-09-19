@@ -2,8 +2,8 @@
 
 A "can't decide?" list-and-random-picker iOS app. See [PLAN.md](PLAN.md) for the
 original implementation plan. The app ships its visual skins as a user-selectable
-choice — currently Midnight 8-Ball and Prize Wheel. (PLAN.md also describes a
-third skin, Gumball, which has since been removed from the app.)
+choice — currently Midnight 8-Ball, Prize Wheel and Gashapon. (PLAN.md also
+describes a third skin, Gumball, which has since been removed from the app.)
 
 (The app displays as "Rand-o-matic" on the home screen and in onboarding.
 Everything else — bundle ID, Xcode project/target/scheme, Swift module name,
@@ -50,18 +50,22 @@ Indecisive/
 ├─ Features/       Home, Detail, Reveal, SkinPicker screens (Phase 3+)
 └─ Resources/
    ├─ Fonts/       Bundled OFL Google Fonts (Lilita One, Space Grotesk,
-   │                Titan One, Work Sans, DM Mono) + LICENSES/
+   │                Titan One, Work Sans, DM Mono, Mochiy Pop One,
+   │                M PLUS Rounded 1c) + LICENSES/
    └─ Assets.xcassets
-design/            Reference-only export of the original Claude Design mockup —
-                    not app code.
+design/            Reference-only export of the Claude Design mockups (every skin
+                    direction, including Gashapon and Crystal Ball) — not app code.
 ```
 
 ## Fonts
 
-All five families are SIL Open Font License (OFL) fonts pulled from
+All seven families are SIL Open Font License (OFL) fonts pulled from
 [google/fonts](https://github.com/google/fonts); license texts are bundled in
 `Indecisive/Resources/Fonts/LICENSES/`. Two (Space Grotesk and Work Sans) are
-variable fonts shipped as a single `.ttf`; `FontRegistry.swift` lists every
+variable fonts shipped as a single `.ttf`. Mochiy Pop One and M PLUS Rounded 1c
+are trimmed to Latin characters (the `-Latin.ttf` files): the originals include
+Japanese and run 3–5 MB each, and the OFL reserves no font name for either, so
+trimming is allowed. `FontRegistry.swift` lists every
 PostScript name the app uses and asserts on launch (DEBUG only) that each one
 actually resolves — variable font named-instance naming isn't always
 predictable from the font file alone, so this check is the source of truth,

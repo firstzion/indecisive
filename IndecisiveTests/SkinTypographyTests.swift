@@ -35,7 +35,7 @@ final class SkinTypographyTests: XCTestCase {
         let weights: [SkinFontWeight] = [.regular, .medium, .semibold, .bold, .extrabold, .black]
         let roles: [SkinTypography.Role] = [.display, .body, .mono]
 
-        for skin in [Skin.eightBall, Skin.prizeWheel] {
+        for skin in [Skin.eightBall, Skin.prizeWheel, Skin.gashapon] {
             for role in roles {
                 for weight in weights {
                     let name = skin.type.name(for: role, weight: weight)

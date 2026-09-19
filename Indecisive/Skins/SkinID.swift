@@ -5,6 +5,7 @@ import Foundation
 enum SkinID: String, CaseIterable, Identifiable, Codable {
     case eightBall
     case prizeWheel
+    case gashapon
 
     var id: String { rawValue }
 }

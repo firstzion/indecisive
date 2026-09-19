@@ -19,7 +19,7 @@ import SnapshotTesting
 @MainActor
 final class SnapshotTests: XCTestCase {
 
-    private let allSkins = [Skin.eightBall, Skin.prizeWheel]
+    private let allSkins = [Skin.eightBall, Skin.prizeWheel, Skin.gashapon]
     private let sizes: [(name: String, category: UIContentSizeCategory)] = [
         ("default", .large),
         ("xxl", .extraExtraExtraLarge),

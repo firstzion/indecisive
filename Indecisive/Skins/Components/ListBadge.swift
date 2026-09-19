@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The small colored icon on a Home-screen list row: a dark ball with a
-/// flavor-tinted diamond (8-Ball) or a conic prize wheel (Prize Wheel).
-/// `flavorIndex` selects the list's own color from
+/// flavor-tinted diamond (8-Ball), a conic prize wheel (Prize Wheel) or a
+/// two-tone capsule (Gashapon). `flavorIndex` selects the list's own color from
 /// `skin.palette.flavors`; `itemCount` only matters for the Wheel, which
 /// draws one wedge per item (capped for legibility).
 struct ListBadge: View {
@@ -38,6 +38,9 @@ struct ListBadge: View {
                     .overlay {
                         Circle().strokeBorder(skin.palette.primaryText, lineWidth: 3)
                     }
+
+            case .gashapon:
+                CapsuleBall(top: flavor, size: size)
             }
         }
         .frame(width: size, height: size)

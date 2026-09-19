@@ -34,6 +34,10 @@ struct SkinCopy: Sendable {
 
     // MARK: Reveal
     let revealKicker: String
+    /// A small label above the winner's name inside the name card (Gashapon's
+    /// "YOU GOT"); `nil` for skins that just show the name. A defaulted `var`
+    /// so a skin without one simply leaves it out of its initializer.
+    var revealWinnerLabel: String? = nil
     let revealSupport: @Sendable (_ candidateCount: Int) -> String
     let acceptLabel: String
     let rerollLabel: String

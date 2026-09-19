@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The small round/rounded-square icon buttons used for Home's "+" and the
-/// Reveal screen's "✕": a plain circle for the 8-Ball, a bordered
+/// Reveal screen's "✕": a plain circle for the 8-Ball and Gashapon, a bordered
 /// rounded square for the Wheel — the same shape language as `CardStyle`
 /// and `PrimaryCTAStyle`, just smaller. Added in Phase 3 once screens
 /// actually needed it, but it belongs alongside the other shared skin
@@ -67,6 +67,7 @@ struct SkinIconButton: View {
         case (_, .primary): return skin.palette.onAccent
         case (.eightBall, .dismiss): return skin.palette.primaryText
         case (.prizeWheel, .dismiss): return skin.palette.primaryText
+        case (.gashapon, .dismiss): return GashaponPaint.revealInk
         case (_, .secondary): return skin.palette.secondaryText
         }
     }
@@ -76,6 +77,8 @@ struct SkinIconButton: View {
         case (_, .primary): return skin.palette.accent
         case (.eightBall, .dismiss): return skin.palette.surface
         case (.prizeWheel, .dismiss): return skin.palette.background
+        // A frosted disc: white over the reveal's cyan.
+        case (.gashapon, .dismiss): return .white.opacity(0.55)
         case (_, .secondary): return skin.palette.surface
         }
     }
@@ -86,8 +89,11 @@ struct SkinIconButton: View {
     }
 
     private var shadow: SkinShadowStyle {
-        (skin.id == .prizeWheel && variant == .primary)
-            ? .hard(offset: CGSize(width: 3, height: 3), color: skin.palette.primaryText)
-            : .none
+        guard variant == .primary else { return .none }
+        switch skin.id {
+        case .prizeWheel: return .hard(offset: CGSize(width: 3, height: 3), color: skin.palette.primaryText)
+        case .gashapon: return .soft(radius: 7, x: 0, y: 6, color: skin.palette.accent, opacity: 0.6)
+        case .eightBall: return .none
+        }
     }
 }

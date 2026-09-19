@@ -17,6 +17,7 @@ struct Skin: Identifiable, Sendable {
         switch id {
         case .eightBall: return .eightBall
         case .prizeWheel: return .prizeWheel
+        case .gashapon: return .gashapon
         }
     }
 }

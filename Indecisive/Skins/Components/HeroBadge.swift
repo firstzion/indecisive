@@ -65,6 +65,17 @@ struct HeroBadge: View {
                             spinAngle = 360
                         }
                     }
+
+            case .gashapon:
+                CapsuleBall(top: flavor, size: size)
+                    .offset(y: floatUp ? -10 : 0)
+                    .onAppear {
+                        guard !reduceMotion else { return }
+                        // The mockup's 3.4s float, each half of it here.
+                        withAnimation(.easeInOut(duration: 1.7).repeatForever(autoreverses: true)) {
+                            floatUp = true
+                        }
+                    }
             }
         }
         .frame(width: size, height: size)

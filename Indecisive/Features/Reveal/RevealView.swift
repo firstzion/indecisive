@@ -83,6 +83,7 @@ struct RevealView: View {
             switch skin.id {
             case .eightBall: delay = 1.0
             case .prizeWheel: delay = 2.9
+            case .gashapon: delay = 0.85 // the lid finishes springing off
             }
         }
         let announcement = "\(skin.copy.revealKicker). \(model.winner.name)."
@@ -117,19 +118,23 @@ struct RevealView: View {
         .padding(.top, 8)
     }
 
-    /// The reveal background is loud and skin-specific (near-black or
-    /// bright yellow), so the header label's color and the
+    /// The reveal background is loud and skin-specific (near-black, bright
+    /// yellow or cyan), so the header label's color and the
     /// screen's overall color scheme aren't derivable from a single token —
     /// each skin picked its own readable combination in the source design.
     private var headerTextColor: Color {
         switch skin.id {
         case .eightBall: return skin.palette.secondaryText
         case .prizeWheel: return skin.palette.primaryText
+        case .gashapon: return GashaponPaint.revealInk
         }
     }
 
     private var revealColorScheme: ColorScheme {
-        skin.id == .prizeWheel ? .light : .dark
+        switch skin.id {
+        case .eightBall: return .dark
+        case .prizeWheel, .gashapon: return .light
+        }
     }
 
     private func accept() {

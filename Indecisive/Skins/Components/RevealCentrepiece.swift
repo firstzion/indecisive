@@ -1,18 +1,19 @@
 import SwiftUI
 import UIKit
 
-/// The reveal screen's visual centerpiece: the shape (8-ball / wheel) plus
-/// the winner's name. For the Wheel, the name sits in its own card below
-/// the shape; for the 8-Ball, it appears inside the ball's diamond window
-/// instead, so there's no separate name card — a real structural
-/// difference in the source design, not just a color swap.
+/// The reveal screen's visual centerpiece: the shape (8-ball / wheel /
+/// capsule) plus the winner's name. For the Wheel and Gashapon, the name
+/// sits in its own card below the shape; for the 8-Ball, it appears inside
+/// the ball's diamond window instead, so there's no separate name card — a
+/// real structural difference in the source design, not just a color swap.
 ///
 /// Each skin's intro animation is its own "toy" moment (PLAN.md §4.4):
 /// the 8-Ball's ball wobbles for ~1.1s before the answer fades in; the
 /// Wheel actually spins to the winner's wedge before its name card
-/// appears. Re-created fresh on every re-roll by the caller's
-/// `.id(model.rerollToken)`, so the whole intro replays each time —
-/// including when a reroll lands back on the same winner.
+/// appears; Gashapon's capsule pops in and its lid springs off. Re-created
+/// fresh on every re-roll by the caller's `.id(model.rerollToken)`, so the
+/// whole intro replays each time — including when a reroll lands back on
+/// the same winner.
 struct RevealCentrepiece: View {
     let skin: Skin
     let winnerName: String
@@ -26,6 +27,8 @@ struct RevealCentrepiece: View {
     @State private var spinAngle = 0.0
     @State private var wobbleAngle = 0.0
     @State private var resultRevealed = false
+    /// Gashapon only: whether the capsule's lid has popped off yet.
+    @State private var lidOpen = false
     @Environment(\.indReducedMotion) private var reduceMotion
 
     /// Every not-yet-fired delayed haptic/animation step scheduled by
@@ -51,10 +54,12 @@ struct RevealCentrepiece: View {
     }
 
     /// Whether the winner's name card should be showing yet — the Wheel
-    /// deliberately holds it back until its spin finishes.
+    /// deliberately holds it back until its spin finishes; Gashapon's pops in
+    /// with the capsule.
     private var nameCardVisible: Bool {
         switch skin.id {
         case .prizeWheel: return resultRevealed
+        case .gashapon: return popped
         case .eightBall: return false // unused — no separate name card
         }
     }
@@ -62,7 +67,7 @@ struct RevealCentrepiece: View {
     @ViewBuilder
     private var entranceWrappedShape: some View {
         switch skin.id {
-        case .eightBall:
+        case .eightBall, .gashapon:
             shape
                 .scaleEffect(popped ? 1 : 0.72)
                 .rotationEffect(.degrees((popped ? 0 : -6) + wobbleAngle))
@@ -131,12 +136,21 @@ struct RevealCentrepiece: View {
                     .offset(y: -104)
             }
             .frame(width: 212, height: 212)
+
+        case .gashapon:
+            OpenCapsule(skin: skin, lidOpen: lidOpen)
         }
     }
 
     @ViewBuilder
     private var nameCard: some View {
         VStack(spacing: 8) {
+            if let label = skin.copy.revealWinnerLabel {
+                Text(label)
+                    .font(skin.type.display(13))
+                    .tracking(2)
+                    .foregroundStyle(skin.palette.accent)
+            }
             Text(winnerName)
                 .font(skin.type.display(34))
                 .foregroundStyle(skin.palette.primaryText)
@@ -151,7 +165,7 @@ struct RevealCentrepiece: View {
         .padding(.horizontal, 24)
         .padding(.vertical, 22)
         .frame(maxWidth: .infinity)
-        .background(skin.palette.surface)
+        .background(nameCardFill)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay {
             if skin.id == .prizeWheel, let border = skin.palette.surfaceBorder {
@@ -160,12 +174,25 @@ struct RevealCentrepiece: View {
             }
         }
         .indShadow(nameCardShadow, cornerRadius: 28)
+        // Gashapon's mockup sets the whole middle stack in from the screen
+        // edges (26pt); the other skins' cards run the full width.
+        .padding(.horizontal, skin.id == .gashapon ? 26 : 0)
+    }
+
+    /// Gashapon's card is the capsule's cream, not the white the other
+    /// skins' cards use.
+    private var nameCardFill: Color {
+        skin.id == .gashapon ? GashaponPaint.shell : skin.palette.surface
     }
 
     private var nameCardShadow: SkinShadowStyle {
         switch skin.id {
         case .prizeWheel:
             return .hard(offset: CGSize(width: 6, height: 6), color: skin.palette.primaryText)
+        case .gashapon:
+            // A flat shelf of teal under the card, like the mockup's
+            // `0 14px 0 rgba(11,61,76,.2)`.
+            return .hard(offset: CGSize(width: 0, height: 14), color: GashaponPaint.revealInk.opacity(0.2))
         case .eightBall:
             return .none // unused — 8-Ball has no separate name card
         }
@@ -245,6 +272,38 @@ struct RevealCentrepiece: View {
                     withAnimation(.interpolatingSpring(stiffness: 170, damping: 14)) {
                         resultRevealed = true
                     }
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                }
+            }
+
+        case .gashapon:
+            // The mockup's `pfm-pop`, then `pfm-lid` 0.25s later.
+            let lidDelay = 0.25
+            if reduceMotion {
+                popped = true
+                lidOpen = true
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            } else {
+                withAnimation(.interpolatingSpring(stiffness: 170, damping: 14)) {
+                    popped = true
+                }
+                afterDelay(lidDelay) {
+                    withAnimation(.interpolatingSpring(stiffness: 190, damping: 12)) {
+                        lidOpen = true
+                    }
+                }
+                // Two crank ticks as the knob turns, a firmer bump as the lid
+                // pops, then the success tap once the prize is showing.
+                // Spaced apart: back-to-back haptics get swallowed.
+                let rigid = UIImpactFeedbackGenerator(style: .rigid)
+                rigid.impactOccurred()
+                afterDelay(0.1) {
+                    rigid.impactOccurred(intensity: 0.7)
+                }
+                afterDelay(lidDelay) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                }
+                afterDelay(0.6) {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                 }
             }

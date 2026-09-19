@@ -45,7 +45,12 @@ struct Confetti: View {
     }
 
     private static func makePieces(for skin: Skin) -> [Piece] {
-        let colors: [Color] = skin.palette.flavors + [skin.palette.surface]
+        // Gashapon's cyan flavor would vanish against its cyan reveal
+        // background, so it uses the mockup's own mix of yellow, cream, pink
+        // and mint instead.
+        let colors: [Color] = skin.id == .gashapon
+            ? [GashaponPaint.coin, GashaponPaint.shell, skin.palette.flavors[0], skin.palette.flavors[2]]
+            : skin.palette.flavors + [skin.palette.surface]
         var pieces: [Piece] = []
         for i in 0..<10 {
             let xFraction: CGFloat = CGFloat(i) / 10 + 0.03

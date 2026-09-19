@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// The accept / re-roll buttons below the reveal. The 8-Ball stacks two
-/// full-width pills; the Wheel places two side-by-side blocks instead — a
-/// real layout difference, not just a color change.
+/// The accept / re-roll buttons below the reveal. The 8-Ball and Gashapon
+/// stack two full-width pills; the Wheel places two side-by-side blocks
+/// instead — a real layout difference, not just a color change.
 struct RevealActions: View {
     let skin: Skin
     let onAccept: () -> Void
@@ -33,7 +33,7 @@ struct RevealActions: View {
 
         Group {
             switch skin.id {
-            case .eightBall:
+            case .eightBall, .gashapon:
                 VStack(spacing: 12) { accept; reroll }
             case .prizeWheel:
                 HStack(spacing: 12) { accept; reroll }
@@ -76,6 +76,8 @@ struct RevealActionStyle: ButtonStyle {
     private var fontSize: CGFloat {
         switch (skin.id, role) {
         case (.eightBall, .accept): return 22
+        case (.gashapon, .accept): return 20
+        case (.gashapon, .reroll): return 18
         default: return 19
         }
     }
@@ -95,6 +97,8 @@ struct RevealActionStyle: ButtonStyle {
         case (.eightBall, .reroll): return skin.palette.primaryText
         case (.prizeWheel, .accept): return skin.palette.background
         case (.prizeWheel, .reroll): return skin.palette.primaryText
+        case (.gashapon, .accept): return GashaponPaint.shell
+        case (.gashapon, .reroll): return GashaponPaint.revealInk
         }
     }
 
@@ -110,6 +114,8 @@ struct RevealActionStyle: ButtonStyle {
         // its own literal rather than reading that array.
         case (.prizeWheel, .accept): return Color(hex: 0x1F9E8E)
         case (.prizeWheel, .reroll): return skin.palette.background
+        case (.gashapon, .accept): return skin.palette.primaryText
+        case (.gashapon, .reroll): return GashaponPaint.shell.opacity(0.92)
         }
     }
 
@@ -125,6 +131,7 @@ struct RevealActionStyle: ButtonStyle {
         switch skin.id {
         case .eightBall: return skin.palette.dashedBorder
         case .prizeWheel: return skin.palette.primaryText
+        case .gashapon: return .clear // unused: Gashapon's buttons have no border
         }
     }
 
@@ -136,8 +143,9 @@ struct RevealActionStyle: ButtonStyle {
     }
 }
 
-/// The little wiggling glyph next to the 8-Ball's "SHAKE AGAIN". The
-/// Wheel's "SPIN AGAIN" has no glyph in the source design.
+/// The little wiggling glyph next to the 8-Ball's "SHAKE AGAIN" and
+/// Gashapon's "One more turn". The Wheel's "SPIN AGAIN" has no glyph in the
+/// source design.
 struct RevealActionGlyph: View {
     let skin: Skin
     @State private var wiggle = false
@@ -156,6 +164,9 @@ struct RevealActionGlyph: View {
                     .rotationEffect(.degrees(45))
             case .prizeWheel:
                 EmptyView()
+            case .gashapon:
+                // A tiny capsule in the accent color.
+                CapsuleBall(top: skin.palette.accent, size: 18, seamOpacity: 0.2, glossy: false)
             }
         }
         .rotationEffect(.degrees(wiggle ? 4 : -4))

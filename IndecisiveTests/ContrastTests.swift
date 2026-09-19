@@ -24,7 +24,7 @@ final class ContrastTests: XCTestCase {
         return (lighter + 0.05) / (darker + 0.05)
     }
 
-    private let allSkins = [Skin.eightBall, Skin.prizeWheel]
+    private let allSkins = [Skin.eightBall, Skin.prizeWheel, Skin.gashapon]
 
     /// WCAG AA for normal-size body text: 4.5:1. This is where the design
     /// actually failed — see PLAN.md §4.4 for the one the plan itself

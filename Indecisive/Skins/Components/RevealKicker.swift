@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// The small eyebrow line above the reveal centrepiece ("THE BALL HAS
-/// SPOKEN" / "WE HAVE A WINNER"). Font family genuinely differs per skin in
-/// the source design (body font for the 8-Ball, display font for the
-/// Wheel), so this switches rather than using one shared token.
+/// SPOKEN" / "WE HAVE A WINNER" / "CAPSULE CRACKED"). Font family genuinely
+/// differs per skin in the source design (body font for the 8-Ball, display
+/// font for the Wheel and Gashapon), so this switches rather than using one
+/// shared token.
 struct RevealKicker: View {
     let skin: Skin
 
@@ -22,6 +23,7 @@ struct RevealKicker: View {
         switch skin.id {
         case .eightBall: return skin.type.body(14, weight: .extrabold)
         case .prizeWheel: return skin.type.display(19)
+        case .gashapon: return skin.type.display(15)
         }
     }
 
@@ -31,6 +33,7 @@ struct RevealKicker: View {
         switch skin.id {
         case .eightBall: return skin.palette.accent
         case .prizeWheel: return skin.palette.primaryText
+        case .gashapon: return GashaponPaint.revealInk
         }
     }
 }

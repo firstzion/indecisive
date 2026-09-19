@@ -57,6 +57,9 @@ targets:
           - "DMMono-Medium.ttf"
           - "LilitaOne-Regular.ttf"
           - "TitanOne-Regular.ttf"
+          - "MochiyPopOne-Regular-Latin.ttf"
+          - "MPLUSRounded1c-Medium-Latin.ttf"
+          - "MPLUSRounded1c-Bold-Latin.ttf"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app

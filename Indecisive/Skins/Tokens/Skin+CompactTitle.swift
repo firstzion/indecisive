@@ -10,7 +10,9 @@ extension Skin {
     func compactTitleFont(_ size: CGFloat, weight: SkinFontWeight = .bold) -> Font {
         switch id {
         case .eightBall: return type.display(size, weight: weight, relativeTo: .body)
-        case .prizeWheel: return type.body(size, weight: weight, relativeTo: .body)
+        // Gashapon's list names and dashed rows are M PLUS Rounded bold in the
+        // design; Mochiy Pop One is kept for headlines and buttons.
+        case .prizeWheel, .gashapon: return type.body(size, weight: weight, relativeTo: .body)
         }
     }
 }

@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The small marker at the start of each item row inside a list: a
-/// monospaced index number (8-Ball) or an outlined flavor-colored square
-/// (Wheel).
+/// monospaced index number (8-Ball), an outlined flavor-colored square
+/// (Wheel) or a tiny two-tone capsule (Gashapon).
 struct RowMarker: View {
     let skin: Skin
     let index: Int
@@ -30,6 +30,9 @@ struct RowMarker: View {
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                         .strokeBorder(skin.palette.primaryText, lineWidth: 2)
                 }
+
+        case .gashapon:
+            CapsuleBall(top: flavor, size: 18, seamOpacity: 0.2, glossy: false)
         }
     }
 }

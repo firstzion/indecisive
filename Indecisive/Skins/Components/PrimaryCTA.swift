@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// The big "Pick For Me" button. The 8-Ball gets a colored glow and the
-/// Wheel a thick ink border with a hard offset "sticker" shadow.
+/// The big "Pick For Me" button. The 8-Ball gets a colored glow, the Wheel a
+/// thick ink border with a hard offset "sticker" shadow, and Gashapon a soft
+/// pink shadow with a darker lip along its bottom edge.
 struct PrimaryCTAStyle: ButtonStyle {
     let skin: Skin
 
@@ -21,6 +22,16 @@ struct PrimaryCTAStyle: ButtonStyle {
         // (PLAN.md Phase 6: "the CTA grows").
         .frame(minHeight: skin.shape.ctaHeight)
         .background(skin.palette.accent)
+        .overlay {
+            // Gashapon's pill has a darker lip along its bottom edge (the
+            // mockup's `inset 0 -4px 0 rgba(0,0,0,.12)`).
+            if skin.id == .gashapon {
+                InsetShadow(
+                    shape: RoundedRectangle(cornerRadius: skin.shape.ctaCornerRadius, style: .continuous),
+                    color: .black.opacity(0.12), y: -4
+                )
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: skin.shape.ctaCornerRadius, style: .continuous))
         .overlay {
             if skin.shape.ctaBorderWidth > 0 {
@@ -35,8 +46,9 @@ struct PrimaryCTAStyle: ButtonStyle {
     }
 }
 
-/// The little glyph inside the CTA: a mini 8-ball or a spinning wedge — a
-/// tiny preview of "the toy" living right on the button that triggers it.
+/// The little glyph inside the CTA: a mini 8-ball, a spinning wedge or a
+/// turning capsule-machine knob — a tiny preview of "the toy" living right on
+/// the button that triggers it.
 struct PrimaryCTAGlyph: View {
     let skin: Skin
     var size: CGFloat = 26
@@ -69,6 +81,24 @@ struct PrimaryCTAGlyph: View {
                     .onAppear {
                         guard !reduceMotion else { return }
                         withAnimation(.linear(duration: 2.4).repeatForever(autoreverses: false)) {
+                            spinAngle = 360
+                        }
+                    }
+
+            case .gashapon:
+                // The machine's knob: a cream disc with a slot-shaped bar,
+                // turning once every 3s like the mockup's.
+                Circle()
+                    .fill(GashaponPaint.shell)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: size * 0.07, style: .continuous)
+                            .fill(skin.palette.accent)
+                            .frame(width: size * 0.57, height: size * 0.14)
+                    }
+                    .rotationEffect(.degrees(spinAngle))
+                    .onAppear {
+                        guard !reduceMotion else { return }
+                        withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
                             spinAngle = 360
                         }
                     }
