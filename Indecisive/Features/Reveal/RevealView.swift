@@ -81,7 +81,6 @@ struct RevealView: View {
             delay = 0
         } else {
             switch skin.id {
-            case .gumball: delay = 0.35
             case .eightBall: delay = 1.0
             case .prizeWheel: delay = 2.9
             }
@@ -118,13 +117,12 @@ struct RevealView: View {
         .padding(.top, 8)
     }
 
-    /// The reveal background is loud and skin-specific (accent red,
-    /// near-black, or bright yellow), so the header label's color and the
+    /// The reveal background is loud and skin-specific (near-black or
+    /// bright yellow), so the header label's color and the
     /// screen's overall color scheme aren't derivable from a single token —
     /// each skin picked its own readable combination in the source design.
     private var headerTextColor: Color {
         switch skin.id {
-        case .gumball: return .white.opacity(0.9)
         case .eightBall: return skin.palette.secondaryText
         case .prizeWheel: return skin.palette.primaryText
         }

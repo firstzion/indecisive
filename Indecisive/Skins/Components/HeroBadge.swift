@@ -26,24 +26,6 @@ struct HeroBadge: View {
     var body: some View {
         Group {
             switch skin.id {
-            case .gumball:
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [.white.opacity(0.8), flavor],
-                            center: UnitPoint(x: 0.32, y: 0.26),
-                            startRadius: 0,
-                            endRadius: size * 0.55
-                        )
-                    )
-                    .offset(y: floatUp ? -6 : 0)
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.easeInOut(duration: 1.7).repeatForever(autoreverses: true)) {
-                            floatUp = true
-                        }
-                    }
-
             case .eightBall:
                 // The 8-ball's own shell black (`revealBackground`) and its
                 // ivory-diamond white (`primaryText`) — the same two colors

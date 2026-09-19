@@ -6,7 +6,7 @@ import SwiftData
 final class PickList {
     var name: String
 
-    /// Index into the current skin's flavour palette — the Gumball capsule
+    /// Index into the current skin's flavour palette — the 8-Ball's diamond
     /// colour, the Wheel's first wedge colour, etc. See `SkinPalette`.
     var flavorIndex: Int
 

@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// The big "Pick For Me" button. Gumball gets a soft colored shadow, the
-/// 8-Ball a colored glow, and the Wheel a thick ink border with a hard
-/// offset "sticker" shadow.
+/// The big "Pick For Me" button. The 8-Ball gets a colored glow and the
+/// Wheel a thick ink border with a hard offset "sticker" shadow.
 struct PrimaryCTAStyle: ButtonStyle {
     let skin: Skin
 
@@ -10,7 +9,7 @@ struct PrimaryCTAStyle: ButtonStyle {
         HStack(spacing: 12) {
             PrimaryCTAGlyph(skin: skin)
             configuration.label
-                .font(skin.type.display(skin.id == .gumball ? 24 : 22, weight: .extrabold))
+                .font(skin.type.display(22, weight: .extrabold))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
         }
@@ -36,9 +35,8 @@ struct PrimaryCTAStyle: ButtonStyle {
     }
 }
 
-/// The little glyph inside the CTA: a gumball, a mini 8-ball, or a spinning
-/// wedge — a tiny preview of "the toy" living right on the button that
-/// triggers it.
+/// The little glyph inside the CTA: a mini 8-ball or a spinning wedge — a
+/// tiny preview of "the toy" living right on the button that triggers it.
 struct PrimaryCTAGlyph: View {
     let skin: Skin
     var size: CGFloat = 26
@@ -49,22 +47,6 @@ struct PrimaryCTAGlyph: View {
     var body: some View {
         Group {
             switch skin.id {
-            case .gumball:
-                Circle().fill(
-                    RadialGradient(
-                        // 0xFFB020 is a standalone decorative highlight,
-                        // not meant to track Gumball's own flavour swatch
-                        // set (`palette.flavors[4]` happens to share this
-                        // exact value, likely not by coincidence, but this
-                        // glyph isn't showing "a flavour" so it keeps its
-                        // own literal rather than reading that array).
-                        colors: [.white.opacity(0.95), Color(hex: 0xFFB020)],
-                        center: UnitPoint(x: 0.32, y: 0.26),
-                        startRadius: 0,
-                        endRadius: size * 0.55
-                    )
-                )
-
             case .eightBall:
                 Circle()
                     // The 8-ball's own shell black — same paint as

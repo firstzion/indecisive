@@ -51,8 +51,6 @@ targets:
         UIRequiredDeviceCapabilities: [arm64]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIAppFonts:
-          - "Baloo2[wght].ttf"
-          - "Nunito[wght].ttf"
           - "SpaceGrotesk[wght].ttf"
           - "WorkSans[wght].ttf"
           - "DMMono-Regular.ttf"

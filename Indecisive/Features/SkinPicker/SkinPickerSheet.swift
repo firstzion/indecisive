@@ -18,7 +18,7 @@ struct SkinPickerSheet: View {
                     ForEach(SkinID.allCases) { id in
                         SkinPreviewTile(
                             skin: Skin.skin(for: id),
-                            isSelected: id.rawValue == skinIDRaw
+                            isSelected: id == SkinID.resolving(skinIDRaw)
                         ) {
                             skinIDRaw = id.rawValue
                             dismiss()

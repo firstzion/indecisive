@@ -24,11 +24,11 @@ final class ContrastTests: XCTestCase {
         return (lighter + 0.05) / (darker + 0.05)
     }
 
-    private let allSkins = [Skin.gumball, Skin.eightBall, Skin.prizeWheel]
+    private let allSkins = [Skin.eightBall, Skin.prizeWheel]
 
     /// WCAG AA for normal-size body text: 4.5:1. This is where the design
-    /// actually failed — see PLAN.md §4.4 for the two the plan itself
-    /// flagged (Gumball, 8-Ball); the Wheel's was found the same way.
+    /// actually failed — see PLAN.md §4.4 for the one the plan itself
+    /// flagged for the 8-Ball; the Wheel's was found the same way.
     func testTertiaryTextMeetsAANormalTextContrastOnBackground() {
         for skin in allSkins {
             let ratio = contrastRatio(skin.palette.tertiaryText, skin.palette.background)
@@ -50,12 +50,12 @@ final class ContrastTests: XCTestCase {
         }
     }
 
-    /// `onAccent` is only ever set on large, bold text (the 22–24pt
-    /// extrabold CTA label) or icon glyphs, never normal body text — WCAG
-    /// AA's threshold for that is 3:1, not 4.5:1. (Checked: Gumball's
-    /// white-on-#FF3B5C is 3.48:1, the Wheel's is 3.22:1 — both pass 3:1
-    /// but would fail 4.5:1, which would be holding this pair to a
-    /// standard that doesn't apply to how it's actually used.)
+    /// `onAccent` is only ever set on large, bold text (the 22pt extrabold
+    /// CTA label) or icon glyphs, never normal body text — WCAG AA's
+    /// threshold for that is 3:1, not 4.5:1. (Checked: the Wheel's is
+    /// 3.22:1 — it passes 3:1 but would fail 4.5:1, which would be holding
+    /// this pair to a standard that doesn't apply to how it's actually
+    /// used.)
     func testOnAccentMeetsAALargeTextContrastOnAccent() {
         for skin in allSkins {
             let ratio = contrastRatio(skin.palette.onAccent, skin.palette.accent)

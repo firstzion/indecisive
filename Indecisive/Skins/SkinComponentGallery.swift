@@ -1,7 +1,7 @@
 #if DEBUG
 import SwiftUI
 
-/// A visual QA screen showing every shared component across all three skins
+/// A visual QA screen showing every shared component across every skin
 /// side by side — the fastest way to check the Skins layer against the
 /// original design mockups. Never part of the shipped navigation (`RootView`
 /// goes straight to `HomeView`) — wrapped in `#if DEBUG` so these 90-odd

@@ -1,7 +1,7 @@
 import SwiftUI
 
 private struct SkinEnvironmentKey: EnvironmentKey {
-    static let defaultValue = Skin.gumball
+    static let defaultValue = Skin.skin(for: SkinID.defaultID)
 }
 
 extension EnvironmentValues {

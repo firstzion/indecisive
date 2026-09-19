@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// How a skin draws depth. Gumball uses a soft, barely-there drop shadow;
-/// the Wheel uses a hard-edged "sticker" shadow (an offset ink-colored
-/// duplicate, no blur); the 8-Ball skips shadows for a colored glow instead.
+/// How a skin draws depth. The Wheel uses a hard-edged "sticker" shadow (an
+/// offset ink-colored duplicate, no blur); the 8-Ball skips shadows for a
+/// colored glow instead. `.soft` is a plain drop shadow, and `.none` draws
+/// nothing.
 enum SkinShadowStyle: Sendable {
     case soft(radius: CGFloat, x: CGFloat, y: CGFloat, color: Color, opacity: Double)
     case hard(offset: CGSize, color: Color)
@@ -43,7 +44,7 @@ struct SkinShape: Sendable {
     let dashedCornerRadius: CGFloat
 
     let ctaHeight: CGFloat
-    /// Large enough to read as a pill on Gumball/8-Ball; a plain rounded
+    /// Large enough to read as a pill on the 8-Ball; a plain rounded
     /// rect (~20) on the Wheel.
     let ctaCornerRadius: CGFloat
     let ctaBorderWidth: CGFloat

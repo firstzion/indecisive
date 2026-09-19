@@ -2,14 +2,13 @@ import SwiftUI
 
 /// Every color a screen needs, named by what it's *for* rather than which
 /// skin it belongs to — screens read `skin.palette.accent`, never a raw hex
-/// value, so the same screen code renders correctly in all three skins.
+/// value, so the same screen code renders correctly in every skin.
 struct SkinPalette: Sendable {
     /// The screen background (Home / Detail).
     let background: Color
     /// Card / list-row background.
     let surface: Color
-    /// Card border color — `nil` means the card relies on shadow alone
-    /// (Gumball has no card border at all).
+    /// Card border color — `nil` means the card relies on shadow alone.
     let surfaceBorder: Color?
     let primaryText: Color
     let secondaryText: Color
@@ -21,8 +20,8 @@ struct SkinPalette: Sendable {
     let accent: Color
     /// Text/icon color to place *on* `accent`.
     let onAccent: Color
-    /// The per-list "flavour" colors — Gumball capsules, 8-Ball diamonds,
-    /// Wheel wedges. Cycled by `PickList.flavorIndex`.
+    /// The per-list "flavour" colors — 8-Ball diamonds, Wheel wedges.
+    /// Cycled by `PickList.flavorIndex`.
     let flavors: [Color]
     /// The reveal screen's own background (often the accent, sometimes not).
     let revealBackground: Color

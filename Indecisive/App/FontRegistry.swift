@@ -3,8 +3,8 @@ import UIKit
 /// Central list of every custom font PostScript name the app expects to be able to load,
 /// plus a startup check (DEBUG only) that each one actually resolves.
 ///
-/// The four families below are Google Fonts *variable* fonts bundled as a single `.ttf`
-/// per family (registered via `UIAppFonts` in Info.plist). iOS exposes each named
+/// Space Grotesk and Work Sans below are Google Fonts *variable* fonts bundled as a single
+/// `.ttf` per family (registered via `UIAppFonts` in Info.plist). iOS exposes each named
 /// instance defined in the font's `fvar` table as its own usable font name, but the
 /// exact naming isn't always predictable from the source file alone — Space Grotesk's
 /// non-Regular-default instances come out as "SpaceGrotesk-Light_Medium" (base
@@ -14,14 +14,6 @@ import UIKit
 /// `verifyAllResolve()` on-device and reading the real `UIFont.fontNames` it printed —
 /// don't hand-guess this list from a font file's tables alone.
 enum FontRegistry {
-
-    static let baloo2: [String] = [
-        "Baloo2-Regular", "Baloo2-Medium", "Baloo2-SemiBold", "Baloo2-Bold", "Baloo2-ExtraBold",
-    ]
-
-    static let nunito: [String] = [
-        "Nunito-Regular", "Nunito-Medium", "Nunito-SemiBold", "Nunito-Bold", "Nunito-ExtraBold", "Nunito-Black",
-    ]
 
     static let spaceGrotesk: [String] = [
         "SpaceGrotesk-Light", "SpaceGrotesk-Light_Regular", "SpaceGrotesk-Light_Medium", "SpaceGrotesk-Light_Bold",
@@ -41,7 +33,7 @@ enum FontRegistry {
     ]
 
     static var all: [String] {
-        baloo2 + nunito + spaceGrotesk + workSans + dmMono + singleWeight
+        spaceGrotesk + workSans + dmMono + singleWeight
     }
 
     /// Confirms every PostScript name above actually resolves to a loaded font.
@@ -57,7 +49,7 @@ enum FontRegistry {
         if missing.isEmpty {
             print("✅ FontRegistry: all \(all.count) custom fonts resolved.")
         } else {
-            for family in ["Baloo 2", "Nunito", "Space Grotesk", "Work Sans", "DM Mono", "Lilita One", "Titan One"] {
+            for family in ["Space Grotesk", "Work Sans", "DM Mono", "Lilita One", "Titan One"] {
                 let available = UIFont.fontNames(forFamilyName: family)
                 if !available.isEmpty {
                     print("ℹ️ Family '\(family)' actually exposes: \(available)")

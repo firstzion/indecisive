@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The small round/rounded-square icon buttons used for Home's "+" and the
-/// Reveal screen's "✕": a plain circle for Gumball/8-Ball, a bordered
+/// Reveal screen's "✕": a plain circle for the 8-Ball, a bordered
 /// rounded square for the Wheel — the same shape language as `CardStyle`
 /// and `PrimaryCTAStyle`, just smaller. Added in Phase 3 once screens
 /// actually needed it, but it belongs alongside the other shared skin
@@ -65,7 +65,6 @@ struct SkinIconButton: View {
     private var foreground: Color {
         switch (skin.id, variant) {
         case (_, .primary): return skin.palette.onAccent
-        case (.gumball, .dismiss): return .white
         case (.eightBall, .dismiss): return skin.palette.primaryText
         case (.prizeWheel, .dismiss): return skin.palette.primaryText
         case (_, .secondary): return skin.palette.secondaryText
@@ -75,13 +74,6 @@ struct SkinIconButton: View {
     private var background: Color {
         switch (skin.id, variant) {
         case (_, .primary): return skin.palette.accent
-        // Reduced from 0.22 — the white "✕" glyph over that more-opaque
-        // tint (effectively #FF6680 on Gumball's reveal background) was
-        // only 2.81:1, short of WCAG AA's 3:1. A more transparent pill
-        // lets more of the saturated red underneath show through, which
-        // is what actually gives the white glyph something to contrast
-        // against.
-        case (.gumball, .dismiss): return .white.opacity(0.10)
         case (.eightBall, .dismiss): return skin.palette.surface
         case (.prizeWheel, .dismiss): return skin.palette.background
         case (_, .secondary): return skin.palette.surface

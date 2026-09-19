@@ -4,7 +4,7 @@ import SwiftData
 import SnapshotTesting
 @testable import Indecisive
 
-/// PLAN.md Phase 7: {Home, Detail, Reveal} × {3 skins} × {default, XXL Dynamic
+/// PLAN.md Phase 7: {Home, Detail, Reveal} × {every skin} × {default, XXL Dynamic
 /// Type}, rendered at the design's own 393×852 frame so they can be compared
 /// by eye against the mockups.
 ///
@@ -19,7 +19,7 @@ import SnapshotTesting
 @MainActor
 final class SnapshotTests: XCTestCase {
 
-    private let allSkins = [Skin.gumball, Skin.eightBall, Skin.prizeWheel]
+    private let allSkins = [Skin.eightBall, Skin.prizeWheel]
     private let sizes: [(name: String, category: UIContentSizeCategory)] = [
         ("default", .large),
         ("xxl", .extraExtraExtraLarge),

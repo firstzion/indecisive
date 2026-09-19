@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// The list-row / grouped-card treatment: a soft shadow with no border for
-/// Gumball, a thin neon border with no shadow for the 8-Ball, and a thick
-/// ink border with a hard offset "sticker" shadow for the Wheel.
+/// The list-row / grouped-card treatment: a thin neon border with no shadow
+/// for the 8-Ball, and a thick ink border with a hard offset "sticker"
+/// shadow for the Wheel.
 struct CardStyle: ViewModifier {
     let skin: Skin
 

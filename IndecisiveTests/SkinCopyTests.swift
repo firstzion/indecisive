@@ -4,17 +4,15 @@ import XCTest
 final class SkinCopyTests: XCTestCase {
 
     func testSkinForIDReturnsTheMatchingSkin() {
-        XCTAssertEqual(Skin.skin(for: .gumball).id, .gumball)
         XCTAssertEqual(Skin.skin(for: .eightBall).id, .eightBall)
         XCTAssertEqual(Skin.skin(for: .prizeWheel).id, .prizeWheel)
     }
 
-    func testGumballCopyPluralizes() {
-        let copy = Skin.gumball.copy
-        XCTAssertEqual(copy.countLine(1), "1 thing")
-        XCTAssertEqual(copy.countLine(2), "2 things")
-        XCTAssertEqual(copy.homeSubtitle(1), "1 list · infinite indecision")
-        XCTAssertEqual(copy.homeSubtitle(5), "5 lists · infinite indecision")
+    func testCountLinePluralizes() {
+        XCTAssertEqual(Skin.eightBall.copy.countLine(1), "1 item")
+        XCTAssertEqual(Skin.eightBall.copy.countLine(2), "2 items")
+        XCTAssertEqual(Skin.prizeWheel.copy.countLine(1), "1 wedge")
+        XCTAssertEqual(Skin.prizeWheel.copy.countLine(2), "2 wedges")
     }
 
     func testEightBallHomeFooterIncludesTotalPickCount() {
@@ -44,7 +42,6 @@ final class SkinCopyTests: XCTestCase {
 
     func testLastPickLineDiffersInToneAcrossSkins() {
         let date = Date()
-        XCTAssertTrue(Skin.gumball.copy.lastPickLine("Pho Palace", date).hasPrefix("Last pick: Pho Palace,"))
         XCTAssertEqual(Skin.eightBall.copy.lastPickLine("Pho Palace", date), "Ball last said: Pho Palace")
         XCTAssertEqual(Skin.prizeWheel.copy.lastPickLine("Pho Palace", date), "Last spin landed on Pho Palace")
     }
@@ -53,7 +50,7 @@ final class SkinCopyTests: XCTestCase {
         // PLAN.md Phase 6: "Empty states per skin" — a regression test that
         // each skin has its own strings rather than one falling back to a
         // shared default that would defeat the point.
-        let all = [Skin.gumball, Skin.eightBall, Skin.prizeWheel]
+        let all = [Skin.eightBall, Skin.prizeWheel]
         for skin in all {
             XCTAssertFalse(skin.copy.emptyStateTitle.isEmpty, "\(skin.name) has no empty-state title")
             XCTAssertFalse(skin.copy.emptyStateMessage.isEmpty, "\(skin.name) has no empty-state message")
@@ -65,7 +62,7 @@ final class SkinCopyTests: XCTestCase {
     func testEveryHomeEmptyStateCopyIsNonEmptyAndSkinFlavored() {
         // Home's own "no lists yet" state — same regression-test shape as
         // the list-detail one above.
-        let all = [Skin.gumball, Skin.eightBall, Skin.prizeWheel]
+        let all = [Skin.eightBall, Skin.prizeWheel]
         for skin in all {
             XCTAssertFalse(skin.copy.homeEmptyStateTitle.isEmpty, "\(skin.name) has no home empty-state title")
             XCTAssertFalse(skin.copy.homeEmptyStateMessage.isEmpty, "\(skin.name) has no home empty-state message")

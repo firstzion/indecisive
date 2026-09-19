@@ -1,8 +1,9 @@
 # Rand-o-matic
 
 A "can't decide?" list-and-random-picker iOS app. See [PLAN.md](PLAN.md) for the
-full implementation plan, including the three visual skins (Gumball, Midnight
-8-Ball, Prize Wheel) that ship as a user-selectable choice.
+original implementation plan. The app ships its visual skins as a user-selectable
+choice — currently Midnight 8-Ball and Prize Wheel. (PLAN.md also describes a
+third skin, Gumball, which has since been removed from the app.)
 
 (The app displays as "Rand-o-matic" on the home screen and in onboarding.
 Everything else — bundle ID, Xcode project/target/scheme, Swift module name,
@@ -48,8 +49,8 @@ Indecisive/
 ├─ Skins/          Skin tokens (palette/type/shape/copy) + per-skin components (Phase 2+)
 ├─ Features/       Home, Detail, Reveal, SkinPicker screens (Phase 3+)
 └─ Resources/
-   ├─ Fonts/       Bundled OFL Google Fonts (Baloo 2, Nunito, Lilita One,
-   │                Space Grotesk, Titan One, Work Sans, DM Mono) + LICENSES/
+   ├─ Fonts/       Bundled OFL Google Fonts (Lilita One, Space Grotesk,
+   │                Titan One, Work Sans, DM Mono) + LICENSES/
    └─ Assets.xcassets
 design/            Reference-only export of the original Claude Design mockup —
                     not app code.
@@ -57,10 +58,11 @@ design/            Reference-only export of the original Claude Design mockup �
 
 ## Fonts
 
-All seven families are SIL Open Font License (OFL) fonts pulled from
+All five families are SIL Open Font License (OFL) fonts pulled from
 [google/fonts](https://github.com/google/fonts); license texts are bundled in
-`Indecisive/Resources/Fonts/LICENSES/`. Four are variable fonts shipped as a
-single `.ttf`; `FontRegistry.swift` lists every PostScript name the app uses
-and asserts on launch (DEBUG only) that each one actually resolves — variable
-font named-instance naming isn't always predictable from the font file alone,
-so this check is the source of truth, not the table in PLAN.md.
+`Indecisive/Resources/Fonts/LICENSES/`. Two (Space Grotesk and Work Sans) are
+variable fonts shipped as a single `.ttf`; `FontRegistry.swift` lists every
+PostScript name the app uses and asserts on launch (DEBUG only) that each one
+actually resolves — variable font named-instance naming isn't always
+predictable from the font file alone, so this check is the source of truth,
+not the table in PLAN.md.

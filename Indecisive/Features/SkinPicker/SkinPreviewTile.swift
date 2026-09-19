@@ -7,7 +7,7 @@ import SwiftUI
 /// looks like. Deliberately just the badge and not a full card-plus-button
 /// sample (an earlier version showed both): picking a tile dismisses the
 /// sheet immediately, so the real screen is one tap away regardless, and
-/// all three rows need to fit on screen at once without scrolling.
+/// every row needs to fit on screen at once without scrolling.
 struct SkinPreviewTile: View {
     let skin: Skin
     let isSelected: Bool

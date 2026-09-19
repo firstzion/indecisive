@@ -17,7 +17,7 @@ struct AppRoot: View {
     @AppStorage(SkinID.hasChosenStorageKey) private var hasChosenSkin: Bool = true
 
     private var currentSkin: Skin {
-        Skin.skin(for: SkinID(rawValue: skinIDRaw) ?? .defaultID)
+        Skin.skin(for: SkinID.resolving(skinIDRaw))
     }
 
     var body: some View {

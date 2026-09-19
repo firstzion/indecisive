@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Falling confetti overlay for the reveal screen. Shapes and colors match
-/// each skin: rounded rects/circles for Gumball, tiny diamonds/dots for the
-/// 8-Ball, and ink-outlined shapes for the Wheel.
+/// each skin: tiny diamonds/dots for the 8-Ball and ink-outlined shapes for
+/// the Wheel.
 ///
 /// Pieces are generated once into `@State` rather than recomputed in `body`
 /// — a computed property re-randomizing on every redraw would both jitter

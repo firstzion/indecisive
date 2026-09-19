@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The small marker at the start of each item row inside a list: a
-/// flavor-colored dot (Gumball), a monospaced index number (8-Ball), or an
-/// outlined flavor-colored square (Wheel).
+/// monospaced index number (8-Ball) or an outlined flavor-colored square
+/// (Wheel).
 struct RowMarker: View {
     let skin: Skin
     let index: Int
@@ -16,11 +16,6 @@ struct RowMarker: View {
 
     var body: some View {
         switch skin.id {
-        case .gumball:
-            Circle()
-                .fill(flavor)
-                .frame(width: 9, height: 9)
-
         case .eightBall:
             Text(String(format: "%02d", index + 1))
                 .font(skin.type.mono(12))

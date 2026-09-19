@@ -1,10 +1,9 @@
 import SwiftUI
 
-/// The small eyebrow line above the reveal centrepiece ("And the winner
-/// is…" / "THE BALL HAS SPOKEN" / "WE HAVE A WINNER"). Font family genuinely
-/// differs per skin in the source design (body font for Gumball/8-Ball,
-/// display font for the Wheel), so this switches rather than using one
-/// shared token.
+/// The small eyebrow line above the reveal centrepiece ("THE BALL HAS
+/// SPOKEN" / "WE HAVE A WINNER"). Font family genuinely differs per skin in
+/// the source design (body font for the 8-Ball, display font for the
+/// Wheel), so this switches rather than using one shared token.
 struct RevealKicker: View {
     let skin: Skin
 
@@ -21,7 +20,7 @@ struct RevealKicker: View {
 
     private var kickerFont: Font {
         switch skin.id {
-        case .gumball, .eightBall: return skin.type.body(14, weight: .extrabold)
+        case .eightBall: return skin.type.body(14, weight: .extrabold)
         case .prizeWheel: return skin.type.display(19)
         }
     }
@@ -30,11 +29,6 @@ struct RevealKicker: View {
     // against `revealBackground` instead of duplicating this switch.
     var kickerColor: Color {
         switch skin.id {
-        case .gumball:
-            // Lightened from the design's #FFD9E1 (2.70:1 on Gumball's
-            // reveal background #FF3B5C, fails WCAG AA's 3:1 for large
-            // text — this is 14pt extrabold, which qualifies as "large").
-            return Color(hex: 0xFFF0F3)
         case .eightBall: return skin.palette.accent
         case .prizeWheel: return skin.palette.primaryText
         }

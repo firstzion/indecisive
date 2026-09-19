@@ -1,18 +1,18 @@
 import SwiftUI
 import UIKit
 
-/// The reveal screen's visual centerpiece: the shape (capsule / 8-ball /
-/// wheel) plus the winner's name. For Gumball and the Wheel, the name sits
-/// in its own card below the shape; for the 8-Ball, it appears inside the
-/// ball's diamond window instead, so there's no separate name card — a real
-/// structural difference in the source design, not just a color swap.
+/// The reveal screen's visual centerpiece: the shape (8-ball / wheel) plus
+/// the winner's name. For the Wheel, the name sits in its own card below
+/// the shape; for the 8-Ball, it appears inside the ball's diamond window
+/// instead, so there's no separate name card — a real structural
+/// difference in the source design, not just a color swap.
 ///
 /// Each skin's intro animation is its own "toy" moment (PLAN.md §4.4):
-/// Gumball pops in all at once; the 8-Ball's ball wobbles for ~1.1s before
-/// the answer fades in; the Wheel actually spins to the winner's wedge
-/// before its name card appears. Re-created fresh on every re-roll by the
-/// caller's `.id(model.rerollToken)`, so the whole intro replays each
-/// time — including when a reroll lands back on the same winner.
+/// the 8-Ball's ball wobbles for ~1.1s before the answer fades in; the
+/// Wheel actually spins to the winner's wedge before its name card
+/// appears. Re-created fresh on every re-roll by the caller's
+/// `.id(model.rerollToken)`, so the whole intro replays each time —
+/// including when a reroll lands back on the same winner.
 struct RevealCentrepiece: View {
     let skin: Skin
     let winnerName: String
@@ -50,12 +50,10 @@ struct RevealCentrepiece: View {
         .onDisappear(perform: cancelScheduledWork)
     }
 
-    /// Whether the winner's name should be showing yet — for Gumball this
-    /// is the same instant as the shape's pop-in; for the 8-Ball and Wheel
-    /// it's deliberately delayed until their own intro animation finishes.
+    /// Whether the winner's name card should be showing yet — the Wheel
+    /// deliberately holds it back until its spin finishes.
     private var nameCardVisible: Bool {
         switch skin.id {
-        case .gumball: return popped
         case .prizeWheel: return resultRevealed
         case .eightBall: return false // unused — no separate name card
         }
@@ -64,10 +62,10 @@ struct RevealCentrepiece: View {
     @ViewBuilder
     private var entranceWrappedShape: some View {
         switch skin.id {
-        case .gumball, .eightBall:
+        case .eightBall:
             shape
                 .scaleEffect(popped ? 1 : 0.72)
-                .rotationEffect(.degrees((popped ? 0 : -6) + (skin.id == .eightBall ? wobbleAngle : 0)))
+                .rotationEffect(.degrees((popped ? 0 : -6) + wobbleAngle))
                 .opacity(popped ? 1 : 0)
         case .prizeWheel:
             // No bounce/scale here — that would fight visually with the
@@ -79,22 +77,6 @@ struct RevealCentrepiece: View {
     @ViewBuilder
     private var shape: some View {
         switch skin.id {
-        case .gumball:
-            ZStack {
-                Circle().fill(
-                    RadialGradient(
-                        colors: [.white.opacity(0.85), skin.palette.accent],
-                        center: UnitPoint(x: 0.34, y: 0.3),
-                        startRadius: 0,
-                        endRadius: 100
-                    )
-                )
-                Text("?!")
-                    .font(skin.type.display(34))
-                    .foregroundStyle(.white)
-            }
-            .frame(width: 176, height: 176)
-
         case .eightBall:
             ZStack {
                 Circle()
@@ -156,7 +138,7 @@ struct RevealCentrepiece: View {
     private var nameCard: some View {
         VStack(spacing: 8) {
             Text(winnerName)
-                .font(skin.type.display(skin.id == .gumball ? 40 : 34))
+                .font(skin.type.display(34))
                 .foregroundStyle(skin.palette.primaryText)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.6)
@@ -182,13 +164,6 @@ struct RevealCentrepiece: View {
 
     private var nameCardShadow: SkinShadowStyle {
         switch skin.id {
-        case .gumball:
-            // Was hardcoded to 0x17130F — the *Wheel's* ink color, not
-            // Gumball's — so this shadow silently ignored any edit to
-            // Gumball's own palette. `primaryText` is Gumball's actual
-            // dark near-black, matching `CardStyle`'s and
-            // `RevealActionStyle`'s equivalent shadows.
-            return .soft(radius: 0, x: 0, y: 12, color: skin.palette.primaryText, opacity: 0.16)
         case .prizeWheel:
             return .hard(offset: CGSize(width: 6, height: 6), color: skin.palette.primaryText)
         case .eightBall:
@@ -208,24 +183,6 @@ struct RevealCentrepiece: View {
         cancelScheduledWork() // defensive — see `scheduledWork`'s doc comment
 
         switch skin.id {
-        case .gumball:
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-            if reduceMotion {
-                popped = true
-            } else {
-                withAnimation(.interpolatingSpring(stiffness: 170, damping: 14).delay(0.05)) {
-                    popped = true
-                }
-            }
-            // Delayed slightly from the soft impact above — firing both
-            // immediately back to back (regardless of Reduce Motion, since
-            // neither call is conditioned on it) means the Taptic Engine
-            // typically only plays the second one, silently swallowing
-            // the first.
-            afterDelay(0.15) {
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-            }
-
         case .eightBall:
             // `repeatCount(6, autoreverses: true)` below takes 6 full
             // back-and-forth cycles × 0.09s × 2 = 1.08s to run its course.

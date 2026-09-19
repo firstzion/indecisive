@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// The accept / re-roll buttons below the reveal. Gumball and the 8-Ball
-/// stack two full-width pills; the Wheel places two side-by-side blocks
-/// instead — a real layout difference, not just a color change.
+/// The accept / re-roll buttons below the reveal. The 8-Ball stacks two
+/// full-width pills; the Wheel places two side-by-side blocks instead — a
+/// real layout difference, not just a color change.
 struct RevealActions: View {
     let skin: Skin
     let onAccept: () -> Void
@@ -33,7 +33,7 @@ struct RevealActions: View {
 
         Group {
             switch skin.id {
-            case .gumball, .eightBall:
+            case .eightBall:
                 VStack(spacing: 12) { accept; reroll }
             case .prizeWheel:
                 HStack(spacing: 12) { accept; reroll }
@@ -75,7 +75,6 @@ struct RevealActionStyle: ButtonStyle {
 
     private var fontSize: CGFloat {
         switch (skin.id, role) {
-        case (.gumball, .accept): return 24
         case (.eightBall, .accept): return 22
         default: return 19
         }
@@ -92,8 +91,6 @@ struct RevealActionStyle: ButtonStyle {
 
     private var foreground: Color {
         switch (skin.id, role) {
-        case (.gumball, .accept): return skin.palette.accent
-        case (.gumball, .reroll): return .white
         case (.eightBall, .accept): return skin.palette.background
         case (.eightBall, .reroll): return skin.palette.primaryText
         case (.prizeWheel, .accept): return skin.palette.background
@@ -103,8 +100,6 @@ struct RevealActionStyle: ButtonStyle {
 
     private var background: Color {
         switch (skin.id, role) {
-        case (.gumball, .accept): return skin.palette.surface
-        case (.gumball, .reroll): return .clear
         case (.eightBall, .accept): return skin.palette.accent
         // A bespoke shade with no existing token match — distinct from
         // both `background` (0x140F2E) and `surface` (0x241B52), used
@@ -120,7 +115,6 @@ struct RevealActionStyle: ButtonStyle {
 
     private var borderWidth: CGFloat {
         switch (skin.id, role) {
-        case (.gumball, .reroll): return 2.5
         case (.eightBall, .reroll): return 1.5
         case (.prizeWheel, _): return 3
         default: return 0
@@ -129,7 +123,6 @@ struct RevealActionStyle: ButtonStyle {
 
     private var borderColor: Color {
         switch skin.id {
-        case .gumball: return .white.opacity(0.7)
         case .eightBall: return skin.palette.dashedBorder
         case .prizeWheel: return skin.palette.primaryText
         }
@@ -137,21 +130,14 @@ struct RevealActionStyle: ButtonStyle {
 
     private var shadow: SkinShadowStyle {
         switch (skin.id, role) {
-        // Was hardcoded to 0x17130F — the *Wheel's* ink color, not
-        // anything in Gumball's own palette — so editing Gumball's colors
-        // could never change this shadow's tint. `primaryText` is
-        // Gumball's own dark near-black and is what every other Gumball
-        // shadow in the codebase already tints with (see `CardStyle`'s and
-        // `RevealCentrepiece`'s equivalents).
-        case (.gumball, .accept): return .soft(radius: 0, x: 0, y: 8, color: skin.palette.primaryText, opacity: 0.18)
         case (.prizeWheel, _): return .hard(offset: CGSize(width: 4, height: 4), color: skin.palette.primaryText)
         default: return .none
         }
     }
 }
 
-/// The little wiggling glyph next to "Nope, roll again" / "SHAKE AGAIN".
-/// The Wheel's "SPIN AGAIN" has no glyph in the source design.
+/// The little wiggling glyph next to the 8-Ball's "SHAKE AGAIN". The
+/// Wheel's "SPIN AGAIN" has no glyph in the source design.
 struct RevealActionGlyph: View {
     let skin: Skin
     @State private var wiggle = false
@@ -160,13 +146,10 @@ struct RevealActionGlyph: View {
     var body: some View {
         Group {
             switch skin.id {
-            case .gumball:
-                // Standalone decorative accent — see the identical note on
-                // `PrimaryCTAGlyph`'s gumball case.
-                Circle().fill(Color(hex: 0xFFB020)).frame(width: 18, height: 18)
             case .eightBall:
-                // Also standalone — coincides with `palette.flavors[0]`,
-                // but this glyph isn't showing "a flavour".
+                // Standalone decorative accent — coincides with
+                // `palette.flavors[0]`, but this glyph isn't showing "a
+                // flavour".
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: 0xFF4FD8))
                     .frame(width: 16, height: 16)

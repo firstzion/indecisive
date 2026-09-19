@@ -17,7 +17,7 @@ struct IndecisiveApp: App {
     /// persisted app data — including whatever's left over from manual
     /// testing in the simulator) seeded fresh every launch.
     ///
-    /// UI tests also pass `-skin gumball -hasChosenSkin YES` so every run
+    /// UI tests also pass `-skin prizeWheel -hasChosenSkin YES` so every run
     /// starts on the same skin with onboarding already complete,
     /// regardless of whatever was last selected. Those two are picked up
     /// automatically by `@AppStorage`/`UserDefaults` — a `-key value`

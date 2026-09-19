@@ -1,9 +1,9 @@
 import SwiftUI
 
 /// The dashed "+ …" row: adding an item within a list, or a new list on
-/// Home. Gumball and the 8-Ball set the label in their display font (Baloo
-/// 2 / Lilita One); the Wheel deliberately uses its *body* font here —
-/// Titan One reads too heavy at this size — matching the source design.
+/// Home. The 8-Ball sets the label in its display font (Lilita One); the
+/// Wheel deliberately uses its *body* font here — Titan One reads too heavy
+/// at this size — matching the source design.
 struct DashedAddRow: View {
     let skin: Skin
     let label: String

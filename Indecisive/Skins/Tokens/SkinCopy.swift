@@ -6,12 +6,6 @@ import Foundation
 /// real plural rules and localization — that's a bigger migration, still
 /// deferred until the copy itself has settled further. Each closure does
 /// its own simple singular/plural branching in the meantime.
-///
-/// One deliberate simplification: the design applies CSS `text-transform:
-/// uppercase` to Gumball's reveal kicker, but every other skin's copy is
-/// already authored in the right case. Rather than add a one-off text-case
-/// token just for that, Gumball's `revealKicker` string is written in caps
-/// directly.
 struct SkinCopy: Sendable {
     // MARK: Home
     let homeSubtitle: @Sendable (_ listCount: Int) -> String

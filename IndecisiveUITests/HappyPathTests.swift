@@ -10,7 +10,7 @@ import XCTest
 ///
 /// The one exception is the skin *choice*, which lives in `UserDefaults`
 /// rather than the store: the happy path really does switch it, so it starts
-/// by picking Gumball and ends by putting Gumball back (see
+/// by picking the Wheel and ends by putting the Wheel back (see
 /// `launchApp(pinningSkin:)` for why it can't just pin the skin instead).
 final class HappyPathTests: XCTestCase {
     private var app: XCUIApplication!
@@ -23,7 +23,7 @@ final class HappyPathTests: XCTestCase {
     /// Launches the app on `-UITesting`'s fresh in-memory store, with
     /// onboarding already complete (`-hasChosenSkin YES`).
     ///
-    /// `pinningSkin` also passes `-skin gumball`, so the run starts on the
+    /// `pinningSkin` also passes `-skin prizeWheel`, so the run starts on the
     /// same skin whatever the simulator last had selected. Both flags land in
     /// `UserDefaults`' argument domain (see `IndecisiveApp.isUITesting`),
     /// which outranks anything the app writes for the lifetime of the
@@ -33,7 +33,7 @@ final class HappyPathTests: XCTestCase {
     private func launchApp(pinningSkin: Bool) {
         var arguments = ["-UITesting", "-hasChosenSkin", "YES"]
         if pinningSkin {
-            arguments += ["-skin", "gumball"]
+            arguments += ["-skin", "prizeWheel"]
         }
         app.launchArguments = arguments
         app.launch()
@@ -50,12 +50,12 @@ final class HappyPathTests: XCTestCase {
 
     func testCreateListAddItemsPickRerollAcceptThenSwitchSkinAndStatePersists() throws {
         // Not pinned: this test switches skins, and a pinned `-skin` would
-        // shadow the switch (the app would stay on Gumball and the 8-Ball
-        // check at the end could never pass). Pick Gumball through the UI
+        // shadow the switch (the app would stay on the Wheel and the 8-Ball
+        // check at the end could never pass). Pick the Wheel through the UI
         // instead, so the switch below is a real change whatever skin the
         // simulator happened to have persisted.
         launchApp(pinningSkin: false)
-        selectSkin("gumball")
+        selectSkin("prizeWheel")
 
         let itemNames = ["Hiking Trail", "Beach Day", "City Tour"]
 
@@ -125,17 +125,17 @@ final class HappyPathTests: XCTestCase {
             lastPickLineAfterSwitch.label.contains(acceptedName),
             "the accepted pick ('\(acceptedName)') should survive the skin switch — got '\(lastPickLineAfterSwitch.label)'"
         )
-        // Re-skinned in the 8-Ball's own voice, not the Gumball copy from
+        // Re-skinned in the 8-Ball's own voice, not the Wheel copy from
         // before the switch.
         XCTAssertTrue(lastPickLineAfterSwitch.label.hasPrefix("Ball last said:"))
 
         // MARK: Put the skin back
 
         // The switch was real, so it was written to the simulator's
-        // persisted defaults — put Gumball back rather than leaving every
-        // later manual launch on the 8-Ball.
+        // persisted defaults — put the Wheel (the app's default skin) back
+        // rather than leaving every later manual launch on the 8-Ball.
         app.buttons["backToListsButton"].tap()
-        selectSkin("gumball")
+        selectSkin("prizeWheel")
         XCTAssertTrue(
             app.buttons["listRow-Weekend Trip"].waitForExistence(timeout: 5),
             "the sheet should dismiss back to Home"
