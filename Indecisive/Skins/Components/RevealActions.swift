@@ -76,20 +76,26 @@ struct RevealActionStyle: ButtonStyle {
     private var fontSize: CGFloat {
         switch (skin.id, role) {
         case (.eightBall, .accept): return 22
+        case (.eightBall, .reroll): return 19
+        case (.prizeWheel, _): return 19
         case (.gashapon, .accept): return 20
         case (.gashapon, .reroll): return 18
-        default: return 19
         }
     }
 
     private var height: CGFloat {
         switch skin.id {
         case .prizeWheel: return 60
-        default: return role == .accept ? 62 : 56
+        case .eightBall, .gashapon: return role == .accept ? 62 : 56
         }
     }
 
-    private var cornerRadius: CGFloat { skin.id == .prizeWheel ? 18 : height / 2 }
+    private var cornerRadius: CGFloat {
+        switch skin.id {
+        case .prizeWheel: return 18
+        case .eightBall, .gashapon: return height / 2
+        }
+    }
 
     private var foreground: Color {
         switch (skin.id, role) {
@@ -121,9 +127,10 @@ struct RevealActionStyle: ButtonStyle {
 
     private var borderWidth: CGFloat {
         switch (skin.id, role) {
+        case (.eightBall, .accept): return 0
         case (.eightBall, .reroll): return 1.5
         case (.prizeWheel, _): return 3
-        default: return 0
+        case (.gashapon, _): return 0
         }
     }
 
@@ -136,9 +143,9 @@ struct RevealActionStyle: ButtonStyle {
     }
 
     private var shadow: SkinShadowStyle {
-        switch (skin.id, role) {
-        case (.prizeWheel, _): return .hard(offset: CGSize(width: 4, height: 4), color: skin.palette.primaryText)
-        default: return .none
+        switch skin.id {
+        case .prizeWheel: return .hard(offset: CGSize(width: 4, height: 4), color: skin.palette.primaryText)
+        case .eightBall, .gashapon: return .none
         }
     }
 }

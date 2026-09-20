@@ -14,9 +14,9 @@ references are `path:line` against `d576a23`.
    had gone stale after deliberate UI edits. This is the *only* automated defence
    against one skin's changes breaking another skin's rendering, and while it was red
    it couldn't tell an expected mismatch from a real regression. *(Fixed — Phase 0.)*
-2. **Adding a fourth skin costs 24 compiler errors across 13 files — plus 18 more
+2. **Adding a fourth skin costs 25 compiler errors across 12 files — plus 18 more
    decision sites the compiler stays silent about** (§2). That silent tail is the
-   thing that will bite when Crystal Ball goes in.
+   thing that will bite when Crystal Ball goes in. *(Fixed — Phase 1, P0-3.)*
 
 ---
 
@@ -158,9 +158,21 @@ extension Skin {
 
 **Where:** see the full inventory in Appendix A.
 
-I added a fourth `SkinID` case in a scratch copy and built. The compiler produced
-**24 "switch must be exhaustive" errors across 13 files** — a useful, complete to-do
-list. But it said nothing about 18 further sites that decide behaviour from
+**Status: done.** Every one of the 18 sites is now an exhaustive `switch` over the skin
+with no `default:` — 15 switches in all, because some sites shared a decision (the shake
+check two screens made separately is now one `Skin.shakeToPick`; three ad-hoc confetti
+checks are one `Confetti.style(for:)`). Verified four ways: (1) all 18 snapshot images
+re-render **byte-identical**, with no tolerance; (2) the five sites the snapshots can't
+see (confetti ×3, shake ×2) are pinned by new tests in `SkinBehaviourTests`, written from
+the old code's values; (3) a grep audit finds no `skin.id ==`/`!=`, no ternary on the skin
+and no `default:` left; (4) the bare-fourth-case experiment now gives **40 errors across
+13 files** (was 25 across 12), the +15 landing exactly on the new switches, with no silent
+site left. The diagnosis below is the state before the fix.
+
+I added a fourth `SkinID` case in a scratch copy and built (whole-module mode, which
+type-checks everything — an ordinary batched debug build stops at the first failing batch
+and reports fewer). The compiler produced **25 "switch must be exhaustive" errors across
+12 files** — a useful, complete to-do list. But it said nothing about 18 further sites that decide behaviour from
 `skin.id` using a form the compiler can't check: `if skin.id == …`, a ternary, or a
 `switch` with a `default:`.
 
@@ -211,6 +223,11 @@ the closure with a direct binding:
 …
 TextField("Item name", text: $item.name)
 ```
+
+The test target has one of the same family: `ContrastTests.swift:93` reads the
+main-actor-isolated `RevealKicker.kickerColor` from a nonisolated test method (`@MainActor`
+on the class clears it, as `SnapshotTests` already does). Both only show up on a build that
+recompiles those files — an incremental build prints no warnings for files it skips.
 
 ---
 
@@ -492,7 +509,7 @@ I measured the compiler's contribution directly by adding a bare fourth case to
 `SkinID` and building:
 
 ```
-24 × "switch must be exhaustive" errors, across 13 files
+25 × "switch must be exhaustive" errors, across 12 files   (whole-module build)
 ```
 
 That's the *good* part — it's a precise, complete to-do list for the exhaustive
@@ -500,13 +517,14 @@ switches. The problem is the other half:
 
 | | count | compiler tells you? |
 |---|---|---|
-| Exhaustive `switch skin.id` | 24 sites / 13 files | ✅ yes |
+| Exhaustive `switch skin.id` | 25 sites / 12 files | ✅ yes |
 | `if skin.id ==` / ternary / `switch … default:` | **18 sites** | ❌ **no** |
 | Hard-coded test skin arrays | **5** | ❌ **no** |
 
 So roughly **40 % of the skin-dependent decisions in the codebase give no signal when a
 skin is added**, and the entire test suite silently continues to cover only the old
-skins.
+skins. *(After P0-2 and P0-3: no hard-coded test arrays and no silent sites; the same
+experiment gives 40 errors across 13 files.)*
 
 ### The underlying cause
 
@@ -669,16 +687,18 @@ green on iOS 27.0** (17 of 18 images fail) — see P2-8.
 
 1. ✅ Add `Skin.all` derived from `SkinID.allCases`; replace all five hard-coded arrays
    (P0-2).
-2. Delete every non-exhaustive skin branch (P0-3, Appendix A) — promote to a token where
+2. ✅ Delete every non-exhaustive skin branch (P0-3, Appendix A) — promote to a token where
    one exists, otherwise rewrite as an exhaustive `switch` with no `default:`.
 3. Extend `ContrastTests` to the reveal action pairs and header text (P2-4).
 4. Fix the `ItemRow` Swift 6 warning (P1-1) and the accessibility gaps (P1-4, P1-5).
 
 **Exit:** adding a bare `SkinID` case produces a compiler error for *every* skin-dependent
-decision, and every existing test automatically covers the new skin.
+decision, and every existing test automatically covers the new skin. *Met after P0-2 +
+P0-3 (measured: a bare fourth case now gives 40 errors across 13 files and no silent site).
+Items 3 and 4 are still open; they don't gate adding a skin.*
 
 This is the phase worth doing even if you do nothing else — it converts the 18 silent
-failures into 18 compiler errors, which is the difference between "Crystal Ball renders
+decisions into compiler errors, which is the difference between "Crystal Ball renders
 subtly wrong and we find out in review" and "Crystal Ball doesn't build until it's
 complete".
 
@@ -705,7 +725,7 @@ structural views into `Skins/<SkinName>/`, and reduce `ListBadge`, `HeroBadge`,
 
 | | files touched to add a skin | silent-failure sites |
 |---|---|---|
-| today | 24 | 17 + 5 test arrays |
+| today (at `d576a23`) | 24 | 18 + 5 test arrays |
 | after Phase 1 | ~24 | **0** |
 | after Phase 2 | ~6 | 0 |
 | after Phase 3 | ~3 | 0 |
@@ -734,8 +754,9 @@ Steps 2 and 6 are the ones that don't exist today.
 
 ## Appendix A — silent (non-exhaustive) skin branches
 
-The 18 sites that need rewriting or promoting in Phase 1. None of these produce a
-compiler error when a `SkinID` case is added.
+The 18 sites that needed rewriting or promoting in Phase 1. **Status: all 18 converted
+(P0-3)** — the table is the state before. None of these produced a compiler error when a
+`SkinID` case was added; each now does.
 
 | File | Line | Form | Silent default for a new skin |
 |---|---|---|---|
@@ -761,11 +782,11 @@ compiler error when a `SkinID` case is added.
 (`RevealView.swift:62` and `ListDetailView.swift:64` are the same capability expressed
 twice, so these 18 sites represent 17 distinct decisions.)
 
-For reference, the 13 files that *do* error — these are already working as intended:
-`Skin.swift`, `Skin+CompactTitle.swift`, `RowMarker.swift`, `ListBadge.swift`,
-`HeroBadge.swift`, `PrimaryCTA.swift`, `RevealGlow.swift`, `RevealKicker.swift`,
-`RevealActions.swift`, `RevealCentrepiece.swift`, `IconButton.swift`, `RevealView.swift`,
-and the `Skin.skin(for:)` registry.
+For reference, the 12 files that errored before P0-3 — these were already working as
+intended: `Skin.swift` (the `Skin.skin(for:)` registry), `Skin+CompactTitle.swift`,
+`RowMarker.swift`, `ListBadge.swift`, `HeroBadge.swift`, `PrimaryCTA.swift`,
+`RevealGlow.swift`, `RevealKicker.swift`, `RevealActions.swift`, `RevealCentrepiece.swift`,
+`IconButton.swift`, `RevealView.swift`.
 
 ---
 
@@ -785,4 +806,7 @@ xcodebuild -project Indecisive.xcodeproj -scheme Indecisive \
 ```
 
 To reproduce the "cost of a fourth skin" measurement: add a bare `case crystalBall` to
-`SkinID` and build — the compiler emits the 24 errors, and Appendix A is what it misses.
+`SkinID` and build with `SWIFT_COMPILATION_MODE=wholemodule` added to the `xcodebuild`
+command — the compiler then lists all 25 errors (an ordinary batched debug build stops at the
+first failing batch and shows fewer), and Appendix A is what it missed. After P0-3 the same
+experiment gives 40.

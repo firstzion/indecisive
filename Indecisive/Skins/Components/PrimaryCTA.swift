@@ -23,9 +23,7 @@ struct PrimaryCTAStyle: ButtonStyle {
         .frame(minHeight: skin.shape.ctaHeight)
         .background(skin.palette.accent)
         .overlay {
-            // Gashapon's pill has a darker lip along its bottom edge (the
-            // mockup's `inset 0 -4px 0 rgba(0,0,0,.12)`).
-            if skin.id == .gashapon {
+            if hasBottomLip {
                 InsetShadow(
                     shape: RoundedRectangle(cornerRadius: skin.shape.ctaCornerRadius, style: .continuous),
                     color: .black.opacity(0.12), y: -4
@@ -43,6 +41,15 @@ struct PrimaryCTAStyle: ButtonStyle {
         .opacity(configuration.isPressed ? 0.85 : 1)
         .scaleEffect(configuration.isPressed ? 0.98 : 1)
         .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+
+    /// Gashapon's pill has a darker lip along its bottom edge (the mockup's
+    /// `inset 0 -4px 0 rgba(0,0,0,.12)`); the other skins' don't.
+    private var hasBottomLip: Bool {
+        switch skin.id {
+        case .gashapon: return true
+        case .eightBall, .prizeWheel: return false
+        }
     }
 }
 

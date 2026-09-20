@@ -13,10 +13,17 @@ struct RevealKicker: View {
             .font(kickerFont)
             .tracking(2)
             .foregroundStyle(kickerColor)
-            // The Wheel's pointer overlaps the centrepiece below it (see
-            // `RevealCentrepiece`'s `Triangle`) — this bit of extra
-            // clearance keeps the two from colliding.
-            .padding(.bottom, skin.id == .prizeWheel ? 8 : 0)
+            .padding(.bottom, bottomClearance)
+    }
+
+    /// Extra space under the kicker. The Wheel's pointer overlaps the
+    /// centrepiece below it (see `RevealCentrepiece`'s `Triangle`), so it needs
+    /// a little clearance to keep the two from colliding; the others don't.
+    private var bottomClearance: CGFloat {
+        switch skin.id {
+        case .prizeWheel: return 8
+        case .eightBall, .gashapon: return 0
+        }
     }
 
     private var kickerFont: Font {

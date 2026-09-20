@@ -57,11 +57,11 @@ struct ListDetailView: View {
             Text("This removes the list and everything in it. This can't be undone.")
         }
         .onShake(canClaimFocus: !isEditing && !isAddFieldFocused) {
-            // "ASK. SHAKE. OBEY." — the 8-Ball skin lets you shake instead
-            // of tapping the CTA. Other skins ignore it. No-op while
-            // editing or if a reveal is already up, same as the CTA being
+            // "ASK. SHAKE. OBEY." — a skin that picks on shake (the 8-Ball) lets
+            // you shake instead of tapping the CTA. Other skins ignore it. No-op
+            // while editing or if a reveal is already up, same as the CTA being
             // disabled/covered in those states.
-            guard skin.id == .eightBall, !isEditing, !list.items.isEmpty, revealModel == nil else { return }
+            guard skin.shakeToPick, !isEditing, !list.items.isEmpty, revealModel == nil else { return }
             startReveal()
         }
         .fullScreenCover(item: $revealModel) { model in

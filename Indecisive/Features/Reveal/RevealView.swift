@@ -57,9 +57,9 @@ struct RevealView: View {
         }
         .preferredColorScheme(revealColorScheme)
         .onShake {
-            // Only the 8-Ball skin cares about physical shakes — matches
-            // its own "SHAKE AGAIN" re-roll button.
-            guard skin.id == .eightBall else { return }
+            // Only a skin that picks on shake (the 8-Ball) cares about physical
+            // shakes — matches its own "SHAKE AGAIN" re-roll button.
+            guard skin.shakeToPick else { return }
             model.reroll()
         }
         .onAppear { scheduleWinnerAnnouncement() }

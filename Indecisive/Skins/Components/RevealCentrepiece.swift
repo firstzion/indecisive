@@ -43,7 +43,7 @@ struct RevealCentrepiece: View {
         VStack(spacing: 22) {
             entranceWrappedShape
 
-            if skin.id != .eightBall {
+            if hasNameCard {
                 nameCard
                     .scaleEffect(nameCardVisible ? 1 : 0.9)
                     .opacity(nameCardVisible ? 1 : 0)
@@ -168,21 +168,49 @@ struct RevealCentrepiece: View {
         .background(nameCardFill)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay {
-            if skin.id == .prizeWheel, let border = skin.palette.surfaceBorder {
+            if nameCardBorderWidth > 0, let border = skin.palette.surfaceBorder {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .strokeBorder(border, lineWidth: 4)
+                    .strokeBorder(border, lineWidth: nameCardBorderWidth)
             }
         }
         .indShadow(nameCardShadow, cornerRadius: 28)
-        // Gashapon's mockup sets the whole middle stack in from the screen
-        // edges (26pt); the other skins' cards run the full width.
-        .padding(.horizontal, skin.id == .gashapon ? 26 : 0)
+        .padding(.horizontal, nameCardHorizontalInset)
+    }
+
+    /// Whether the winner's name sits in its own card below the shape. The
+    /// 8-Ball shows it inside the ball's diamond window instead.
+    private var hasNameCard: Bool {
+        switch skin.id {
+        case .eightBall: return false
+        case .prizeWheel, .gashapon: return true
+        }
+    }
+
+    /// The Wheel's card has a thick ink border; the others rely on their fill
+    /// and shadow alone.
+    private var nameCardBorderWidth: CGFloat {
+        switch skin.id {
+        case .prizeWheel: return 4
+        case .eightBall, .gashapon: return 0
+        }
+    }
+
+    /// Gashapon's mockup sets the whole middle stack in from the screen edges
+    /// (26pt); the other skins' cards run the full width.
+    private var nameCardHorizontalInset: CGFloat {
+        switch skin.id {
+        case .gashapon: return 26
+        case .eightBall, .prizeWheel: return 0
+        }
     }
 
     /// Gashapon's card is the capsule's cream, not the white the other
     /// skins' cards use.
     private var nameCardFill: Color {
-        skin.id == .gashapon ? GashaponPaint.shell : skin.palette.surface
+        switch skin.id {
+        case .gashapon: return GashaponPaint.shell
+        case .eightBall, .prizeWheel: return skin.palette.surface
+        }
     }
 
     private var nameCardShadow: SkinShadowStyle {

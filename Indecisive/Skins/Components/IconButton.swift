@@ -57,9 +57,10 @@ struct SkinIconButton: View {
     }
 
     private var shape: AnyShape {
-        skin.id == .prizeWheel
-            ? AnyShape(RoundedRectangle(cornerRadius: size * 0.32, style: .continuous))
-            : AnyShape(Circle())
+        switch skin.id {
+        case .prizeWheel: return AnyShape(RoundedRectangle(cornerRadius: size * 0.32, style: .continuous))
+        case .eightBall, .gashapon: return AnyShape(Circle())
+        }
     }
 
     private var foreground: Color {
@@ -84,8 +85,10 @@ struct SkinIconButton: View {
     }
 
     private var borderWidth: CGFloat {
-        guard skin.id == .prizeWheel else { return 0 }
-        return variant == .primary ? 3 : 2.5
+        switch skin.id {
+        case .prizeWheel: return variant == .primary ? 3 : 2.5
+        case .eightBall, .gashapon: return 0
+        }
     }
 
     private var shadow: SkinShadowStyle {

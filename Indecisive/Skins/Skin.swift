@@ -29,4 +29,15 @@ struct Skin: Identifiable, Sendable {
     /// to add it to a literal, which is how a new skin used to slip past them.
     /// Iterate this, not `[Skin.eightBall, …]`.
     static let all: [Skin] = SkinID.allCases.map(Skin.skin(for:))
+
+    /// The 8-Ball's "ASK. SHAKE. OBEY.": shaking the phone picks (on a list) and
+    /// re-rolls (on the reveal) instead of tapping. The other skins ignore a
+    /// shake. One decision, read by both `ListDetailView` and `RevealView` so the
+    /// two can't disagree — and an exhaustive switch, so a new skin has to answer.
+    var shakeToPick: Bool {
+        switch id {
+        case .eightBall: return true
+        case .prizeWheel, .gashapon: return false
+        }
+    }
 }
