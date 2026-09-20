@@ -8,12 +8,11 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.didFailToLoadPersistedStore) private var didFailToLoadPersistedStore
     @Query(sort: \PickList.sortOrder) private var lists: [PickList]
-    /// Backs `totalPickCount` via `@Query` (not `PickService.totalPickCount`,
-    /// which ran a fresh, un-tracked `fetchCount` on every `body`
-    /// evaluation) so SwiftUI actually re-renders the footer when a pick
-    /// is recorded elsewhere — accepting/rejecting in `RevealView` — the
-    /// same way `lists` above already reacts to list changes.
-    @Query private var picks: [Pick]
+    /// Backs `totalPickCount`. Created on appear rather than held as a
+    /// `@Query`, because the footer needs a *number* and a `@Query` would
+    /// hand it every `Pick` ever recorded to count them — see `PickCounter`,
+    /// which documents why this line has now been written three ways.
+    @State private var pickCounter: PickCounter?
     @State private var showingNewList = false
     @State private var showingSkinPicker = false
     @State private var showingStoreLoadFailureAlert = false
@@ -70,6 +69,13 @@ struct HomeView: View {
         .tint(skin.palette.accent)
         .preferredColorScheme(skin.palette.colorScheme)
         .onAppear {
+            // Built here, not at init: it needs the `modelContext` from the
+            // environment. Made once and kept — it watches the store from
+            // then on, including while Detail is covering this screen.
+            if pickCounter == nil {
+                pickCounter = PickCounter(context: modelContext)
+            }
+
             // Guarded by `hasShownStoreLoadFailureAlert` so navigating back
             // to Home from Detail doesn't re-show this every time — it
             // should fire at most once per launch.
@@ -158,7 +164,7 @@ struct HomeView: View {
     }
 
     private var totalPickCount: Int {
-        picks.count
+        pickCounter?.total ?? 0
     }
 
     private func createList(named name: String, flavorIndex: Int) {

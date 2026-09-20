@@ -32,13 +32,74 @@ struct IndecisiveApp: App {
         ProcessInfo.processInfo.arguments.contains("-UITesting")
     }
 
+    /// `true` when this process is hosting a **unit** test run.
+    ///
+    /// `IndecisiveTests` is hosted by the real app, so launching it also
+    /// launches the whole app: `SeedData` writes to the real on-disk store,
+    /// and Home's `@Query` views sit there live, observing it, for the
+    /// duration of the run — alongside every in-memory container the tests
+    /// themselves create and save. That is incidental state no test asked
+    /// for, and it is the leading suspect for the intermittent
+    /// `EXC_BREAKPOINT` inside a `_SwiftData_SwiftUI` save observer that a
+    /// full run hits every twenty-odd times (REVIEW.md, P1-5). So under a
+    /// unit test run the app stays out of the way entirely: a throwaway
+    /// in-memory store and no UI at all.
+    ///
+    /// XCTest sets this variable in the *host* app's environment. A UI
+    /// test's target app doesn't get it — only the runner does — so
+    /// `IndecisiveUITests` still launches the real app normally.
+    private static var isHostingUnitTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
+    /// Either flavour of test run, both of which want a throwaway store
+    /// rather than the user's real one.
+    private static var isUnderTest: Bool {
+        isUITesting || isHostingUnitTests
+    }
+
+    /// Where every `@AppStorage` in the app reads and writes — injected in
+    /// `body` with `.defaultAppStorage(_:)`, so no call site has to know.
+    let storage: UserDefaults
+
+    private static let uiTestingSuiteName = "com.indecisive.app.uitesting"
+
+    /// The app's own defaults normally; under `-UITesting`, a separate suite
+    /// emptied at every launch.
+    ///
+    /// The skin choice was the one piece of state a UI test run still
+    /// leaked. `-UITesting` already guarantees the *store* never touches
+    /// real data, but the chosen skin lives in `UserDefaults`, and the
+    /// happy-path test deliberately does *not* pin `-skin` — it switches
+    /// skins, and a pinned argument-domain value would shadow the switch and
+    /// make the test unable to fail. So the switch was real and persistent:
+    /// it wrote the simulator's actual defaults. The test put the Wheel back
+    /// at the end, but only if it got that far; any failure before that left
+    /// the machine on the 8-Ball, and the next run — or the next manual
+    /// launch — started somewhere else.
+    ///
+    /// A throwaway suite keeps the switch completely real while making the
+    /// leak impossible, and means a test no longer has to tidy up after
+    /// itself to stay honest. Launch arguments still work: `-key value` goes
+    /// into the argument domain, which every `UserDefaults` instance
+    /// searches first.
+    private static func makeStorage() -> UserDefaults {
+        guard isUITesting, let suite = UserDefaults(suiteName: uiTestingSuiteName) else {
+            return .standard
+        }
+        suite.removePersistentDomain(forName: uiTestingSuiteName)
+        return suite
+    }
+
     init() {
         FontRegistry.verifyAllResolve()
 
+        storage = Self.makeStorage()
+
         let schema = Schema(versionedSchema: IndecisiveSchemaV1.self)
 
-        if Self.isUITesting {
-            // A UI test's in-memory store is thrown away every launch
+        if Self.isUnderTest {
+            // A test run's in-memory store is thrown away every launch
             // anyway, so there's nothing meaningful to fall back *from* —
             // a failure here means something is fundamentally broken
             // (not a real-world migration/corruption case), so this one
@@ -47,7 +108,7 @@ struct IndecisiveApp: App {
                 let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
                 container = try ModelContainer(for: schema, migrationPlan: IndecisiveMigrationPlan.self, configurations: config)
             } catch {
-                fatalError("Failed to create the in-memory UI-test ModelContainer: \(error)")
+                fatalError("Failed to create the in-memory test ModelContainer: \(error)")
             }
             didFailToLoadPersistedStore = false
         } else {
@@ -87,8 +148,18 @@ struct IndecisiveApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppRoot()
-                .environment(\.didFailToLoadPersistedStore, didFailToLoadPersistedStore)
+            if Self.isHostingUnitTests {
+                // Nothing at all while hosting unit tests — see
+                // `isHostingUnitTests`. The tests that exercise real screens
+                // host their own copies, with their own containers; the
+                // app's would only be a second, unasked-for set of live
+                // `@Query` observers in the same process.
+                Color.clear
+            } else {
+                AppRoot()
+                    .environment(\.didFailToLoadPersistedStore, didFailToLoadPersistedStore)
+                    .defaultAppStorage(storage)
+            }
         }
         .modelContainer(container)
     }

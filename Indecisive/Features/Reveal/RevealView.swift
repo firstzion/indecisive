@@ -9,11 +9,22 @@ struct RevealView: View {
     @Environment(\.skin) private var skin
     @Environment(\.dismiss) private var dismiss
     @Environment(\.indReducedMotion) private var reduceMotion
-    /// The pending `scheduleWinnerAnnouncement()` work, kept so it can be
-    /// cancelled — otherwise a stale VoiceOver announcement (up to ~2.9s
-    /// out, for the Wheel) can fire after the user has already dismissed
-    /// this screen or rerolled again.
-    @State private var announcementWorkItem: DispatchWorkItem?
+    /// Whether the skin's intro has run its course, so the winner is
+    /// actually on screen. Set by `announceWinnerOnceLegible()`.
+    @State private var introHasFinished = false
+
+    /// Whether the accept / re-roll buttons (and a shake) should do
+    /// anything yet. You can't lock in — or reject — an answer you can't
+    /// see, and on the Wheel "can't see it yet" lasts the whole 2.8 s spin.
+    ///
+    /// `reduceMotion` short-circuits it rather than waiting for the state
+    /// above, so the very first render is already correct in the case where
+    /// there is no intro to wait through. (That also keeps the reveal
+    /// snapshots — which all render under Reduce Motion — showing the
+    /// settled screen rather than a transient disabled one.)
+    private var actionsEnabled: Bool {
+        reduceMotion || introHasFinished
+    }
 
     var body: some View {
         ZStack {
@@ -50,7 +61,7 @@ struct RevealView: View {
             }
             .safeAreaInset(edge: .top) { header }
             .safeAreaInset(edge: .bottom) {
-                RevealActions(skin: skin, onAccept: accept, onReroll: model.reroll)
+                RevealActions(skin: skin, isEnabled: actionsEnabled, onAccept: accept, onReroll: model.reroll)
                     .padding(.horizontal, 24)
                     .padding(.bottom, 24)
             }
@@ -58,31 +69,37 @@ struct RevealView: View {
         .preferredColorScheme(skin.reveal.colorScheme)
         .onShake {
             // Only a skin that picks on shake (the 8-Ball) cares about physical
-            // shakes — matches its own "SHAKE AGAIN" re-roll button.
-            guard skin.traits.shakeToPick else { return }
+            // shakes — matches its own "SHAKE AGAIN" re-roll button. Held off
+            // until the answer is readable for the same reason the buttons
+            // are: a shaky hand would otherwise stack re-rolls behind the one
+            // still playing, each recording a rejection of an answer nobody
+            // ever saw.
+            guard skin.traits.shakeToPick, actionsEnabled else { return }
             model.reroll()
         }
-        .onAppear { scheduleWinnerAnnouncement() }
-        .onChange(of: model.rerollToken) { _, _ in scheduleWinnerAnnouncement() }
-        .onDisappear { announcementWorkItem?.cancel() }
+        // Keyed on `rerollToken`, so every re-roll restarts the wait — and
+        // `task(id:)` cancels the previous one for us when the token changes
+        // or this screen goes away. (This replaces a hand-managed
+        // `DispatchWorkItem`, which existed only to be cancellable: without
+        // that, a stale announcement up to ~2.9 s out could fire over a
+        // screen the user had already dismissed.)
+        .task(id: model.rerollToken) { await announceWinnerOnceLegible() }
     }
 
-    /// VoiceOver announces the winner once it's actually visible — timed to
-    /// each skin's own intro animation (`announcementDelay`; PLAN.md Phase 6:
-    /// "the reveal announces the winner"), rather than the instant the model
-    /// picks it, which for the Wheel is ~2.8s before its name is on screen.
-    private func scheduleWinnerAnnouncement() {
-        // A reroll before the previous announcement fired would otherwise
-        // stack a second one on top of it; cancel whatever's pending first.
-        announcementWorkItem?.cancel()
-
+    /// Waits out the skin's intro, then lets the actions work and tells
+    /// VoiceOver the answer — both at the moment the winner is actually on
+    /// screen (`announcementDelay`; PLAN.md Phase 6: "the reveal announces
+    /// the winner"), rather than the instant the model picked it, which for
+    /// the Wheel is ~2.8 s before its name appears.
+    private func announceWinnerOnceLegible() async {
         let delay = Self.announcementDelay(for: skin, reduceMotion: reduceMotion)
-        let announcement = "\(skin.copy.revealKicker). \(model.winner.name)."
-        let workItem = DispatchWorkItem {
-            UIAccessibility.post(notification: .announcement, argument: announcement)
+        if delay > 0 {
+            introHasFinished = false
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled else { return }
         }
-        announcementWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+        introHasFinished = true
+        UIAccessibility.post(notification: .announcement, argument: "\(skin.copy.revealKicker). \(model.winner.name).")
     }
 
     /// How long after the reveal appears VoiceOver announces the winner: once it

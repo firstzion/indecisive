@@ -31,8 +31,19 @@ final class RevealModel: Identifiable {
         self.winner = first
     }
 
-    /// "Sold, let's go" / "LOCK IT IN": records the win and ends the session.
+    /// Whether this session has already been closed out with an accepted
+    /// pick. `accept()` is wired to a button that dismisses the screen, and
+    /// dismissal isn't instantaneous — so a double-tap on "LOCK IT IN" used
+    /// to land twice and record *two* accepted picks from one user action,
+    /// inflating both the list's history and the running "the ball has
+    /// spoken" counter.
+    private(set) var hasAccepted = false
+
+    /// "Sold, let's go" / "LOCK IT IN": records the win and ends the
+    /// session. Idempotent — see `hasAccepted`.
     func accept() {
+        guard !hasAccepted else { return }
+        hasAccepted = true
         service.record(winner, in: list, accepted: true)
     }
 

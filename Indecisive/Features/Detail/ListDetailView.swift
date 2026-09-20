@@ -71,7 +71,17 @@ struct ListDetailView: View {
         // the back button or the swipe gesture (just restored above)
         // without ever tapping "Done", not just the normal Done-tap path
         // in `editButton`.
-        .onDisappear(perform: commitEdits)
+        //
+        // Gated on actually being mid-edit. It used to run unconditionally,
+        // which meant simply *looking* at a list and going back rewrote its
+        // name and every item's name to the values they already held —
+        // dirtying the model and waking autosave and every `@Query`
+        // observing it, for nothing. Tapping "Done" has already committed by
+        // the time this runs, so `isEditing` is false there too.
+        .onDisappear {
+            guard isEditing else { return }
+            commitEdits()
+        }
     }
 
     // MARK: Toolbar
@@ -334,6 +344,14 @@ struct ListDetailView: View {
     }
 
     private func deleteList() {
+        // Leave edit mode first. "Delete this list" only exists *in* edit
+        // mode, so `onDisappear`'s `commitEdits()` would otherwise still be
+        // armed as this screen pops — and since the delete below is
+        // deferred by a run-loop turn, that commit lands *after* it,
+        // ordering a write to `list.name` and every `item.name` after the
+        // delete of the very object it writes to.
+        isEditing = false
+
         // Dismiss first, *then* delete — deleting the SwiftData model
         // before dismissing risks `body` re-evaluating (it reads
         // `list.name`/`list.items` in the toolbar, alert and hero) against

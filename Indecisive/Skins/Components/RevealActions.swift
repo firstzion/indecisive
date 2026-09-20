@@ -5,6 +5,10 @@ import SwiftUI
 /// Wheel) is the skin's own choice — `skin.reveal.actions`.
 struct RevealActions: View {
     let skin: Skin
+    /// Whether the winner is on screen yet — see
+    /// `RevealView.actionsEnabled`. Both buttons are inert and visibly
+    /// dimmed until it is, rather than silently swallowing taps.
+    var isEnabled: Bool = true
     let onAccept: () -> Void
     let onReroll: () -> Void
 
@@ -39,6 +43,9 @@ struct RevealActions: View {
                 HStack(spacing: 12) { accept; reroll }
             }
         }
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1 : 0.55)
+        .animation(.easeOut(duration: 0.2), value: isEnabled)
         .sensoryFeedback(.success, trigger: acceptTrigger)
         .sensoryFeedback(.impact(weight: .light), trigger: rerollTrigger)
     }

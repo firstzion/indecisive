@@ -34,6 +34,26 @@ final class RevealModelTests: XCTestCase {
         XCTAssertEqual(list.lastAcceptedPick?.itemName, "A")
     }
 
+    func testAcceptingTwiceOnlyRecordsOnePick() throws {
+        // "LOCK IT IN" dismisses the reveal, and dismissal isn't instant, so
+        // a double-tap used to land twice — two accepted picks in the list's
+        // history, and the running counter up by two, from one user action.
+        let context = try TestSupport.makeInMemoryContext()
+        let list = PickList(name: "Lunch")
+        list.items = [PickItem(name: "A")]
+        context.insert(list)
+
+        let service = PickService(context: context)
+        let model = try XCTUnwrap(RevealModel(list: list, service: service))
+        model.accept()
+        model.accept()
+        model.accept()
+
+        XCTAssertEqual(list.picks.count, 1, "only the first accept should have been recorded")
+        XCTAssertEqual(service.totalPickCount, 1, "and the running total should agree")
+        XCTAssertTrue(model.hasAccepted)
+    }
+
     func testRerollNeverRepeatsAnyPreviouslyRejectedWinnerBeforeFullExhaustion() throws {
         // PickService.choose (Phase 1) resets its exclusion pool once every
         // candidate has been rejected — so once *all* items in a session

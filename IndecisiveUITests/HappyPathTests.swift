@@ -5,13 +5,16 @@ import XCTest
 /// confirm the state survives the switch.
 ///
 /// Launches with `-UITesting` (see `IndecisiveApp`), which forces an
-/// in-memory store seeded fresh every run and skips onboarding — so this
-/// test never touches, or depends on, real persisted simulator data.
+/// in-memory store seeded fresh every run *and* points every `@AppStorage`
+/// at a throwaway `UserDefaults` suite wiped on launch — so this test never
+/// touches, or depends on, real persisted simulator data, the skin choice
+/// included.
 ///
-/// The one exception is the skin *choice*, which lives in `UserDefaults`
-/// rather than the store: the happy path really does switch it, so it starts
-/// by picking the Wheel and ends by putting the Wheel back (see
-/// `launchApp(pinningSkin:)` for why it can't just pin the skin instead).
+/// That last part used to be untrue: the happy path really does switch
+/// skins, so it wrote the simulator's actual defaults and then put the Wheel
+/// back at the end — which only helped if it got that far. It no longer has
+/// to tidy up after itself, so a failure halfway through can't leave the
+/// machine, or the next run, somewhere else.
 @MainActor
 final class HappyPathTests: XCTestCase {
     private var app: XCUIApplication!
@@ -27,12 +30,13 @@ final class HappyPathTests: XCTestCase {
     /// onboarding already complete (`-hasChosenSkin YES`).
     ///
     /// `pinningSkin` also passes `-skin prizeWheel`, so the run starts on the
-    /// same skin whatever the simulator last had selected. Both flags land in
-    /// `UserDefaults`' argument domain (see `IndecisiveApp.isUITesting`),
-    /// which outranks anything the app writes for the lifetime of the
-    /// process — that's what keeps them off the simulator's real persisted
-    /// defaults, but it also means the skin *can't be changed from the UI*
-    /// while it's pinned. A test that switches skins therefore must not pin.
+    /// same skin whatever was last selected. Both flags land in
+    /// `UserDefaults`' argument domain, which outranks anything the app
+    /// writes for the lifetime of the process — handy for a fixed starting
+    /// point, but it also means the skin *cannot be changed from the UI*
+    /// while it is pinned. A test that switches skins must therefore not
+    /// pin, and gets its fixed starting point by picking a skin through the
+    /// UI instead.
     private func launchApp(pinningSkin: Bool) {
         var arguments = ["-UITesting", "-hasChosenSkin", "YES"]
         if pinningSkin {
@@ -94,12 +98,19 @@ final class HappyPathTests: XCTestCase {
         XCTAssertTrue(pickButton.isEnabled, "the CTA must be enabled once the list has items")
         pickButton.tap()
 
+        // Both buttons exist as soon as the reveal does, but stay disabled
+        // until the skin's intro has finished and the winner is readable —
+        // the Wheel's spin is 2.9 s of that. Waiting on `isEnabled` rather
+        // than mere existence is what makes this a real check of that guard
+        // instead of a tap that silently does nothing.
         let rerollButton = app.buttons["rerollButton"]
         XCTAssertTrue(rerollButton.waitForExistence(timeout: 5), "the reveal should appear after tapping Pick For Me")
+        XCTAssertTrue(rerollButton.waitUntilEnabled(timeout: 10), "the re-roll button should become usable once the wheel lands")
         rerollButton.tap()
 
         let acceptButton = app.buttons["acceptButton"]
         XCTAssertTrue(acceptButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(acceptButton.waitUntilEnabled(timeout: 10), "the accept button should become usable once the re-rolled wheel lands")
         acceptButton.tap()
 
         // MARK: Check the "last pick" line
@@ -131,18 +142,6 @@ final class HappyPathTests: XCTestCase {
         // Re-skinned in the 8-Ball's own voice, not the Wheel copy from
         // before the switch.
         XCTAssertTrue(lastPickLineAfterSwitch.label.hasPrefix("Ball last said:"))
-
-        // MARK: Put the skin back
-
-        // The switch was real, so it was written to the simulator's
-        // persisted defaults — put the Wheel (the app's default skin) back
-        // rather than leaving every later manual launch on the 8-Ball.
-        app.buttons["backToListsButton"].tap()
-        selectSkin("prizeWheel")
-        XCTAssertTrue(
-            app.buttons["listRow-Weekend Trip"].waitForExistence(timeout: 5),
-            "the sheet should dismiss back to Home"
-        )
     }
 
     /// The Home-screen swipe-to-delete: pulling a row far enough left asks
@@ -259,6 +258,16 @@ private extension XCUIElement {
         coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap()
         let current = (value as? String) ?? ""
         typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count) + text)
+    }
+
+    /// Waits until the element is present *and* enabled. `waitForExistence`
+    /// alone isn't enough for a control that appears disabled and is
+    /// switched on later — `tap()` on a disabled element succeeds and does
+    /// nothing, so the failure would surface much later and somewhere else.
+    func waitUntilEnabled(timeout: TimeInterval) -> Bool {
+        let predicate = NSPredicate(format: "exists == true AND isEnabled == true")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: self)
+        return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
     }
 
     /// The inverse of `waitForExistence` — waits until the element is
