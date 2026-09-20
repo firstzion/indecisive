@@ -42,10 +42,9 @@ struct SkinRevealStyle: Sendable {
     /// window) — an optional, so a new skin has to say which it is.
     let nameCard: NameCard?
     /// The support line ("Chosen from 14. …") set straight onto the reveal background under
-    /// the centrepiece, for a skin with no name card to hold it. A skin with a card has the
-    /// card draw the line inside itself, so this is `nil` there — a skin can't show it twice.
-    /// The 8-Ball is the other skin with no card; its mockup has a line under the ball, but
-    /// the app has never drawn one, so it stays `nil` to keep its reveal as it is.
+    /// the centrepiece, for a skin with no name card to hold it (the 8-Ball, Crystal Ball). A
+    /// skin with a card has the card draw the line inside itself, so this is `nil` there — every
+    /// skin says it exactly once, and none says it twice.
     let supportLine: SupportLine?
     let actions: Actions
     let confetti: ConfettiStyle

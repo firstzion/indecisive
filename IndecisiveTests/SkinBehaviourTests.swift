@@ -59,25 +59,31 @@ final class SkinBehaviourTests: XCTestCase {
         XCTAssertEqual(Skin.gashapon.reveal.nameCard?.appearance, .withCentrepiece)
     }
 
-    func testTheSupportLineIsDrawnByTheCardOrByTheSkinButNeverBoth() {
-        // A skin with a name card has the card draw the line inside itself; drawing another
-        // under it would say it twice. A loose one is for a skin with no card.
+    func testEverySkinSaysItsSupportLineExactlyOnce() {
+        // A skin with a name card has the card draw the line inside itself; one with no card
+        // sets it straight onto the background. Having both would say it twice, and having
+        // neither would leave out a line every mockup has (the 8-Ball's went missing that way).
         for skin in Skin.all {
-            XCTAssertFalse(
-                skin.reveal.nameCard != nil && skin.reveal.supportLine != nil,
-                "\(skin.name) would show its support line twice"
+            let inCard = skin.reveal.nameCard != nil
+            let loose = skin.reveal.supportLine != nil
+            XCTAssertNotEqual(
+                inCard, loose,
+                inCard ? "\(skin.name) would say its support line twice" : "\(skin.name) never says its support line"
             )
         }
     }
 
-    func testOnlyCrystalBallSetsASupportLineUnderItsBall() {
-        // The 8-Ball's mockup has one too, but the app has never drawn it; it stays as it was.
-        XCTAssertNil(Skin.eightBall.reveal.supportLine)
-        XCTAssertNil(Skin.prizeWheel.reveal.supportLine)
-        XCTAssertNil(Skin.gashapon.reveal.supportLine)
-        let line = Skin.crystalBall.reveal.supportLine
-        XCTAssertNotNil(line)
-        XCTAssertEqual(line.map { rgba($0.color) }, rgba(Color(hex: 0xC0A7DC)), "the mockup's #C0A7DC")
+    func testTheEightBallAndCrystalBallSetTheirSupportLineInTheirMockupsMutedViolets() {
+        XCTAssertNil(Skin.prizeWheel.reveal.supportLine, "its card carries the line")
+        XCTAssertNil(Skin.gashapon.reveal.supportLine, "its card carries the line")
+        XCTAssertEqual(
+            Skin.eightBall.reveal.supportLine.map { rgba($0.color) }, rgba(Color(hex: 0x9186C4)),
+            "the 8-Ball mockup's #9186C4"
+        )
+        XCTAssertEqual(
+            Skin.crystalBall.reveal.supportLine.map { rgba($0.color) }, rgba(Color(hex: 0xC0A7DC)),
+            "the Crystal Ball mockup's #C0A7DC"
+        )
     }
 
     func testOnlyTheWheelSetsItsRevealButtonsSideBySide() {

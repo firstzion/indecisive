@@ -108,7 +108,8 @@ extension Skin {
                 revealKicker: "THE BALL HAS SPOKEN",
                 revealSupport: { n in
                     let others = max(n - 1, 0)
-                    return "Beat \(others) other contender\(others == 1 ? "" : "s"). Arguing with a ball is undignified."
+                    // The mockup breaks the line after the first sentence.
+                    return "Beat \(others) other contender\(others == 1 ? "" : "s").\nArguing with a ball is undignified."
                 },
                 acceptLabel: "LOCK IT IN",
                 rerollLabel: "SHAKE AGAIN"
@@ -129,11 +130,14 @@ extension Skin {
                 // No separate card: the winner's name appears inside the ball's
                 // diamond window instead.
                 nameCard: nil,
-                // The mockup has a line under the ball ("Beat 13 other contenders. …"), but
-                // the app has never drawn it — with no card there was nowhere for it to sit —
-                // and this keeps the reveal exactly as it was. Setting a `SupportLine` here
-                // would add it (Crystal Ball's is the model).
-                supportLine: nil,
+                // The line under the ball ("Beat 13 other contenders. …"), set straight onto the
+                // background: 14pt Space Grotesk in the muted violet, as in the mockup. It arrives
+                // with the answer. (It was missing until 2026-09-20: with no card there had been
+                // nowhere for it to sit.)
+                supportLine: SkinRevealStyle.SupportLine(
+                    font: type.body(14),
+                    color: palette.secondaryText
+                ),
                 actions: SkinRevealStyle.Actions(
                     axis: .vertical,
                     accept: SkinRevealStyle.ActionButton(

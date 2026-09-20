@@ -5,8 +5,8 @@ import SwiftUI
 /// the name sits in its own card below the shape; for the 8-Ball and Crystal
 /// Ball, it appears inside the ball instead, so there's no separate name card
 /// — a real structural difference in the source design, not just a color swap.
-/// (Crystal Ball's mockup also sets a support line under the ball, straight
-/// onto the background: `SkinRevealStyle.supportLine`.)
+/// (Those two set their support line under the ball instead, straight onto
+/// the background: `SkinRevealStyle.supportLine`.)
 ///
 /// Each skin's intro animation is its own "toy" moment (PLAN.md §4.4):
 /// the 8-Ball's ball wobbles for ~1.1s before the answer fades in; the

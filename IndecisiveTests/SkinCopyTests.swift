@@ -80,13 +80,14 @@ final class SkinCopyTests: XCTestCase {
 
     func testEightBallRevealSupportCountsOtherContenders() {
         let copy = Skin.eightBall.copy
+        // The mockup breaks the line after the first sentence.
         XCTAssertEqual(
             copy.revealSupport(14),
-            "Beat 13 other contenders. Arguing with a ball is undignified."
+            "Beat 13 other contenders.\nArguing with a ball is undignified."
         )
         XCTAssertEqual(
             copy.revealSupport(1),
-            "Beat 0 other contenders. Arguing with a ball is undignified."
+            "Beat 0 other contenders.\nArguing with a ball is undignified."
         )
     }
 
