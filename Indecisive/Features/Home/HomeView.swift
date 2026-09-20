@@ -102,7 +102,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Rand-o-matic")
                     .font(skin.type.display(36, weight: .extrabold))
-                    .foregroundStyle(skin.palette.primaryText)
+                    .foregroundStyle(skin.palette.titleText)
                     // Sized for "Wizard of Odds"; "Rand-o-matic" is a
                     // different shape and wraps mid-hyphen at a fixed 36pt
                     // in some skins' display faces. Shrink-to-fit instead

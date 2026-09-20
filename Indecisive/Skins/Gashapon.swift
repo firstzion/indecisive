@@ -9,6 +9,7 @@ extension Skin {
             surface: Color(hex: 0xFFFFFF),
             surfaceBorder: nil,
             primaryText: Color(hex: 0x16283C),
+            titleText: Color(hex: 0x16283C),
             secondaryText: Color(hex: 0x5A6E80),
             // Darkened from the design's #6C8497 (3.69:1 on #F2FAFF, fails
             // WCAG AA's 4.5:1 for normal text) — it sets the dashed add rows
@@ -156,6 +157,8 @@ extension Skin {
                     horizontalInset: 26,
                     appearance: .withCentrepiece
                 ),
+                // The card carries the support line itself.
+                supportLine: nil,
                 actions: SkinRevealStyle.Actions(
                     axis: .vertical,
                     accept: SkinRevealStyle.ActionButton(
@@ -178,6 +181,7 @@ extension Skin {
                     )
                 ),
                 confetti: SkinRevealStyle.ConfettiStyle(
+                    motion: .falling,
                     // Its cyan flavour would vanish against its cyan reveal background, so
                     // it uses the mockup's own mix of yellow, cream, pink and mint instead.
                     colors: [CapsulePaint.prize, shell, palette.flavors[0], palette.flavors[2]],

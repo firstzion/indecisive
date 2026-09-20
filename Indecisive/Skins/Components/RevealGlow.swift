@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// The decoration behind the reveal screen: the 8-Ball's pulsing lime glow or
-/// Gashapon's slowly turning sunburst. The Wheel has none, so `RevealView` can
-/// include this unconditionally. What is drawn is per skin; how it moves is the
-/// skin's own `motion.revealBackdrop`.
+/// The decoration behind the reveal screen: the 8-Ball's pulsing lime glow,
+/// Gashapon's slowly turning sunburst or Crystal Ball's pulsing pink haze. The
+/// Wheel has none, so `RevealView` can include this unconditionally. What is
+/// drawn is per skin; how it moves is the skin's own `motion.revealBackdrop`.
 struct RevealGlow: View {
     let skin: Skin
 
@@ -11,6 +11,7 @@ struct RevealGlow: View {
         switch skin.id {
         case .eightBall: glow
         case .gashapon: sunburst
+        case .crystalBall: haze
         case .prizeWheel: EmptyView()
         }
     }
@@ -29,6 +30,31 @@ struct RevealGlow: View {
             // Reduce Motion keeps a static dim glow rather than pulsing
             // — still decorative, just not animated.
             .indIdle(skin.motion.revealBackdrop)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+
+    /// A 460pt disc of pink, densest at the middle and gone by 62 % of the way to the corner —
+    /// the mockup's `radial-gradient(circle, rgba(255,139,209,.3), transparent 62%)`.
+    /// Reduce Motion keeps it still, at its dim end.
+    private var haze: some View {
+        // Drawn in an overlay for the same reason as the sunburst below: 460pt is wider than the
+        // screen, and a fixed-size child in the ZStack would widen the reveal's whole layout.
+        Color.clear
+            .overlay {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [CrystalPaint.pink.opacity(0.3), CrystalPaint.pink.opacity(0)],
+                            center: .center,
+                            startRadius: 0,
+                            // 62 % of the distance from the centre to the corner of a 460pt box.
+                            endRadius: 0.62 * 230 * 2.0.squareRoot()
+                        )
+                    )
+                    .frame(width: 460, height: 460)
+                    .indIdle(skin.motion.revealBackdrop)
+            }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }

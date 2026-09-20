@@ -32,6 +32,13 @@ private struct IdleMotionModifier: ViewModifier {
             content.opacity(running ? 1 : low).onAppear(perform: start)
         case let .wiggle(degrees, _):
             content.rotationEffect(.degrees(running ? degrees : -degrees)).onAppear(perform: start)
+        case let .twinkle(scaleLow, opacityLow, _):
+            // Full size and opacity at rest, dimmest half a swing in: the loop runs
+            // the mockup's `pfm-twinkle` half a period out of step, which no one can see.
+            content
+                .scaleEffect(running ? scaleLow : 1)
+                .opacity(running ? opacityLow : 1)
+                .onAppear(perform: start)
         }
     }
 
@@ -47,6 +54,7 @@ private struct IdleMotionModifier: ViewModifier {
         case let .spin(period): return .linear(duration: period).repeatForever(autoreverses: false)
         case let .pulse(_, halfPeriod): return .easeInOut(duration: halfPeriod).repeatForever(autoreverses: true)
         case let .wiggle(_, halfPeriod): return .easeInOut(duration: halfPeriod).repeatForever(autoreverses: true)
+        case let .twinkle(_, _, halfPeriod): return .easeInOut(duration: halfPeriod).repeatForever(autoreverses: true)
         }
     }
 }

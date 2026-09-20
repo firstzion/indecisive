@@ -8,6 +8,7 @@ extension Skin {
             surface: Color(hex: 0x241B52),
             surfaceBorder: Color(hex: 0x362A72),
             primaryText: Color(hex: 0xF2EEFF),
+            titleText: Color(hex: 0xF2EEFF),
             secondaryText: Color(hex: 0x9186C4),
             // Lightened from the design's #7C6FC0 (4.30:1 on #140F2E, fails
             // WCAG AA's 4.5:1 for normal text) — PLAN.md §4.4 flagged this
@@ -128,6 +129,11 @@ extension Skin {
                 // No separate card: the winner's name appears inside the ball's
                 // diamond window instead.
                 nameCard: nil,
+                // The mockup has a line under the ball ("Beat 13 other contenders. …"), but
+                // the app has never drawn it — with no card there was nowhere for it to sit —
+                // and this keeps the reveal exactly as it was. Setting a `SupportLine` here
+                // would add it (Crystal Ball's is the model).
+                supportLine: nil,
                 actions: SkinRevealStyle.Actions(
                     axis: .vertical,
                     accept: SkinRevealStyle.ActionButton(
@@ -152,6 +158,7 @@ extension Skin {
                     )
                 ),
                 confetti: SkinRevealStyle.ConfettiStyle(
+                    motion: .falling,
                     colors: palette.flavors + [palette.surface],
                     cornerRadius: 2,
                     outline: nil

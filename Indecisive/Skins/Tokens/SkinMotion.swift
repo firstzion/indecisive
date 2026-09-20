@@ -47,6 +47,10 @@ enum IdleMotion: Sendable, Hashable {
     /// Rocks `degrees` either side of upright; each swing takes `halfPeriod`
     /// seconds. Rests tilted back, at `-degrees`.
     case wiggle(degrees: Double, halfPeriod: Double)
+    /// Shrinks to `scaleLow` of its size and dims to `opacityLow`, then swells back;
+    /// each way takes `halfPeriod` seconds. Rests at full size and opacity — a dot that
+    /// sat small and dim would read as switched off.
+    case twinkle(scaleLow: Double, opacityLow: Double, halfPeriod: Double)
 }
 
 /// The "toy moment" that plays when the reveal appears — each skin's own
@@ -68,6 +72,10 @@ enum RevealIntro: Sendable, Equatable {
     /// The capsule pops in and its lid springs off `lidDelay` seconds later,
     /// taking `lidSettle` to come to rest.
     case popAndOpen(lidDelay: Double, lidSettle: Double)
+    /// The crystal ball pops in with its answer hidden in the mist; `partDelay`
+    /// seconds later the mist parts and the answer (and the line under it) fade in
+    /// over `nameFadeIn`.
+    case mistParts(partDelay: Double, nameFadeIn: Double)
 
     /// Seconds after the reveal appears until the winner is on screen and legible:
     /// the moment VoiceOver announces it.
@@ -79,6 +87,8 @@ enum RevealIntro: Sendable, Equatable {
             return duration + cardIn
         case let .popAndOpen(lidDelay, lidSettle):
             return lidDelay + lidSettle
+        case let .mistParts(partDelay, nameFadeIn):
+            return partDelay + nameFadeIn
         }
     }
 }

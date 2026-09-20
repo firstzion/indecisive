@@ -60,6 +60,8 @@ targets:
           - "MochiyPopOne-Regular-Latin.ttf"
           - "MPLUSRounded1c-Medium-Latin.ttf"
           - "MPLUSRounded1c-Bold-Latin.ttf"
+          - "BagelFatOne-Regular-Latin.ttf"
+          - "Nunito[wght].ttf"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app

@@ -22,6 +22,8 @@ final class SkinCopyTests: XCTestCase {
         XCTAssertEqual(Skin.prizeWheel.copy.countLine(2), "2 wedges")
         XCTAssertEqual(Skin.gashapon.copy.countLine(1), "1 capsule inside")
         XCTAssertEqual(Skin.gashapon.copy.countLine(14), "14 capsules inside")
+        XCTAssertEqual(Skin.crystalBall.copy.countLine(1), "1 possible future")
+        XCTAssertEqual(Skin.crystalBall.copy.countLine(14), "14 possible futures")
     }
 
     func testGashaponHomeSubtitlePluralizes() {
@@ -37,6 +39,36 @@ final class SkinCopyTests: XCTestCase {
         // Only Gashapon has a "you got" label; the other skins just show the name.
         XCTAssertNil(Skin.eightBall.copy.revealWinnerLabel)
         XCTAssertNil(Skin.prizeWheel.copy.revealWinnerLabel)
+        XCTAssertNil(Skin.crystalBall.copy.revealWinnerLabel)
+    }
+
+    func testCrystalBallSpeaksInTheMockupsWords() {
+        let copy = Skin.crystalBall.copy
+        // Static, like the Wheel's: the mockup's subtitle and footer don't count anything.
+        XCTAssertEqual(copy.homeSubtitle(0), "Madame Random will see you now")
+        XCTAssertEqual(copy.homeSubtitle(99), "Madame Random will see you now")
+        XCTAssertEqual(copy.homeFooter(412), "The mists are ready when you are")
+        XCTAssertEqual(copy.newListRow, "Summon a new list")
+        XCTAssertEqual(copy.detailHeadline(1), "1 future inside")
+        XCTAssertEqual(copy.detailHeadline(14), "14 futures inside")
+        XCTAssertEqual(copy.addRow, "Add to the prophecy")
+        XCTAssertEqual(copy.ctaCaption, "Cross my palm and tap")
+        XCTAssertEqual(copy.ctaLabel, "Pick For Me")
+        XCTAssertEqual(copy.revealKicker, "THE MISTS HAVE PARTED")
+        XCTAssertEqual(copy.acceptLabel, "So it is written")
+        XCTAssertEqual(copy.rerollLabel, "Consult again")
+    }
+
+    func testCrystalBallRevealSupportCountsTheCandidatesAndBreaksWhereTheMockupDoes() {
+        // The mockup breaks the line after "were".
+        XCTAssertEqual(
+            Skin.crystalBall.copy.revealSupport(14),
+            "Chosen from 14. The spirits were\nunanimous, which never happens."
+        )
+        XCTAssertEqual(
+            Skin.crystalBall.copy.revealSupport(1),
+            "Chosen from 1. The spirits were\nunanimous, which never happens."
+        )
     }
 
     func testEightBallHomeFooterIncludesTotalPickCount() {
@@ -69,6 +101,7 @@ final class SkinCopyTests: XCTestCase {
         XCTAssertEqual(Skin.eightBall.copy.lastPickLine("Pho Palace", date), "Ball last said: Pho Palace")
         XCTAssertEqual(Skin.prizeWheel.copy.lastPickLine("Pho Palace", date), "Last spin landed on Pho Palace")
         XCTAssertTrue(Skin.gashapon.copy.lastPickLine("Pho Palace", date).hasPrefix("Last drop: Pho Palace,"))
+        XCTAssertEqual(Skin.crystalBall.copy.lastPickLine("Pho Palace", date), "The mists last chose Pho Palace")
     }
 
     func testEveryEmptyStateCopyIsNonEmptyAndSkinFlavored() {

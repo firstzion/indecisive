@@ -14,10 +14,14 @@ import UIKit
 /// `verifyAllResolve()` on-device and reading the real `UIFont.fontNames` it printed —
 /// don't hand-guess this list from a font file's tables alone.
 ///
-/// Mochiy Pop One and M PLUS Rounded 1c are Latin-only subsets (the `-Latin.ttf` files):
-/// the Google Fonts originals include Japanese and are 3–5 MB each, and the OFL reserves no
-/// font name for either, so trimming is allowed. M PLUS Rounded 1c's PostScript names are the
-/// legacy "RoundedMplus1c-*", not the "MPLUSRounded1c-*" its filenames suggest.
+/// Mochiy Pop One, M PLUS Rounded 1c and Bagel Fat One are Latin-only subsets (the `-Latin.ttf`
+/// files): the Google Fonts originals include Japanese or Korean and are 1.5–5 MB each, and the
+/// OFL reserves no font name for any of them, so trimming is allowed. M PLUS Rounded 1c's
+/// PostScript names are the legacy "RoundedMplus1c-*", not the "MPLUSRounded1c-*" its filenames
+/// suggest.
+///
+/// Nunito is a variable font like the two above, but its named instances declare their own
+/// PostScript names ("Nunito-SemiBold", …) — unlike Space Grotesk's — so they come out clean.
 enum FontRegistry {
 
     static let spaceGrotesk: [String] = [
@@ -33,16 +37,21 @@ enum FontRegistry {
         "RoundedMplus1c-Medium", "RoundedMplus1c-Bold",
     ]
 
+    static let nunito: [String] = [
+        "Nunito-Regular", "Nunito-Medium", "Nunito-SemiBold",
+        "Nunito-Bold", "Nunito-ExtraBold", "Nunito-Black",
+    ]
+
     static let dmMono: [String] = [
         "DMMono-Regular", "DMMono-Medium",
     ]
 
     static let singleWeight: [String] = [
-        "LilitaOne", "TitanOne", "MochiyPopOne-Regular",
+        "LilitaOne", "TitanOne", "MochiyPopOne-Regular", "BagelFatOne-Regular",
     ]
 
     static var all: [String] {
-        spaceGrotesk + workSans + mPlusRounded1c + dmMono + singleWeight
+        spaceGrotesk + workSans + mPlusRounded1c + nunito + dmMono + singleWeight
     }
 
     /// Confirms every PostScript name above actually resolves to a loaded font.
@@ -58,7 +67,7 @@ enum FontRegistry {
         if missing.isEmpty {
             print("✅ FontRegistry: all \(all.count) custom fonts resolved.")
         } else {
-            for family in ["Space Grotesk", "Work Sans", "Rounded Mplus 1c", "DM Mono", "Lilita One", "Titan One", "Mochiy Pop One"] {
+            for family in ["Space Grotesk", "Work Sans", "Rounded Mplus 1c", "Nunito", "DM Mono", "Lilita One", "Titan One", "Mochiy Pop One", "Bagel Fat One"] {
                 let available = UIFont.fontNames(forFamilyName: family)
                 if !available.isEmpty {
                     print("ℹ️ Family '\(family)' actually exposes: \(available)")

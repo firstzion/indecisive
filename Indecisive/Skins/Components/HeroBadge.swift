@@ -50,6 +50,9 @@ struct HeroBadge: View {
 
             case .gashapon:
                 CapsuleBall(top: flavor, ink: skin.palette.primaryText, size: size)
+
+            case .crystalBall:
+                CrystalOrb(look: .hero(CrystalPaint.tint(forFlavorIndex: flavorIndex)), size: size)
             }
         }
         .indIdle(skin.motion.heroBadge)

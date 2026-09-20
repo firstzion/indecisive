@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// The big "Pick For Me" button. The 8-Ball gets a colored glow, the Wheel a
-/// thick ink border with a hard offset "sticker" shadow, and Gashapon a soft
-/// pink shadow with a darker lip along its bottom edge.
+/// thick ink border with a hard offset "sticker" shadow, Gashapon a soft
+/// pink shadow with a darker lip along its bottom edge, and Crystal Ball a
+/// gold glow with the same lip.
 struct PrimaryCTAStyle: ButtonStyle {
     let skin: Skin
 
@@ -44,9 +45,9 @@ struct PrimaryCTAStyle: ButtonStyle {
     }
 }
 
-/// The little glyph inside the CTA: a mini 8-ball, a spinning wedge or a
-/// turning capsule-machine knob — a tiny preview of "the toy" living right on
-/// the button that triggers it.
+/// The little glyph inside the CTA: a mini 8-ball, a spinning wedge, a
+/// turning capsule-machine knob or a floating crystal bead — a tiny preview of
+/// "the toy" living right on the button that triggers it.
 struct PrimaryCTAGlyph: View {
     let skin: Skin
     var size: CGFloat = 26
@@ -82,6 +83,10 @@ struct PrimaryCTAGlyph: View {
                             .fill(skin.palette.accent)
                             .frame(width: size * 0.57, height: size * 0.14)
                     }
+
+            case .crystalBall:
+                // A small purple bead with a bright highlight.
+                CrystalOrb(look: .bead, size: size)
             }
         }
         // Whether the glyph turns, and how fast, is the skin's own (`skin.motion.ctaGlyph`).

@@ -23,6 +23,7 @@ struct Skin: Identifiable, Sendable {
         case .eightBall: return .eightBall
         case .prizeWheel: return .prizeWheel
         case .gashapon: return .gashapon
+        case .crystalBall: return .crystalBall
         }
     }
 

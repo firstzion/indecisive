@@ -1,15 +1,18 @@
 import SwiftUI
 
 /// The reveal screen's visual centerpiece: the shape (8-ball / wheel /
-/// capsule) plus the winner's name. For the Wheel and Gashapon, the name
-/// sits in its own card below the shape; for the 8-Ball, it appears inside
-/// the ball's diamond window instead, so there's no separate name card — a
-/// real structural difference in the source design, not just a color swap.
+/// capsule / crystal ball) plus the winner's name. For the Wheel and Gashapon,
+/// the name sits in its own card below the shape; for the 8-Ball and Crystal
+/// Ball, it appears inside the ball instead, so there's no separate name card
+/// — a real structural difference in the source design, not just a color swap.
+/// (Crystal Ball's mockup also sets a support line under the ball, straight
+/// onto the background: `SkinRevealStyle.supportLine`.)
 ///
 /// Each skin's intro animation is its own "toy" moment (PLAN.md §4.4):
 /// the 8-Ball's ball wobbles for ~1.1s before the answer fades in; the
 /// Wheel actually spins to the winner's wedge before its name card
-/// appears; Gashapon's capsule pops in and its lid springs off. Re-created
+/// appears; Gashapon's capsule pops in and its lid springs off; Crystal
+/// Ball's pops in with its answer hidden, and the mist parts to show it. Re-created
 /// fresh on every re-roll by the caller's `.id(model.rerollToken)`, so the
 /// whole intro replays each time — including when a reroll lands back on
 /// the same winner.
@@ -49,10 +52,24 @@ struct RevealCentrepiece: View {
                 nameCard(card)
                     .scaleEffect(visible ? 1 : 0.9)
                     .opacity(visible ? 1 : 0)
+            } else if let support = skin.reveal.supportLine {
+                supportLine(support)
             }
         }
         .onAppear(perform: startIntroAnimation)
         .onDisappear(perform: cancelScheduledWork)
+    }
+
+    /// The support line of a skin with no name card to hold it, set on the reveal background.
+    /// It arrives with the answer, so the two read together — `resultRevealed` is the flag every
+    /// intro that hides the answer (`.wobble`, `.spin`, `.mistParts`) sets when it shows.
+    private func supportLine(_ support: SkinRevealStyle.SupportLine) -> some View {
+        Text(skin.copy.revealSupport(candidateCount))
+            .font(support.font)
+            .foregroundStyle(support.color)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 26)
+            .opacity(resultRevealed ? 1 : 0)
     }
 
     /// Whether the winner's name card should be showing yet — the Wheel
@@ -68,7 +85,7 @@ struct RevealCentrepiece: View {
     @ViewBuilder
     private var entranceWrappedShape: some View {
         switch skin.motion.revealIntro {
-        case .wobble, .popAndOpen:
+        case .wobble, .popAndOpen, .mistParts:
             shape
                 .scaleEffect(popped ? 1 : 0.72)
                 .rotationEffect(.degrees((popped ? 0 : -6) + wobbleAngle))
@@ -140,6 +157,9 @@ struct RevealCentrepiece: View {
 
         case .gashapon:
             OpenCapsule(skin: skin, lidOpen: lidOpen)
+
+        case .crystalBall:
+            CrystalBallOnStand(skin: skin, winnerName: winnerName, nameVisible: resultRevealed)
         }
     }
 
@@ -257,6 +277,22 @@ struct RevealCentrepiece: View {
                 afterDelay(lidDelay) {
                     withAnimation(.interpolatingSpring(stiffness: 190, damping: 12)) {
                         lidOpen = true
+                    }
+                }
+            }
+
+        case let .mistParts(partDelay, nameFadeIn):
+            if reduceMotion {
+                popped = true
+                resultRevealed = true
+            } else {
+                withAnimation(.interpolatingSpring(stiffness: 170, damping: 14)) {
+                    popped = true
+                }
+                // The ball is up and drifting with its answer hidden; now the mist parts.
+                afterDelay(partDelay) {
+                    withAnimation(.easeIn(duration: nameFadeIn)) {
+                        resultRevealed = true
                     }
                 }
             }

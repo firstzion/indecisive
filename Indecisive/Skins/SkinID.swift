@@ -6,6 +6,7 @@ enum SkinID: String, CaseIterable, Identifiable, Codable {
     case eightBall
     case prizeWheel
     case gashapon
+    case crystalBall
 
     var id: String { rawValue }
 }

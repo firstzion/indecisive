@@ -3,7 +3,8 @@ import SwiftUI
 /// Falling confetti behind the reveal screen — the mockup's `pfm-fall`. Each piece
 /// drops from just above the top edge to just below the bottom, spinning about its
 /// own centre and fading in, then out, on the way; then it starts over from the top.
-/// Colours, corner radius and outline are the skin's own (`skin.reveal.confetti`).
+/// Colours, corner radius and outline are the skin's own (`skin.reveal.confetti`). A skin whose
+/// confetti `motion` is `.twinkling` gets its stars (`Twinkles`) here instead of any of this.
 ///
 /// Where a piece is at any moment is a pure function of the clock
 /// (`ConfettiMotion.pose(of:at:containerHeight:)`), drawn by `ConfettiField` — it isn't
@@ -38,6 +39,14 @@ struct Confetti: View {
     }
 
     var body: some View {
+        switch skin.reveal.confetti.motion {
+        case .falling: falling
+        case .twinkling: Twinkles(style: skin.reveal.confetti)
+        }
+    }
+
+    @ViewBuilder
+    private var falling: some View {
         // Purely decorative, endlessly-repeating motion — exactly what
         // Reduce Motion asks apps to cut. No static fallback either: a
         // frozen field of confetti mid-fall doesn't read as "confetti".

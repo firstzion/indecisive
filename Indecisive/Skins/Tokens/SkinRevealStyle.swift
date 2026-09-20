@@ -41,6 +41,12 @@ struct SkinRevealStyle: Sendable {
     /// skin whose centrepiece shows the name itself (the 8-Ball's diamond
     /// window) — an optional, so a new skin has to say which it is.
     let nameCard: NameCard?
+    /// The support line ("Chosen from 14. …") set straight onto the reveal background under
+    /// the centrepiece, for a skin with no name card to hold it. A skin with a card has the
+    /// card draw the line inside itself, so this is `nil` there — a skin can't show it twice.
+    /// The 8-Ball is the other skin with no card; its mockup has a line under the ball, but
+    /// the app has never drawn one, so it stays `nil` to keep its reveal as it is.
+    let supportLine: SupportLine?
     let actions: Actions
     let confetti: ConfettiStyle
 
@@ -81,6 +87,13 @@ struct SkinRevealStyle: Sendable {
         let appearance: Appearance
     }
 
+    /// A support line drawn on the reveal background itself (see `supportLine`).
+    struct SupportLine: Sendable {
+        let font: Font
+        /// Read straight against `palette.revealBackground`.
+        let color: Color
+    }
+
     /// The accept / re-roll buttons below the centrepiece.
     struct Actions: Sendable {
         /// `.vertical` stacks two full-width buttons; `.horizontal` sets them
@@ -104,15 +117,28 @@ struct SkinRevealStyle: Sendable {
         let shadow: SkinShadowStyle
     }
 
-    /// The falling confetti. Hidden under Reduce Motion — which is how the
-    /// snapshot tests run — so no image pins it: `SkinBehaviourTests` pins the look
-    /// and `ConfettiTests` the motion.
+    /// The skin's celebration behind the reveal: falling confetti, or twinkling stars.
+    /// Falling confetti is hidden under Reduce Motion — which is how the snapshot tests
+    /// run — so no image pins it; twinkling stars are drawn still instead, so those show.
+    /// `SkinBehaviourTests` pins the look and `ConfettiTests` the motion.
     struct ConfettiStyle: Sendable {
+        enum Motion: Sendable, Equatable {
+            /// Pieces drop from above the top edge to below the bottom, spinning, again
+            /// and again — the mockup's `pfm-fall`.
+            case falling
+            /// Stars hold their places and swell and fade in turn — the mockup's
+            /// `pfm-twinkle` (Crystal Ball). There are six, in the mockup's own places.
+            case twinkling
+        }
+
+        let motion: Motion
         /// The colours the pieces cycle through. Must not be empty.
         let colors: [Color]
-        /// Corner radius of the rectangular pieces (the round ones are circles).
+        /// Corner radius of the rectangular pieces (the round ones are circles). Falling
+        /// confetti only: twinkling stars are always discs.
         let cornerRadius: CGFloat
-        /// Ink colour of the outline drawn round every piece; `nil` draws none.
+        /// Ink colour of the outline drawn round every piece; `nil` draws none. Falling
+        /// confetti only.
         let outline: Color?
     }
 }

@@ -11,6 +11,9 @@ struct SkinPalette: Sendable {
     /// Card border color — `nil` means the card relies on shadow alone.
     let surfaceBorder: Color?
     let primaryText: Color
+    /// The app's title at the top of Home. `primaryText` in every skin but one — Crystal
+    /// Ball's mockup sets it in gold — so it is a role of its own rather than a reuse.
+    let titleText: Color
     let secondaryText: Color
     let tertiaryText: Color
     let chevron: Color

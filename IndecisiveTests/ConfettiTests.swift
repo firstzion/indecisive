@@ -11,7 +11,7 @@ import SwiftUI
 final class ConfettiTests: XCTestCase {
 
     private let height: CGFloat = 800
-    private let style = SkinRevealStyle.ConfettiStyle(colors: [.red], cornerRadius: 3, outline: nil)
+    private let style = SkinRevealStyle.ConfettiStyle(motion: .falling, colors: [.red], cornerRadius: 3, outline: nil)
 
     private func piece(
         x: CGFloat = 0.3, size: CGFloat = 12, round: Bool = true, duration: Double = 4, delay: Double = 1
@@ -83,7 +83,9 @@ final class ConfettiTests: XCTestCase {
     /// "It doesn't really fall across the screen": at the worst, one piece in a handful was
     /// on screen at all, nearly all of them within the top few dozen points.
     func testTheShowerCoversTheWholeScreenAtEveryMoment() {
-        for skin in Skin.all {
+        // Only a skin whose confetti falls has a shower: Crystal Ball's stars twinkle in place
+        // (below).
+        for skin in Skin.all where skin.reveal.confetti.motion == .falling {
             var generator = SeededGenerator(seed: 7)
             let pieces = Confetti.makePieces(for: skin, using: &generator)
             var perFifth = [Double](repeating: 0, count: 5)

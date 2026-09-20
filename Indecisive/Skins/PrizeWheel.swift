@@ -8,6 +8,7 @@ extension Skin {
             surface: Color(hex: 0xFFFFFF),
             surfaceBorder: Color(hex: 0x17130F),
             primaryText: Color(hex: 0x17130F),
+            titleText: Color(hex: 0x17130F),
             secondaryText: Color(hex: 0x6E655B),
             // Darkened from the design's #7C7167 (4.31:1 on #FBF3E4, fails
             // WCAG AA's 4.5:1 for normal text) — not one of PLAN.md's two
@@ -123,6 +124,8 @@ extension Skin {
                     // The spin has to land before the name appears.
                     appearance: .afterIntro
                 ),
+                // The card carries the support line itself.
+                supportLine: nil,
                 actions: SkinRevealStyle.Actions(
                     axis: .horizontal,
                     accept: SkinRevealStyle.ActionButton(
@@ -148,6 +151,7 @@ extension Skin {
                     )
                 ),
                 confetti: SkinRevealStyle.ConfettiStyle(
+                    motion: .falling,
                     colors: palette.flavors + [palette.surface],
                     cornerRadius: 3,
                     outline: palette.primaryText

@@ -143,6 +143,19 @@ final class ContrastTests: XCTestCase {
         }
     }
 
+    /// A loose support line ("Chosen from 14. …") is 14pt regular-weight text set straight onto the
+    /// reveal background, so it is held to the normal-text bar. Only a skin with no name card has one.
+    func testRevealSupportLineMeetsAANormalTextContrastOnRevealBackground() {
+        var checked = 0
+        for skin in Skin.all {
+            guard let line = skin.reveal.supportLine else { continue }
+            checked += 1
+            let ratio = contrastRatio(line.color, skin.palette.revealBackground)
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(skin.name) reveal support line contrast is \(ratio), fails WCAG AA")
+        }
+        XCTAssertGreaterThan(checked, 0, "no skin has a loose support line to check")
+    }
+
     /// The "✕" glyph is a graphical control, so 3:1 (WCAG 1.4.11) against its disc.
     func testRevealDismissGlyphMeetsAAUIComponentContrastOnItsDisc() {
         for skin in Skin.all {

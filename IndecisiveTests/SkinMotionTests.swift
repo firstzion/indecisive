@@ -35,6 +35,7 @@ final class SkinMotionTests: XCTestCase {
             case let .wobble(swings, swingDuration, _): return Double(swings) * 2 * swingDuration
             case let .spin(duration, _, _): return duration
             case let .popAndOpen(lidDelay, _): return lidDelay
+            case let .mistParts(partDelay, _): return partDelay
             }
         }
         for skin in Skin.all {
@@ -54,12 +55,18 @@ final class SkinMotionTests: XCTestCase {
         XCTAssertEqual(RevealView.announcementDelay(for: .gashapon, reduceMotion: false), 0.85, accuracy: 1e-9)
     }
 
+    func testCrystalBallAnnouncesOnceTheMistHasPartedAndTheNameHasFadedIn() {
+        // The mist parts at 0.5s and the name fades in over the next 0.5s.
+        XCTAssertEqual(RevealView.announcementDelay(for: .crystalBall, reduceMotion: false), 1.0, accuracy: 1e-9)
+    }
+
     // MARK: The intro's numbers
 
     func testIntroNumbersMatchWhatTheAnimationsHardCoded() {
         XCTAssertEqual(Skin.eightBall.motion.revealIntro, .wobble(swings: 6, swingDuration: 0.09, answerFadeIn: 0.35))
         XCTAssertEqual(Skin.prizeWheel.motion.revealIntro, .spin(duration: 2.8, turns: 4, cardIn: 0.1))
         XCTAssertEqual(Skin.gashapon.motion.revealIntro, .popAndOpen(lidDelay: 0.25, lidSettle: 0.6))
+        XCTAssertEqual(Skin.crystalBall.motion.revealIntro, .mistParts(partDelay: 0.5, nameFadeIn: 0.5))
     }
 
     // MARK: Haptics
@@ -118,6 +125,20 @@ final class SkinMotionTests: XCTestCase {
         )
     }
 
+    func testCrystalBallHapticsAreAShimmerALightTapAsTheMistPartsThenSuccess() {
+        assertBeats(
+            Skin.crystalBall.motion.revealHaptics,
+            [
+                HapticBeat(at: 0, kind: .impact(.soft, intensity: 0.9)),
+                HapticBeat(at: 0.16, kind: .impact(.soft, intensity: 0.5)),
+                HapticBeat(at: 0.32, kind: .impact(.soft, intensity: 0.7)),
+                HapticBeat(at: 0.5, kind: .impact(.light, intensity: 1)),
+                HapticBeat(at: 1.0, kind: .success),
+            ],
+            "Crystal Ball"
+        )
+    }
+
     func testDeceleratingTicksSlowDownAndStayInsideTheDuration() {
         let ticks = HapticBeat.decelerating(over: 2.8)
         XCTAssertGreaterThan(ticks.count, 5)
@@ -146,5 +167,12 @@ final class SkinMotionTests: XCTestCase {
         XCTAssertEqual(gashapon.ctaGlyph, .spin(period: 3))
         XCTAssertEqual(gashapon.rerollGlyph, .wiggle(degrees: 4, halfPeriod: 0.6))
         XCTAssertEqual(gashapon.revealBackdrop, .spin(period: 26))
+
+        // The mockup's `pfm-float` (3.6s, and 2.6s), `pfm-twinkle` (1.6s) and `pfm-glow` (3s).
+        let crystalBall = Skin.crystalBall.motion
+        XCTAssertEqual(crystalBall.heroBadge, .float(distance: 10, halfPeriod: 1.8))
+        XCTAssertEqual(crystalBall.ctaGlyph, .float(distance: 10, halfPeriod: 1.3))
+        XCTAssertEqual(crystalBall.rerollGlyph, .twinkle(scaleLow: 0.6, opacityLow: 0.35, halfPeriod: 0.8))
+        XCTAssertEqual(crystalBall.revealBackdrop, .pulse(low: 0.45, halfPeriod: 1.5))
     }
 }

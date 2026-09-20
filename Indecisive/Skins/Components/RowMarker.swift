@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The small marker at the start of each item row inside a list: a
 /// monospaced index number (8-Ball), an outlined flavor-colored square
-/// (Wheel) or a tiny two-tone capsule (Gashapon).
+/// (Wheel), a tiny two-tone capsule (Gashapon) or a bright dot (Crystal Ball).
 struct RowMarker: View {
     let skin: Skin
     let index: Int
@@ -33,6 +33,13 @@ struct RowMarker: View {
 
         case .gashapon:
             CapsuleBall(top: flavor, ink: skin.palette.primaryText, size: 18, seamOpacity: 0.2, glossy: false)
+
+        case .crystalBall:
+            // The dots run gold, pink, cyan down the list — the mockup's own order, which is
+            // not the order the list badges take their colours in.
+            Circle()
+                .fill(CrystalPaint.markers[index % CrystalPaint.markers.count])
+                .frame(width: 7, height: 7)
         }
     }
 }
