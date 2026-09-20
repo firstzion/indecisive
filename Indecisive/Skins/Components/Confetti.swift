@@ -31,7 +31,7 @@ struct Confetti: View {
             GeometryReader { proxy in
                 ZStack {
                     ForEach(pieces) { piece in
-                        ConfettiPieceView(style: Self.style(for: skin), piece: piece, containerHeight: proxy.size.height)
+                        ConfettiPieceView(style: skin.reveal.confetti, piece: piece, containerHeight: proxy.size.height)
                             .position(x: piece.xFraction * proxy.size.width, y: 0)
                     }
                 }
@@ -45,7 +45,9 @@ struct Confetti: View {
     }
 
     private static func makePieces(for skin: Skin) -> [Piece] {
-        let colors = style(for: skin).colors
+        let colors = skin.reveal.confetti.colors
+        // `colors[i % colors.count]` below would trap on an empty list.
+        guard !colors.isEmpty else { return [] }
         var pieces: [Piece] = []
         for i in 0..<10 {
             let xFraction: CGFloat = CGFloat(i) / 10 + 0.03
@@ -68,52 +70,8 @@ struct Confetti: View {
     }
 }
 
-extension Confetti {
-    /// A skin's confetti look: the colours the pieces cycle through, how rounded
-    /// the rectangular ones are, and whether every piece gets an ink outline.
-    ///
-    /// Confetti is hidden under Reduce Motion — which is how the snapshot tests
-    /// run — so no image pins it; `SkinBehaviourTests` does instead.
-    struct Style {
-        let colors: [Color]
-        /// Corner radius of the rectangular pieces (the round ones are circles).
-        let cornerRadius: CGFloat
-        /// Ink colour of the outline drawn round every piece; `nil` draws none.
-        let outline: Color?
-    }
-
-    /// One exhaustive switch, so a new skin has to say how its confetti looks.
-    /// Pure data — `nonisolated`, so it isn't tied to the main actor just
-    /// because it lives on a `View`.
-    nonisolated static func style(for skin: Skin) -> Style {
-        switch skin.id {
-        case .eightBall:
-            return Style(
-                colors: skin.palette.flavors + [skin.palette.surface],
-                cornerRadius: 2,
-                outline: nil
-            )
-        case .prizeWheel:
-            return Style(
-                colors: skin.palette.flavors + [skin.palette.surface],
-                cornerRadius: 3,
-                outline: skin.palette.primaryText
-            )
-        case .gashapon:
-            // Gashapon's cyan flavor would vanish against its cyan reveal
-            // background, so it uses the mockup's own mix of yellow, cream, pink
-            // and mint instead.
-            return Style(
-                colors: [GashaponPaint.coin, GashaponPaint.shell, skin.palette.flavors[0], skin.palette.flavors[2]],
-                cornerRadius: 3,
-                outline: nil
-            )
-        }
-    }
-}
-
 private struct ConfettiPieceView: View {
-    let style: Confetti.Style
+    let style: SkinRevealStyle.ConfettiStyle
     let piece: Confetti.Piece
     let containerHeight: CGFloat
     @State private var fallen = false

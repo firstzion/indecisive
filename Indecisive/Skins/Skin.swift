@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// Everything that changes between the app's visual "skins": palette,
-/// type, shape/shadow language and copy. Screens read only these semantic
-/// tokens — never a raw hex value, PostScript name or hardcoded string — so
-/// switching skins never requires touching a screen.
+/// Everything that changes between the app's visual "skins": palette, type,
+/// shape/shadow language, copy, motion, the reveal screen's look, and behaviour.
+/// Screens read only these semantic tokens — never a raw hex value, PostScript
+/// name or hardcoded string — so switching skins never requires touching a
+/// screen. None of the token types' initialisers has a default, so a new skin
+/// has to decide every one.
 struct Skin: Identifiable, Sendable {
     let id: SkinID
     let name: String
@@ -12,6 +14,9 @@ struct Skin: Identifiable, Sendable {
     let type: SkinTypography
     let shape: SkinShape
     let copy: SkinCopy
+    let motion: SkinMotion
+    let reveal: SkinRevealStyle
+    let traits: SkinTraits
 
     static func skin(for id: SkinID) -> Skin {
         switch id {
@@ -29,15 +34,4 @@ struct Skin: Identifiable, Sendable {
     /// to add it to a literal, which is how a new skin used to slip past them.
     /// Iterate this, not `[Skin.eightBall, …]`.
     static let all: [Skin] = SkinID.allCases.map(Skin.skin(for:))
-
-    /// The 8-Ball's "ASK. SHAKE. OBEY.": shaking the phone picks (on a list) and
-    /// re-rolls (on the reveal) instead of tapping. The other skins ignore a
-    /// shake. One decision, read by both `ListDetailView` and `RevealView` so the
-    /// two can't disagree — and an exhaustive switch, so a new skin has to answer.
-    var shakeToPick: Bool {
-        switch id {
-        case .eightBall: return true
-        case .prizeWheel, .gashapon: return false
-        }
-    }
 }

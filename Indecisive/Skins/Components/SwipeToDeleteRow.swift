@@ -35,11 +35,11 @@ struct SwipeToDeleteRow<Content: View>: View {
         ZStack(alignment: .trailing) {
             if offset < 0 {
                 RoundedRectangle(cornerRadius: skin.shape.cardRadius, style: .continuous)
-                    .fill(Color.red)
+                    .fill(skin.palette.destructive)
                     .overlay(alignment: .trailing) {
                         Image(systemName: "trash.fill")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(skin.palette.onDestructive)
                             .padding(.trailing, 28)
                     }
                     .accessibilityHidden(true)

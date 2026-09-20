@@ -23,10 +23,10 @@ struct PrimaryCTAStyle: ButtonStyle {
         .frame(minHeight: skin.shape.ctaHeight)
         .background(skin.palette.accent)
         .overlay {
-            if hasBottomLip {
+            if let lip = skin.shape.ctaInsetShadow {
                 InsetShadow(
                     shape: RoundedRectangle(cornerRadius: skin.shape.ctaCornerRadius, style: .continuous),
-                    color: .black.opacity(0.12), y: -4
+                    color: lip.color, x: lip.x, y: lip.y
                 )
             }
         }
@@ -42,15 +42,6 @@ struct PrimaryCTAStyle: ButtonStyle {
         .scaleEffect(configuration.isPressed ? 0.98 : 1)
         .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
-
-    /// Gashapon's pill has a darker lip along its bottom edge (the mockup's
-    /// `inset 0 -4px 0 rgba(0,0,0,.12)`); the other skins' don't.
-    private var hasBottomLip: Bool {
-        switch skin.id {
-        case .gashapon: return true
-        case .eightBall, .prizeWheel: return false
-        }
-    }
 }
 
 /// The little glyph inside the CTA: a mini 8-ball, a spinning wedge or a
@@ -59,9 +50,6 @@ struct PrimaryCTAStyle: ButtonStyle {
 struct PrimaryCTAGlyph: View {
     let skin: Skin
     var size: CGFloat = 26
-
-    @State private var spinAngle = 0.0
-    @Environment(\.indReducedMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -84,33 +72,20 @@ struct PrimaryCTAGlyph: View {
                 // two loudest colors the real reveal screen uses.
                 WheelFill(wedgeCount: 4, colors: [skin.palette.revealBackground, skin.palette.background])
                     .overlay { Circle().strokeBorder(skin.palette.primaryText, lineWidth: 2.5) }
-                    .rotationEffect(.degrees(spinAngle))
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.linear(duration: 2.4).repeatForever(autoreverses: false)) {
-                            spinAngle = 360
-                        }
-                    }
 
             case .gashapon:
-                // The machine's knob: a cream disc with a slot-shaped bar,
-                // turning once every 3s like the mockup's.
+                // The machine's knob: a cream disc with a slot-shaped bar.
                 Circle()
-                    .fill(GashaponPaint.shell)
+                    .fill(CapsulePaint.shell)
                     .overlay {
                         RoundedRectangle(cornerRadius: size * 0.07, style: .continuous)
                             .fill(skin.palette.accent)
                             .frame(width: size * 0.57, height: size * 0.14)
                     }
-                    .rotationEffect(.degrees(spinAngle))
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
-                            spinAngle = 360
-                        }
-                    }
             }
         }
+        // Whether the glyph turns, and how fast, is the skin's own (`skin.motion.ctaGlyph`).
+        .indIdle(skin.motion.ctaGlyph)
         .frame(width: size, height: size)
     }
 }

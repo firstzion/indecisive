@@ -61,7 +61,7 @@ struct ListDetailView: View {
             // you shake instead of tapping the CTA. Other skins ignore it. No-op
             // while editing or if a reveal is already up, same as the CTA being
             // disabled/covered in those states.
-            guard skin.shakeToPick, !isEditing, !list.items.isEmpty, revealModel == nil else { return }
+            guard skin.traits.shakeToPick, !isEditing, !list.items.isEmpty, revealModel == nil else { return }
             startReveal()
         }
         .fullScreenCover(item: $revealModel) { model in

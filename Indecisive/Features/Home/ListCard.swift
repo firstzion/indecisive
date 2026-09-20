@@ -10,7 +10,7 @@ struct ListCard: View {
             ListBadge(skin: skin, flavorIndex: list.flavorIndex, itemCount: list.items.count)
             VStack(alignment: .leading, spacing: 2) {
                 Text(list.name)
-                    .font(skin.compactTitleFont(19))
+                    .font(skin.type.compactTitle(19))
                     .foregroundStyle(skin.palette.primaryText)
                     .lineLimit(1)
                 Text(skin.copy.countLine(list.items.count))

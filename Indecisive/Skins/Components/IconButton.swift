@@ -44,7 +44,7 @@ struct SkinIconButton: View {
                         shape.stroke(skin.palette.primaryText, lineWidth: borderWidth)
                     }
                 }
-                .indShadow(shadow, cornerRadius: size * 0.32)
+                .indShadow(shadow, cornerRadius: cornerRadius)
                 // `size` can be as small as 32pt (Reveal's "✕"), under
                 // Apple's 44×44pt minimum tappable target. Pad the *hit
                 // area* out to 44×44 without growing the visible shape —
@@ -56,49 +56,49 @@ struct SkinIconButton: View {
         .accessibilityLabel(accessibilityLabel)
     }
 
+    private var style: SkinIconButtonStyle { skin.shape.iconButton }
+
     private var shape: AnyShape {
-        switch skin.id {
-        case .prizeWheel: return AnyShape(RoundedRectangle(cornerRadius: size * 0.32, style: .continuous))
-        case .eightBall, .gashapon: return AnyShape(Circle())
+        switch style.shape {
+        case .circle:
+            return AnyShape(Circle())
+        case let .roundedSquare(cornerFraction):
+            return AnyShape(RoundedRectangle(cornerRadius: size * cornerFraction, style: .continuous))
+        }
+    }
+
+    /// The radius a `.hard` shadow needs to draw its offset copy in the same
+    /// outline as the button.
+    private var cornerRadius: CGFloat {
+        switch style.shape {
+        case .circle: return size / 2
+        case let .roundedSquare(cornerFraction): return size * cornerFraction
         }
     }
 
     // `foreground` and `background` are internal (not `private`) so
     // `ContrastTests` can check the reveal's "✕" against its own disc.
     var foreground: Color {
-        switch (skin.id, variant) {
-        case (_, .primary): return skin.palette.onAccent
-        case (.eightBall, .dismiss): return skin.palette.primaryText
-        case (.prizeWheel, .dismiss): return skin.palette.primaryText
-        case (.gashapon, .dismiss): return GashaponPaint.revealInk
-        case (_, .secondary): return skin.palette.secondaryText
+        switch variant {
+        case .primary: return skin.palette.onAccent
+        case .dismiss: return skin.reveal.dismiss.foreground
+        case .secondary: return skin.palette.secondaryText
         }
     }
 
     var background: Color {
-        switch (skin.id, variant) {
-        case (_, .primary): return skin.palette.accent
-        case (.eightBall, .dismiss): return skin.palette.surface
-        case (.prizeWheel, .dismiss): return skin.palette.background
-        // A frosted disc: white over the reveal's cyan.
-        case (.gashapon, .dismiss): return .white.opacity(0.55)
-        case (_, .secondary): return skin.palette.surface
+        switch variant {
+        case .primary: return skin.palette.accent
+        case .dismiss: return skin.reveal.dismiss.background
+        case .secondary: return skin.palette.surface
         }
     }
 
     private var borderWidth: CGFloat {
-        switch skin.id {
-        case .prizeWheel: return variant == .primary ? 3 : 2.5
-        case .eightBall, .gashapon: return 0
-        }
+        variant == .primary ? style.primaryBorderWidth : style.quietBorderWidth
     }
 
     private var shadow: SkinShadowStyle {
-        guard variant == .primary else { return .none }
-        switch skin.id {
-        case .prizeWheel: return .hard(offset: CGSize(width: 3, height: 3), color: skin.palette.primaryText)
-        case .gashapon: return .soft(radius: 7, x: 0, y: 6, color: skin.palette.accent, opacity: 0.6)
-        case .eightBall: return .none
-        }
+        variant == .primary ? style.primaryShadow : .none
     }
 }

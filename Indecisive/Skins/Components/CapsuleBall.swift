@@ -29,6 +29,17 @@ struct InsetShadow<S: Shape>: View {
     }
 }
 
+/// The two paints of Gashapon's capsule art that have no slot in `SkinPalette`:
+/// the cream lower half and the yellow prize ball. They belong to the capsule art
+/// (`CapsuleBall`, `OpenCapsule`) and to `Gashapon.swift`, whose reveal reuses the
+/// cream. No shared component names them — those read `skin.reveal` / `skin.palette`.
+enum CapsulePaint {
+    /// The pale lower half of every capsule.
+    static let shell = Color(hex: 0xFFF7E8)
+    /// The prize ball inside the opened capsule.
+    static let prize = Color(hex: 0xFFD23D)
+}
+
 /// Gashapon's two-tone capsule seen from the side: a flavor-colored top half,
 /// a thin seam and a cream bottom half, lit from the top left. Drawn at three
 /// sizes — the Home badge (46), the detail hero (56) and the item-row marker
@@ -36,6 +47,8 @@ struct InsetShadow<S: Shape>: View {
 struct CapsuleBall: View {
     /// The flavor color of the top half.
     let top: Color
+    /// The capsule's ink — the seam between the halves is drawn in it.
+    let ink: Color
     let size: CGFloat
     /// The seam is a hair lighter on the row markers than on the badges.
     var seamOpacity = 0.22
@@ -44,7 +57,7 @@ struct CapsuleBall: View {
 
     var body: some View {
         let k = size / 46
-        let seam = Skin.gashapon.palette.primaryText.opacity(seamOpacity)
+        let seam = ink.opacity(seamOpacity)
         Circle()
             .fill(
                 LinearGradient(
@@ -53,8 +66,8 @@ struct CapsuleBall: View {
                         .init(color: top, location: 0.47),
                         .init(color: seam, location: 0.47),
                         .init(color: seam, location: 0.53),
-                        .init(color: GashaponPaint.shell, location: 0.53),
-                        .init(color: GashaponPaint.shell, location: 1),
+                        .init(color: CapsulePaint.shell, location: 0.53),
+                        .init(color: CapsulePaint.shell, location: 1),
                     ],
                     startPoint: .top,
                     endPoint: .bottom

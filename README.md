@@ -86,7 +86,7 @@ Indecisive/
 ├─ App/            Entry point, root view, font registry
 ├─ Model/          SwiftData models (Phase 1)
 ├─ Logic/          PickService — the random-pick logic (Phase 1)
-├─ Skins/          Skin tokens (palette/type/shape/copy) + per-skin components (Phase 2+)
+├─ Skins/          Skin tokens (palette, type, shape, copy, motion, reveal, traits) + the components that draw them
 ├─ Features/       Home, Detail, Reveal, SkinPicker screens (Phase 3+)
 └─ Resources/
    ├─ Fonts/       Bundled OFL Google Fonts (Lilita One, Space Grotesk,
@@ -96,6 +96,21 @@ Indecisive/
 design/            Reference-only export of the Claude Design mockups (every skin
                     direction, including Gashapon and Crystal Ball) — not app code.
 ```
+
+## Adding a skin
+
+Everything a skin decides lives in one token file; the compiler and the tests do the checklist.
+
+1. Add a `case` to `SkinID` and a line to `Skin.skin(for:)`.
+2. Build. The seven views that draw a skin's artwork — `ListBadge`, `HeroBadge`, `RowMarker`,
+   `PrimaryCTAGlyph`, `RevealGlow`, `RevealActionGlyph` and `RevealCentrepiece` — each need an arm.
+3. Write `Skins/<Name>.swift`. A `Skin` takes a `palette`, `type`, `shape`, `copy`, `motion`, `reveal` and
+   `traits`, and none of their initialisers has a default: a decision you leave out doesn't compile.
+4. Add its fonts to `FontRegistry` and `project.yml`, then run `xcodegen generate`.
+5. Run the tests. Contrast, fonts, copy and behaviour cover the new skin automatically (they iterate
+   `Skin.all`); record its snapshot images (see [Snapshot tests](#snapshot-tests)).
+
+[REVIEW.md](REVIEW.md) §2 and §5 have the reasoning and a measured trial.
 
 ## Fonts
 

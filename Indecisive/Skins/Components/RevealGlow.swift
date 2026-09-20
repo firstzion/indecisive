@@ -1,14 +1,11 @@
 import SwiftUI
 
-/// The decoration behind the reveal screen: the 8-Ball's pulsing lime glow
-/// (PLAN.md §4.4's `ind-glow`: opacity .45↔1 over a 2.6s round trip) or
+/// The decoration behind the reveal screen: the 8-Ball's pulsing lime glow or
 /// Gashapon's slowly turning sunburst. The Wheel has none, so `RevealView` can
-/// include this unconditionally.
+/// include this unconditionally. What is drawn is per skin; how it moves is the
+/// skin's own `motion.revealBackdrop`.
 struct RevealGlow: View {
     let skin: Skin
-    @State private var pulsedUp = false
-    @State private var turned = false
-    @Environment(\.indReducedMotion) private var reduceMotion
 
     var body: some View {
         switch skin.id {
@@ -31,19 +28,13 @@ struct RevealGlow: View {
             .frame(width: 420, height: 420)
             // Reduce Motion keeps a static dim glow rather than pulsing
             // — still decorative, just not animated.
-            .opacity(pulsedUp ? 1 : 0.45)
+            .indIdle(skin.motion.revealBackdrop)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 1.3).repeatForever(autoreverses: true)) {
-                    pulsedUp = true
-                }
-            }
     }
 
-    /// White rays, 12° wide every 24°, turning once every 26s — the mockup's
-    /// `repeating-conic-gradient` on a 520pt disc. Reduce Motion keeps it still.
+    /// White rays, 12° wide every 24° — the mockup's `repeating-conic-gradient`
+    /// on a 520pt disc. Reduce Motion keeps it still.
     private var sunburst: some View {
         // Drawn in an overlay so the 520pt disc, wider than the screen, can't
         // widen the reveal's layout — a fixed-size child in the ZStack does,
@@ -53,16 +44,10 @@ struct RevealGlow: View {
                 Circle()
                     .fill(AngularGradient(stops: Self.rayStops, center: .center, angle: .degrees(-90)))
                     .frame(width: 520, height: 520)
-                    .rotationEffect(.degrees(turned ? 360 : 0))
+                    .indIdle(skin.motion.revealBackdrop)
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(.linear(duration: 26).repeatForever(autoreverses: false)) {
-                    turned = true
-                }
-            }
     }
 
     /// 15 rays: each is white at 22% for 12° and clear for the next 12°. Stops

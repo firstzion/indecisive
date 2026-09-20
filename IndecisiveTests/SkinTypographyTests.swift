@@ -7,7 +7,8 @@ final class SkinTypographyTests: XCTestCase {
         let type = SkinTypography(
             display: [.regular: "A-Regular", .bold: "A-Bold"],
             body: [:],
-            mono: [:]
+            mono: [:],
+            compactTitle: .display
         )
         XCTAssertEqual(type.name(for: .display, weight: .bold), "A-Bold")
     }
@@ -17,13 +18,14 @@ final class SkinTypographyTests: XCTestCase {
         let type = SkinTypography(
             display: [:],
             body: [.regular: "A-Regular", .bold: "A-Bold"],
-            mono: [:]
+            mono: [:],
+            compactTitle: .body
         )
         XCTAssertEqual(type.name(for: .body, weight: .semibold), "A-Regular")
     }
 
     func testResolveFallsBackToAnyAvailableNameIfNoRegularEither() {
-        let type = SkinTypography(display: [.black: "OnlyBlack"], body: [:], mono: [:])
+        let type = SkinTypography(display: [.black: "OnlyBlack"], body: [:], mono: [:], compactTitle: .display)
         XCTAssertEqual(type.name(for: .display, weight: .bold), "OnlyBlack")
     }
 

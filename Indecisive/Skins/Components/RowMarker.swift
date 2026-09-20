@@ -32,7 +32,7 @@ struct RowMarker: View {
                 }
 
         case .gashapon:
-            CapsuleBall(top: flavor, size: 18, seamOpacity: 0.2, glossy: false)
+            CapsuleBall(top: flavor, ink: skin.palette.primaryText, size: 18, seamOpacity: 0.2, glossy: false)
         }
     }
 }

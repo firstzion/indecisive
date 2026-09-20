@@ -67,7 +67,7 @@ struct OpenCapsule: View {
             style: .continuous
         )
         return shape
-            .fill(GashaponPaint.shell)
+            .fill(CapsulePaint.shell)
             .overlay {
                 // The mockup's faint `inset 0 -10px 14px -10px` shade: a soft
                 // darkening along the bowl's bottom edge, about 17% at the rim.
@@ -86,7 +86,7 @@ struct OpenCapsule: View {
 
     private var prize: some View {
         Circle()
-            .fill(GashaponPaint.coin)
+            .fill(CapsulePaint.prize)
             .overlay {
                 Text("!")
                     .font(skin.type.display(22))

@@ -8,7 +8,7 @@ struct DashedAddRow: View {
     let skin: Skin
     let label: String
 
-    private var labelFont: Font { skin.compactTitleFont(16) }
+    private var labelFont: Font { skin.type.compactTitle(16) }
 
     var body: some View {
         HStack(spacing: 8) {

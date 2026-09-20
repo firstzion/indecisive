@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// The accept / re-roll buttons below the reveal. The 8-Ball and Gashapon
-/// stack two full-width pills; the Wheel places two side-by-side blocks
-/// instead — a real layout difference, not just a color change.
+/// The accept / re-roll buttons below the reveal. Whether they stack as two
+/// full-width pills (the 8-Ball, Gashapon) or sit side by side as blocks (the
+/// Wheel) is the skin's own choice — `skin.reveal.actions`.
 struct RevealActions: View {
     let skin: Skin
     let onAccept: () -> Void
@@ -32,10 +32,10 @@ struct RevealActions: View {
         .accessibilityIdentifier("rerollButton")
 
         Group {
-            switch skin.id {
-            case .eightBall, .gashapon:
+            switch skin.reveal.actions.axis {
+            case .vertical:
                 VStack(spacing: 12) { accept; reroll }
-            case .prizeWheel:
+            case .horizontal:
                 HStack(spacing: 12) { accept; reroll }
             }
         }
@@ -52,139 +52,41 @@ struct RevealActionStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(skin.type.display(fontSize, weight: .bold))
+            .font(skin.type.display(spec.fontSize, weight: .bold))
             .multilineTextAlignment(.center)
             .lineLimit(2)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
             // minHeight so a wrapped label at large Dynamic Type sizes has
             // room to grow instead of clipping (PLAN.md Phase 6).
-            .frame(minHeight: height)
-            .foregroundStyle(foreground)
-            .background(background)
+            .frame(minHeight: spec.minHeight)
+            .foregroundStyle(spec.foreground)
+            .background(spec.background)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay {
-                if borderWidth > 0 {
+                if let border = spec.border {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(borderColor, lineWidth: borderWidth)
+                        .strokeBorder(border.color, lineWidth: border.width)
                 }
             }
-            .indShadow(shadow, cornerRadius: cornerRadius)
+            .indShadow(spec.shadow, cornerRadius: cornerRadius)
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 
-    private var fontSize: CGFloat {
-        switch (skin.id, role) {
-        case (.eightBall, .accept): return 22
-        case (.eightBall, .reroll): return 19
-        case (.prizeWheel, _): return 19
-        case (.gashapon, .accept): return 20
-        case (.gashapon, .reroll): return 18
-        }
-    }
-
-    private var height: CGFloat {
-        switch skin.id {
-        case .prizeWheel: return 60
-        case .eightBall, .gashapon: return role == .accept ? 62 : 56
+    private var spec: SkinRevealStyle.ActionButton {
+        switch role {
+        case .accept: return skin.reveal.actions.accept
+        case .reroll: return skin.reveal.actions.reroll
         }
     }
 
     private var cornerRadius: CGFloat {
-        switch skin.id {
-        case .prizeWheel: return 18
-        case .eightBall, .gashapon: return height / 2
-        }
+        spec.corners.radius(forHeight: spec.minHeight)
     }
 
     // `foreground` and `background` are internal (not `private`) so
     // `ContrastTests` can check each button's label against its own fill
-    // instead of duplicating these switches.
-    var foreground: Color {
-        switch (skin.id, role) {
-        case (.eightBall, .accept): return skin.palette.background
-        case (.eightBall, .reroll): return skin.palette.primaryText
-        case (.prizeWheel, .accept): return skin.palette.background
-        case (.prizeWheel, .reroll): return skin.palette.primaryText
-        case (.gashapon, .accept): return GashaponPaint.shell
-        case (.gashapon, .reroll): return GashaponPaint.revealInk
-        }
-    }
-
-    var background: Color {
-        switch (skin.id, role) {
-        case (.eightBall, .accept): return skin.palette.accent
-        // A bespoke shade with no existing token match — distinct from
-        // both `background` (0x140F2E) and `surface` (0x241B52), used
-        // only here.
-        case (.eightBall, .reroll): return Color(hex: 0x180F38)
-        // Also bespoke — coincides with `palette.flavors[2]`, but "the
-        // accept button's color" isn't really "flavour #3", so this keeps
-        // its own literal rather than reading that array.
-        case (.prizeWheel, .accept): return Color(hex: 0x1F9E8E)
-        case (.prizeWheel, .reroll): return skin.palette.background
-        case (.gashapon, .accept): return skin.palette.primaryText
-        case (.gashapon, .reroll): return GashaponPaint.shell.opacity(0.92)
-        }
-    }
-
-    private var borderWidth: CGFloat {
-        switch (skin.id, role) {
-        case (.eightBall, .accept): return 0
-        case (.eightBall, .reroll): return 1.5
-        case (.prizeWheel, _): return 3
-        case (.gashapon, _): return 0
-        }
-    }
-
-    private var borderColor: Color {
-        switch skin.id {
-        case .eightBall: return skin.palette.dashedBorder
-        case .prizeWheel: return skin.palette.primaryText
-        case .gashapon: return .clear // unused: Gashapon's buttons have no border
-        }
-    }
-
-    private var shadow: SkinShadowStyle {
-        switch skin.id {
-        case .prizeWheel: return .hard(offset: CGSize(width: 4, height: 4), color: skin.palette.primaryText)
-        case .eightBall, .gashapon: return .none
-        }
-    }
-}
-
-/// The little wiggling glyph next to the 8-Ball's "SHAKE AGAIN" and
-/// Gashapon's "One more turn". The Wheel's "SPIN AGAIN" has no glyph in the
-/// source design.
-struct RevealActionGlyph: View {
-    let skin: Skin
-    @State private var wiggle = false
-    @Environment(\.indReducedMotion) private var reduceMotion
-
-    var body: some View {
-        Group {
-            switch skin.id {
-            case .eightBall:
-                // Standalone decorative accent — coincides with
-                // `palette.flavors[0]`, but this glyph isn't showing "a
-                // flavour".
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color(hex: 0xFF4FD8))
-                    .frame(width: 16, height: 16)
-                    .rotationEffect(.degrees(45))
-            case .prizeWheel:
-                EmptyView()
-            case .gashapon:
-                // A tiny capsule in the accent color.
-                CapsuleBall(top: skin.palette.accent, size: 18, seamOpacity: 0.2, glossy: false)
-            }
-        }
-        .rotationEffect(.degrees(wiggle ? 4 : -4))
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) {
-                wiggle = true
-            }
-        }
-    }
+    // through the component itself.
+    var foreground: Color { spec.foreground }
+    var background: Color { spec.background }
 }

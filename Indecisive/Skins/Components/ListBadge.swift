@@ -40,7 +40,7 @@ struct ListBadge: View {
                     }
 
             case .gashapon:
-                CapsuleBall(top: flavor, size: size)
+                CapsuleBall(top: flavor, ink: skin.palette.primaryText, size: size)
             }
         }
         .frame(width: size, height: size)

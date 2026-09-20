@@ -55,11 +55,11 @@ struct RevealView: View {
                     .padding(.bottom, 24)
             }
         }
-        .preferredColorScheme(revealColorScheme)
+        .preferredColorScheme(skin.reveal.colorScheme)
         .onShake {
             // Only a skin that picks on shake (the 8-Ball) cares about physical
             // shakes — matches its own "SHAKE AGAIN" re-roll button.
-            guard skin.shakeToPick else { return }
+            guard skin.traits.shakeToPick else { return }
             model.reroll()
         }
         .onAppear { scheduleWinnerAnnouncement() }
@@ -68,30 +68,30 @@ struct RevealView: View {
     }
 
     /// VoiceOver announces the winner once it's actually visible — timed to
-    /// roughly match each skin's own intro animation (PLAN.md Phase 6: "the
-    /// reveal announces the winner"), rather than the instant the model
+    /// each skin's own intro animation (`announcementDelay`; PLAN.md Phase 6:
+    /// "the reveal announces the winner"), rather than the instant the model
     /// picks it, which for the Wheel is ~2.8s before its name is on screen.
     private func scheduleWinnerAnnouncement() {
         // A reroll before the previous announcement fired would otherwise
         // stack a second one on top of it; cancel whatever's pending first.
         announcementWorkItem?.cancel()
 
-        let delay: Double
-        if reduceMotion {
-            delay = 0
-        } else {
-            switch skin.id {
-            case .eightBall: delay = 1.0
-            case .prizeWheel: delay = 2.9
-            case .gashapon: delay = 0.85 // the lid finishes springing off
-            }
-        }
+        let delay = Self.announcementDelay(for: skin, reduceMotion: reduceMotion)
         let announcement = "\(skin.copy.revealKicker). \(model.winner.name)."
         let workItem = DispatchWorkItem {
             UIAccessibility.post(notification: .announcement, argument: announcement)
         }
         announcementWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+    }
+
+    /// How long after the reveal appears VoiceOver announces the winner: once it
+    /// is actually on screen, which is when the skin's own intro says it is — the
+    /// very numbers `RevealCentrepiece` animates with, so the two can't drift
+    /// apart. At once under Reduce Motion, which skips the intro. Pure data, so
+    /// `nonisolated`, and internal so the tests can check it.
+    nonisolated static func announcementDelay(for skin: Skin, reduceMotion: Bool) -> Double {
+        reduceMotion ? 0 : skin.motion.revealIntro.winnerLegibleAfter
     }
 
     private var wedgeCount: Int {
@@ -108,7 +108,7 @@ struct RevealView: View {
         HStack {
             Text(model.list.name)
                 .font(skin.type.body(15, weight: .bold))
-                .foregroundStyle(headerTextColor)
+                .foregroundStyle(skin.reveal.headerText)
             Spacer()
             SkinIconButton(skin: skin, glyph: "✕", accessibilityLabel: "Close", variant: .dismiss, size: 32) {
                 dismiss()
@@ -116,30 +116,6 @@ struct RevealView: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)
-    }
-
-    /// The reveal background is loud and skin-specific (near-black, bright
-    /// yellow or cyan), so the header label's color and the
-    /// screen's overall color scheme aren't derivable from a single token —
-    /// each skin picked its own readable combination in the source design.
-    private var headerTextColor: Color { Self.headerTextColor(for: skin) }
-
-    /// Static and internal (not `private`) so `ContrastTests` can check it
-    /// against `revealBackground` without building a whole reveal screen. Pure
-    /// data, so `nonisolated`.
-    nonisolated static func headerTextColor(for skin: Skin) -> Color {
-        switch skin.id {
-        case .eightBall: return skin.palette.secondaryText
-        case .prizeWheel: return skin.palette.primaryText
-        case .gashapon: return GashaponPaint.revealInk
-        }
-    }
-
-    private var revealColorScheme: ColorScheme {
-        switch skin.id {
-        case .eightBall: return .dark
-        case .prizeWheel, .gashapon: return .light
-        }
     }
 
     private func accept() {

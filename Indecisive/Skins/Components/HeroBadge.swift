@@ -1,21 +1,17 @@
 import SwiftUI
 
 /// The larger badge on the list-detail screen's header — the same shape
-/// language as `ListBadge` but bigger and idly animated. The 8-Ball is a
-/// deliberate exception: it shows the branded white-diamond-with-"8" mark
-/// instead of the list's own flavor color, since this spot reads as "this
-/// is an 8-ball list" rather than "here's list #N's color" (matches the
-/// source design exactly — the small home-row icon is flavor-tinted, the
-/// big detail hero isn't).
+/// language as `ListBadge` but bigger and idly animated (`skin.motion.heroBadge`).
+/// The 8-Ball is a deliberate exception: it shows the branded
+/// white-diamond-with-"8" mark instead of the list's own flavor color, since
+/// this spot reads as "this is an 8-ball list" rather than "here's list #N's
+/// color" (matches the source design exactly — the small home-row icon is
+/// flavor-tinted, the big detail hero isn't).
 struct HeroBadge: View {
     let skin: Skin
     let flavorIndex: Int
     let itemCount: Int
     var size: CGFloat = 56
-
-    @State private var floatUp = false
-    @State private var spinAngle = 0.0
-    @Environment(\.indReducedMotion) private var reduceMotion
 
     private var flavor: Color {
         let flavors = skin.palette.flavors
@@ -45,39 +41,18 @@ struct HeroBadge: View {
                             }
                             .rotationEffect(.degrees(45))
                     }
-                    .offset(y: floatUp ? -6 : 0)
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-                            floatUp = true
-                        }
-                    }
 
             case .prizeWheel:
                 WheelFill(wedgeCount: wheelWedgeCount(forItemCount: itemCount), colors: skin.palette.flavors)
                     .overlay {
                         Circle().strokeBorder(skin.palette.primaryText, lineWidth: 3)
                     }
-                    .rotationEffect(.degrees(spinAngle))
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.linear(duration: 9).repeatForever(autoreverses: false)) {
-                            spinAngle = 360
-                        }
-                    }
 
             case .gashapon:
-                CapsuleBall(top: flavor, size: size)
-                    .offset(y: floatUp ? -10 : 0)
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        // The mockup's 3.4s float, each half of it here.
-                        withAnimation(.easeInOut(duration: 1.7).repeatForever(autoreverses: true)) {
-                            floatUp = true
-                        }
-                    }
+                CapsuleBall(top: flavor, ink: skin.palette.primaryText, size: size)
             }
         }
+        .indIdle(skin.motion.heroBadge)
         .frame(width: size, height: size)
     }
 }

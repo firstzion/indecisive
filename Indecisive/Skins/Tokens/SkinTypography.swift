@@ -22,15 +22,19 @@ struct SkinTypography: Sendable {
     private let displayNames: [SkinFontWeight: String]
     private let bodyNames: [SkinFontWeight: String]
     private let monoNames: [SkinFontWeight: String]
+    /// Which of the three faces `compactTitle(_:weight:)` uses.
+    let compactTitleRole: Role
 
     init(
         display: [SkinFontWeight: String],
         body: [SkinFontWeight: String],
-        mono: [SkinFontWeight: String]
+        mono: [SkinFontWeight: String],
+        compactTitle: Role
     ) {
         self.displayNames = display
         self.bodyNames = body
         self.monoNames = mono
+        self.compactTitleRole = compactTitle
     }
 
     /// The three type roles, exposed so tests can enumerate every
@@ -48,6 +52,19 @@ struct SkinTypography: Sendable {
 
     func mono(_ size: CGFloat, weight: SkinFontWeight = .regular, relativeTo style: Font.TextStyle = .caption) -> Font {
         .custom(name(for: .mono, weight: weight), size: size, relativeTo: style)
+    }
+
+    /// Font for compact, dense titles — Home row names, dashed add-row labels — in
+    /// whichever face the skin picked with `compactTitleRole`. A skin's display face
+    /// isn't always the right one at this density (the Wheel's Titan One reads too
+    /// heavy), so it can drop to its body face here while headlines and buttons keep
+    /// the display one.
+    func compactTitle(_ size: CGFloat, weight: SkinFontWeight = .bold) -> Font {
+        switch compactTitleRole {
+        case .display: return display(size, weight: weight, relativeTo: .body)
+        case .body: return body(size, weight: weight, relativeTo: .body)
+        case .mono: return mono(size, weight: weight, relativeTo: .body)
+        }
     }
 
     /// Resolves a role + weight to the actual PostScript name that will be

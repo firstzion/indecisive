@@ -33,8 +33,36 @@ extension View {
     }
 }
 
+/// A hard-edged band hugging the *inside* of a shape's edge — CSS's
+/// `inset x y 0 color`. Drawn by `InsetShadow`.
+struct SkinInsetShadow: Sendable {
+    let color: Color
+    let x: CGFloat
+    let y: CGFloat
+}
+
+/// The outline of the small icon buttons (Home's "+", the reveal's "✕").
+enum SkinIconShape: Sendable {
+    case circle
+    /// A rounded square whose corner radius is `cornerFraction` of its side.
+    case roundedSquare(cornerFraction: CGFloat)
+}
+
+/// How the small icon buttons are drawn: Home's "+" and "🎨", the reveal's "✕".
+/// See `SkinIconButton`.
+struct SkinIconButtonStyle: Sendable {
+    let shape: SkinIconShape
+    /// Outline round the accent-filled "+" (0 draws none).
+    let primaryBorderWidth: CGFloat
+    /// Outline round the quieter buttons — the skins picker's and the reveal's "✕".
+    let quietBorderWidth: CGFloat
+    /// Depth under the "+"; the quieter buttons never cast one.
+    let primaryShadow: SkinShadowStyle
+}
+
 /// Corner radii, border widths and the shadow language for cards, dashed
-/// rows and the primary CTA. See `CardStyle` and `PrimaryCTAStyle`.
+/// rows, the primary CTA and the small icon buttons. See `CardStyle`,
+/// `PrimaryCTAStyle` and `SkinIconButton`.
 struct SkinShape: Sendable {
     let cardRadius: CGFloat
     let cardBorderWidth: CGFloat
@@ -49,4 +77,9 @@ struct SkinShape: Sendable {
     let ctaCornerRadius: CGFloat
     let ctaBorderWidth: CGFloat
     let ctaShadow: SkinShadowStyle
+    /// A darker lip along the CTA's bottom edge (Gashapon's mockup has
+    /// `inset 0 -4px 0 rgba(0,0,0,.12)`); `nil` draws none.
+    let ctaInsetShadow: SkinInsetShadow?
+
+    let iconButton: SkinIconButtonStyle
 }

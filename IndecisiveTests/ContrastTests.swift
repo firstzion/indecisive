@@ -107,8 +107,7 @@ final class ContrastTests: XCTestCase {
     /// both qualify as WCAG "large text", so 3:1 is the applicable bar.
     func testRevealKickerMeetsAALargeTextContrastOnRevealBackground() {
         for skin in Skin.all {
-            let kicker = RevealKicker(skin: skin)
-            let ratio = contrastRatio(kicker.kickerColor, skin.palette.revealBackground)
+            let ratio = contrastRatio(skin.reveal.kicker.color, skin.palette.revealBackground)
             XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) reveal kicker contrast is \(ratio), fails WCAG AA large text")
         }
     }
@@ -139,7 +138,7 @@ final class ContrastTests: XCTestCase {
     /// resemble) that it's held to the stricter normal-text bar, 4.5:1, instead.
     func testRevealHeaderTitleMeetsAANormalTextContrastOnRevealBackground() {
         for skin in Skin.all {
-            let ratio = contrastRatio(RevealView.headerTextColor(for: skin), skin.palette.revealBackground)
+            let ratio = contrastRatio(skin.reveal.headerText, skin.palette.revealBackground)
             XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(skin.name) reveal header contrast is \(ratio), fails WCAG AA")
         }
     }
@@ -153,6 +152,27 @@ final class ContrastTests: XCTestCase {
             let disc = flattened(button.background, over: skin.palette.revealBackground)
             let ratio = contrastRatio(button.foreground, disc)
             XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) reveal dismiss glyph contrast is \(ratio), fails WCAG AA for a UI component")
+        }
+    }
+
+    // MARK: Destructive controls
+    //
+    // Two places draw with `destructive`: the swipe-to-delete backdrop (a trash
+    // glyph on the red) and edit mode's "minus" (the red, straight onto the list
+    // card). Both are graphical controls, so 3:1 (WCAG 1.4.11). They used to be
+    // raw `Color.red` / `.white` — outside the palette, so nothing checked them.
+
+    func testDestructiveGlyphMeetsAAUIComponentContrastOnDestructive() {
+        for skin in Skin.all {
+            let ratio = contrastRatio(skin.palette.onDestructive, skin.palette.destructive)
+            XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) trash glyph contrast is \(ratio), fails WCAG AA for a UI component")
+        }
+    }
+
+    func testDestructiveMeetsAAUIComponentContrastOnSurface() {
+        for skin in Skin.all {
+            let ratio = contrastRatio(skin.palette.destructive, skin.palette.surface)
+            XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) edit-mode minus contrast is \(ratio), fails WCAG AA for a UI component")
         }
     }
 }

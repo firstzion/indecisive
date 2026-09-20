@@ -18,6 +18,11 @@ references are `path:line` against `d576a23`.
    decision sites the compiler stays silent about** (§2). That silent tail is the
    thing that will bite when Crystal Ball goes in. *(Fixed — Phase 1, P0-3.)*
 
+**Status:** Phases 0, 1 and 2 (§4) are done. A bare fourth `SkinID` case now costs **8 compiler
+errors across 8 files**, and a complete fourth skin — measured by writing one — **10 files**, with
+every value decision in a single token file (§2). Phase 3 (per-skin art) and the owner's calls —
+P1-10, P1-11, P2-7, P2-8, P2-10, P2-11 — are open.
+
 ---
 
 ## 0. Verified baseline
@@ -165,8 +170,9 @@ extension Skin {
 
 **Status: done.** Every one of the 18 sites is now an exhaustive `switch` over the skin
 with no `default:` — 15 switches in all, because some sites shared a decision (the shake
-check two screens made separately is now one `Skin.shakeToPick`; three ad-hoc confetti
-checks are one `Confetti.style(for:)`). Verified four ways: (1) all 18 snapshot images
+check two screens made separately is now one decision, and three ad-hoc confetti checks are
+one — both tokens since Phase 2: `skin.traits.shakeToPick`, `skin.reveal.confetti`). Verified
+four ways: (1) all 18 snapshot images
 re-render **byte-identical**, with no tolerance; (2) the five sites the snapshots can't
 see (confetti ×3, shake ×2) are pinned by new tests in `SkinBehaviourTests`, written from
 the old code's values; (3) a grep audit finds no `skin.id ==`/`!=`, no ternary on the skin
@@ -246,6 +252,27 @@ class clears each, as `SnapshotTests` already had.
 
 **Where:** `RevealCentrepiece.swift:216, 243, 267` vs `RevealView.swift:83-87`
 
+**Status: done (Phase 2).** `SkinMotion.revealIntro` owns the numbers. `RevealCentrepiece` animates
+from them, and `RevealView.announcementDelay(for:reduceMotion:)` reads `revealIntro.winnerLegibleAfter`,
+which is *computed from those same numbers* — so the two can't drift. The 8-Ball's announcement moves
+from 1.00 s to **1.43 s** (the wobble's 1.08 s plus the answer's 0.35 s fade-in): a deliberate behaviour
+change, the one this entry describes. The Wheel's 2.9 s and Gashapon's 0.85 s are unchanged.
+`SkinMotionTests` pins all three, and checks that no skin can announce before its winner begins to
+appear (an exhaustive switch, so a new intro has to say when its winner appears). The haptic patterns
+moved into the same token (`revealHaptics`), and the idle animations (`heroBadge`, `ctaGlyph`,
+`rerollGlyph`, `revealBackdrop`) into `IdleMotion`, applied by one `indIdle` modifier in place of six
+hand-written copies of the same `@State` + `onAppear` block.
+
+Snapshots can't see any of this — they run under Reduce Motion — so it was checked live. The original
+build and the new one were recorded playing each skin's reveal on the same simulator and compared frame
+by frame: the 8-Ball and Gashapon intros are pixel-identical from 0.4 s on (mean difference 0.2–0.4
+out of 255, against 6 at the fast presentation frames where a one-frame alignment error dominates); the
+Wheel's spin fits 4 turns over 2.8 s in both builds (3 or 5 turns, or 2.4 s or 3.2 s, fit worse in each) and
+its name card appears at the same moment (+2.97 s vs +3.00 s); the hero badge's bob (5.9 pt and 9.8 pt, waveform
+correlation ≥ 0.999), the CTA glyphs' spin rates, the re-roll wiggle and the glow / sunburst all match. **Not
+checked:** how the haptics *feel* — the simulator has no Taptic Engine, so only their schedule is tested; try
+a pick on each skin on a device. The diagnosis below is the state before.
+
 `RevealCentrepiece` owns the intro animation durations. `RevealView` separately hard-codes
 when to post the VoiceOver announcement, with a comment saying it is "timed to roughly
 match each skin's own intro animation". Nothing enforces that.
@@ -273,6 +300,16 @@ files with nothing connecting them.
 **Where:** `Gashapon.swift:96-104`, referenced from `RevealActions.swift` (×4),
 `RevealCentrepiece.swift` (×2), `Confetti.swift` (×2), `IconButton.swift`,
 `RevealView.swift`, `PrimaryCTA.swift`, plus `CapsuleBall.swift` and `OpenCapsule.swift`.
+
+**Status: done (Phase 2), by a different route from the fix below.** Palette slots turned out to be the
+wrong home. Once the reveal's colours became tokens (`SkinRevealStyle`), none of the six shared files needed
+the paints any more, and `surfaceAlt` / `inkOnReveal` / `prizeAccent` would have been values only one skin uses,
+forced onto the other two as dummies. Instead: the reveal's ink and cream are locals in `Gashapon.swift`; the
+cream and the yellow prize ball — the two paints only the capsule *artwork* draws — are `CapsulePaint`, owned
+by `CapsuleBall.swift` and named only by the capsule art, the CTA knob (a structural branch) and Gashapon's own
+token file; `GashaponPaint` is gone; and `CapsuleBall` takes its ink as a parameter instead of reaching into
+`Skin.gashapon`. No shared component names a skin's paints any more. Phase 3 will move that art, and
+`CapsulePaint`, into a folder of its own. The diagnosis below is the state before.
 
 `CapsuleBall.swift:47` goes further and reaches straight back into the skin registry
 from a leaf view:
@@ -368,6 +405,14 @@ Separately, decide on a retention policy for `Pick` (only the last N per list ar
 **Where:** `SwipeToDeleteRow.swift:38` (`.fill(Color.red)`), `ItemRow.swift:39`
 (`.foregroundStyle(.red)`)
 
+**Status: done (Phase 2).** `SkinPalette.destructive` / `onDestructive`, read by `SwipeToDeleteRow` and
+`ItemRow`, and covered by two new `ContrastTests` (the trash glyph on the red, and edit mode's "minus" on the
+card — both 3:1, as UI components). The values are today's system reds made explicit: what `Color.red` resolves to
+on iOS 26 (`#FF383C` light, `#FF4245` dark — measured, and not the values iOS 17 uses), so nothing looks different.
+Giving each skin its own red is a design call this leaves open. One nuance: a fixed hex no longer shifts with
+the system's Increase Contrast setting the way `Color.red` did — as no other skin colour does either. Negative control: a pale Wheel red failed both new
+tests at 1.74:1, naming the skin. The diagnosis below is the state before.
+
 These are the only two raw colours in the whole app outside a skin definition — every
 other colour goes through a token, which `Skin.swift:4-6` states as a rule. System red
 on the 8-Ball's `#241B52` card is also not contrast-checked by anything.
@@ -459,6 +504,10 @@ decision; just note the debt is larger than `SkinCopy` alone.
 
 #### P2-2. Unguarded array indexing in `Confetti`
 
+**Status: done (Phase 2).** No shared component indexes `flavors` any more: the confetti colours are
+`skin.reveal.confetti.colors`, and `Confetti` guards against an empty list. Gashapon's own file still picks two of its
+flavours by index — from the array literal a few lines above it, in the skin's own file.
+
 `Confetti.swift:52` reads `skin.palette.flavors[0]` and `flavors[2]` directly. Safe today
 (Gashapon ships 5 flavours) but it will crash if that palette is ever trimmed, and it's a
 pattern a new skin will copy. `RowMarker.swift:11-15` shows the right shape
@@ -480,7 +529,8 @@ skin that has a different palette length.
 title against `revealBackground` (held to 4.5:1, since 15 pt bold is too near the "large text"
 line to lean on it), and the "✕" glyph against its disc. So the tests can read the real values,
 `RevealActionStyle.foreground` / `background`, `SkinIconButton.foreground` / `background` and
-`RevealView.headerTextColor(for:)` are now internal. Checked two ways: all 12 ratios match an
+`RevealView.headerTextColor(for:)` are now internal (since Phase 2 the header and kicker colours are
+tokens, `skin.reveal.headerText` and `skin.reveal.kicker.color`, which the tests read directly). Checked two ways: all 12 ratios match an
 independent calculation to two decimals, and with three colours deliberately broken the new
 tests failed on exactly those (Wheel accept 1.97:1, 8-Ball header and dismiss 1.0:1) while all
 seven older contrast tests still passed — the gap this entry described. The diagnosis below is
@@ -594,6 +644,14 @@ skin is added**, and the entire test suite silently continues to cover only the 
 skins. *(After P0-2 and P0-3: no hard-coded test arrays and no silent sites; the same
 experiment gives 40 errors across 13 files.)*
 
+*(After Phase 2 — measured: a bare fourth case gives **8 errors across 8 files** — the registry and the seven
+structural views. And a complete stand-in fourth skin, written in a scratch copy, builds having touched
+**10 files**: `SkinID`, the registry, one new file holding all its tokens, and one arm in each of the seven
+structural views. No test file was edited; the suite then reacted to the new skin by itself: the six snapshot
+tests recorded their missing images, a contrast test flagged the stand-in's accept label at 2.92:1, and the copy
+tests flagged strings it had copied from another skin. Before Phase 2 the same job meant 15 files, twelve of
+them shared components each taking a value decision.)*
+
 ### The underlying cause
 
 `PLAN.md §4.1` set a good rule:
@@ -610,10 +668,11 @@ absorbed the overflow. Today they carry three quite different kinds of decision:
 | **Capabilities** — does this skin do X? | `ListDetailView.swift:64` / `RevealView.swift:62` (shake to pick), `RevealCentrepiece.swift:46` (is there a name card?) | tokens |
 | **Structure** — genuinely different view trees | `ListBadge`, `HeroBadge`, `RowMarker`, `PrimaryCTAGlyph`, `RevealGlow`, `RevealCentrepiece.shape` | per-skin code |
 
-Only the third kind actually needs a switch. The first two are ~70 % of the sites.
+Only the third kind actually needs a switch. The first two are ~70 % of the sites. *(Phase 2 moved the first two
+kinds into tokens; the third is what remains.)*
 
 `SkinMotion` — listed in `PLAN.md §4.1`'s own `Skin` struct — was never built, which is
-why all the animation timing ended up inline in `RevealCentrepiece`.
+why all the animation timing ended up inline in `RevealCentrepiece`. *(Built in Phase 2.)*
 
 ---
 
@@ -621,6 +680,16 @@ why all the animation timing ended up inline in `RevealCentrepiece`.
 
 Keep the existing shape. Grow the token layer to cover values and capabilities, and
 (optionally, later) move structure into per-skin art packs.
+
+> **Built in Phase 2, with these changes from the sketch below.** `SkinTraits` holds only `shakeToPick`: the
+> compact-title font role went to `SkinTypography` (`compactTitleRole`, where a font choice belongs) and the
+> confetti to `SkinRevealStyle` (it is the reveal's). `SkinMotion`'s two idle fields became `IdleMotion` values
+> (`heroBadge`, `ctaGlyph`, `rerollGlyph`, `revealBackdrop`) beside a `RevealIntro` enum whose numbers the
+> announcement is derived from, and the haptics are `[HapticBeat]`. `SkinRevealStyle` holds resolved `Color` and
+> `Font` values, built in each skin's own file, rather than font-role specs. `SkinPalette` gained only
+> `destructive` / `onDestructive` — not `surfaceAlt`, `inkOnReveal` or `prizeAccent` (see P1-3). `SkinShape`
+> gained `ctaInsetShadow` and `iconButton`. `SkinArt` is still Phase 3. Every token initialiser takes every
+> field, with no defaults, so a skin file that omits a decision doesn't compile.
 
 ```swift
 struct Skin: Identifiable, Sendable {
@@ -770,16 +839,22 @@ decisions into compiler errors, which is the difference between "Crystal Ball re
 subtly wrong and we find out in review" and "Crystal Ball doesn't build until it's
 complete".
 
-### Phase 2 — move values and capabilities into tokens (~1–2 days)
+### Phase 2 — move values and capabilities into tokens (~1–2 days) — ✅ done
 
-1. Add `SkinMotion` (fixes P1-2 structurally), `SkinRevealStyle`, `SkinTraits`.
-2. Add the missing `SkinPalette` slots and retire `GashaponPaint` (P1-3) and the raw
-   reds (P1-7).
-3. Reduce `RevealKicker`, `RevealActions`, `IconButton`, `Confetti`,
-   `Skin+CompactTitle` and `RevealView` to zero `skin.id` references.
+1. ✅ Added `SkinMotion` (fixes P1-2 structurally), `SkinRevealStyle`, `SkinTraits`.
+2. ✅ Added `destructive` / `onDestructive` to `SkinPalette` and retired `GashaponPaint` (P1-3) and the raw
+   reds (P1-7). The other palette slots proposed here proved unnecessary — see P1-3 and §3.
+3. ✅ Reduced `RevealKicker`, `RevealActions`, `IconButton`, `Confetti`, `Skin+CompactTitle` (deleted; now
+   `SkinTypography.compactTitle`) and `RevealView` to zero `skin.id` references — and with them `PrimaryCTA`'s
+   bottom lip (`SkinShape.ctaInsetShadow`), the name card and when it appears, the action buttons' layout and the
+   dismiss disc's colours.
 
-**Exit:** no shared file switches on `skin.id` for a *value*. `grep -c 'skin\.id'` on
-`Features/` returns 0.
+**Exit — met, with the wording sharpened.** No shared file makes a *value* decision from `skin.id`: the reads went
+from 41 (in 14 files) to 9 — the seven structural views, the registry, and the skin picker tile's
+`accessibilityIdentifier`, which is an identity rather than a decision — and `Features/` went from 4 to that one.
+Verified: all 18 snapshots byte-identical to before (`TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all`, then `git status`
+on the PNGs); a clean build with 0 warnings; 84 unit and 4 UI tests; negative controls on the new tests; and, for the
+motion that snapshots can't see, a live frame-by-frame comparison against the original build (P1-2).
 
 ### Phase 3 — per-skin art packs (~1–2 days, optional)
 
@@ -793,30 +868,36 @@ structural views into `Skins/<SkinName>/`, and reduce `ListBadge`, `HeroBadge`,
 
 | | files touched to add a skin | silent-failure sites |
 |---|---|---|
-| today (at `d576a23`) | 24 | 18 + 5 test arrays |
-| after Phase 1 | ~24 | **0** |
-| after Phase 2 | ~6 | 0 |
-| after Phase 3 | ~3 | 0 |
+| at `d576a23` | 24 | 18 + 5 test arrays |
+| after Phase 1 | ~24, now compiler-guided | **0** |
+| after Phase 2 — *measured* | **10**: three fixed (`SkinID`, the registry, the skin's own file) + 7 structural views | 0 |
+| after Phase 3 (estimate) | ~3 | 0 |
 
 Phase 1 doesn't reduce the file count much — it changes *how* you find them, from
 eyeballing to following compiler errors. That's the change that actually protects the
-existing skins.
+existing skins. Phase 2 is what moves the count, and it changes *what* the edits are: every value
+decision now sits in one file, and the seven that remain are "draw this skin's artwork" arms. (The ~6
+estimated here originally left out those seven structural views; only Phase 3 removes them.)
 
 ---
 
 ## 5. The end state: adding a skin
 
-After Phases 0–2, adding Crystal Ball should be:
+After Phases 0–2, adding Crystal Ball is — as measured with a stand-in skin (§2):
 
-1. Add `case crystalBall` to `SkinID`.
-2. Build. The compiler lists every decision the new skin owes.
-3. Write `Skins/CrystalBall.swift` — tokens only, one file.
-4. Write its structural views (badge, marker, centrepiece, backdrop) — one file.
+1. Add `case crystalBall` to `SkinID`, and a line to `Skin.skin(for:)`.
+2. Build. The compiler lists the seven structural views that need an arm for the new artwork
+   (`ListBadge`, `HeroBadge`, `RowMarker`, `PrimaryCTAGlyph`, `RevealGlow`, `RevealActionGlyph`,
+   `RevealCentrepiece.shape`).
+3. Write `Skins/CrystalBall.swift` — tokens only, one file: `palette`, `type`, `shape`, `copy`, `motion`,
+   `reveal`, `traits`, none with a default, so a decision left out doesn't compile.
+4. Write the structural arms — the badge, marker, glyphs, backdrop and centrepiece.
 5. Add its fonts to `FontRegistry` + `project.yml`, run `xcodegen generate`.
-6. Run the tests. Contrast, font-resolution and copy tests cover it automatically;
-   record its four new snapshots.
+6. Run the tests. Contrast, font-resolution, copy and behaviour tests cover it automatically; record its
+   six new snapshot images.
 
-Steps 2 and 6 are the ones that don't exist today.
+Steps 2 and 6 are the ones that didn't exist before Phase 1. After Phase 3, step 4 moves into the skin's own
+folder and stops touching shared files.
 
 ---
 
@@ -824,7 +905,8 @@ Steps 2 and 6 are the ones that don't exist today.
 
 The 18 sites that needed rewriting or promoting in Phase 1. **Status: all 18 converted
 (P0-3)** — the table is the state before. None of these produced a compiler error when a
-`SkinID` case was added; each now does.
+`SkinID` case was added; each now does. **Phase 2 then moved every one of them into a token**,
+so what a new skin owes for these is now a field in its own file rather than an arm in a shared one.
 
 | File | Line | Form | Silent default for a new skin |
 |---|---|---|---|

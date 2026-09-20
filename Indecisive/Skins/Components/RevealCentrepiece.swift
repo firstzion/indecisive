@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// The reveal screen's visual centerpiece: the shape (8-ball / wheel /
 /// capsule) plus the winner's name. For the Wheel and Gashapon, the name
@@ -30,6 +29,8 @@ struct RevealCentrepiece: View {
     /// Gashapon only: whether the capsule's lid has popped off yet.
     @State private var lidOpen = false
     @Environment(\.indReducedMotion) private var reduceMotion
+    /// Plays the skin's haptic beats (`playHaptics()`), reusing one generator per kind.
+    @State private var haptics = HapticPlayer()
 
     /// Every not-yet-fired delayed haptic/animation step scheduled by
     /// `startIntroAnimation()`, tracked so `cancelScheduledWork()` can
@@ -43,10 +44,11 @@ struct RevealCentrepiece: View {
         VStack(spacing: 22) {
             entranceWrappedShape
 
-            if hasNameCard {
-                nameCard
-                    .scaleEffect(nameCardVisible ? 1 : 0.9)
-                    .opacity(nameCardVisible ? 1 : 0)
+            if let card = skin.reveal.nameCard {
+                let visible = nameCardVisible(card)
+                nameCard(card)
+                    .scaleEffect(visible ? 1 : 0.9)
+                    .opacity(visible ? 1 : 0)
             }
         }
         .onAppear(perform: startIntroAnimation)
@@ -56,23 +58,22 @@ struct RevealCentrepiece: View {
     /// Whether the winner's name card should be showing yet — the Wheel
     /// deliberately holds it back until its spin finishes; Gashapon's pops in
     /// with the capsule.
-    private var nameCardVisible: Bool {
-        switch skin.id {
-        case .prizeWheel: return resultRevealed
-        case .gashapon: return popped
-        case .eightBall: return false // unused — no separate name card
+    private func nameCardVisible(_ card: SkinRevealStyle.NameCard) -> Bool {
+        switch card.appearance {
+        case .withCentrepiece: return popped
+        case .afterIntro: return resultRevealed
         }
     }
 
     @ViewBuilder
     private var entranceWrappedShape: some View {
-        switch skin.id {
-        case .eightBall, .gashapon:
+        switch skin.motion.revealIntro {
+        case .wobble, .popAndOpen:
             shape
                 .scaleEffect(popped ? 1 : 0.72)
                 .rotationEffect(.degrees((popped ? 0 : -6) + wobbleAngle))
                 .opacity(popped ? 1 : 0)
-        case .prizeWheel:
+        case .spin:
             // No bounce/scale here — that would fight visually with the
             // spin. Just a quick fade-in; the spin itself is the entrance.
             shape.opacity(popped ? 1 : 0)
@@ -143,7 +144,7 @@ struct RevealCentrepiece: View {
     }
 
     @ViewBuilder
-    private var nameCard: some View {
+    private func nameCard(_ card: SkinRevealStyle.NameCard) -> some View {
         VStack(spacing: 8) {
             if let label = skin.copy.revealWinnerLabel {
                 Text(label)
@@ -165,65 +166,16 @@ struct RevealCentrepiece: View {
         .padding(.horizontal, 24)
         .padding(.vertical, 22)
         .frame(maxWidth: .infinity)
-        .background(nameCardFill)
+        .background(card.fill)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay {
-            if nameCardBorderWidth > 0, let border = skin.palette.surfaceBorder {
+            if let border = card.border {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .strokeBorder(border, lineWidth: nameCardBorderWidth)
+                    .strokeBorder(border.color, lineWidth: border.width)
             }
         }
-        .indShadow(nameCardShadow, cornerRadius: 28)
-        .padding(.horizontal, nameCardHorizontalInset)
-    }
-
-    /// Whether the winner's name sits in its own card below the shape. The
-    /// 8-Ball shows it inside the ball's diamond window instead.
-    private var hasNameCard: Bool {
-        switch skin.id {
-        case .eightBall: return false
-        case .prizeWheel, .gashapon: return true
-        }
-    }
-
-    /// The Wheel's card has a thick ink border; the others rely on their fill
-    /// and shadow alone.
-    private var nameCardBorderWidth: CGFloat {
-        switch skin.id {
-        case .prizeWheel: return 4
-        case .eightBall, .gashapon: return 0
-        }
-    }
-
-    /// Gashapon's mockup sets the whole middle stack in from the screen edges
-    /// (26pt); the other skins' cards run the full width.
-    private var nameCardHorizontalInset: CGFloat {
-        switch skin.id {
-        case .gashapon: return 26
-        case .eightBall, .prizeWheel: return 0
-        }
-    }
-
-    /// Gashapon's card is the capsule's cream, not the white the other
-    /// skins' cards use.
-    private var nameCardFill: Color {
-        switch skin.id {
-        case .gashapon: return GashaponPaint.shell
-        case .eightBall, .prizeWheel: return skin.palette.surface
-        }
-    }
-
-    private var nameCardShadow: SkinShadowStyle {
-        switch skin.id {
-        case .prizeWheel:
-            return .hard(offset: CGSize(width: 6, height: 6), color: skin.palette.primaryText)
-        case .gashapon:
-            // A flat shelf of teal under the card, like the mockup's
-            // `0 14px 0 rgba(11,61,76,.2)`.
-            return .hard(offset: CGSize(width: 0, height: 14), color: GashaponPaint.revealInk.opacity(0.2))
-        case .eightBall:
-            return .none // unused — 8-Ball has no separate name card
-        }
+        .indShadow(card.shadow, cornerRadius: 28)
+        .padding(.horizontal, card.horizontalInset)
     }
 
     // MARK: Intro animations
@@ -233,15 +185,19 @@ struct RevealCentrepiece: View {
     // instant, motion-free reveal under Reduce Motion — the long Wheel spin
     // in particular is exactly the kind of animation Reduce Motion exists
     // to skip, not just slow down or soften.
+    //
+    // Every timing here, and the haptic pattern, is the skin's own
+    // (`skin.motion`). `RevealView` announces the winner to VoiceOver from the
+    // same numbers, so the two can't drift apart.
 
     private func startIntroAnimation() {
         cancelScheduledWork() // defensive — see `scheduledWork`'s doc comment
 
-        switch skin.id {
-        case .eightBall:
-            // `repeatCount(6, autoreverses: true)` below takes 6 full
-            // back-and-forth cycles × 0.09s × 2 = 1.08s to run its course.
-            let wobbleDuration = 0.09 * 2 * 6
+        switch skin.motion.revealIntro {
+        case let .wobble(swings, swingDuration, answerFadeIn):
+            // `repeatCount(swings, autoreverses: true)` below takes `swings` full
+            // back-and-forth cycles × `swingDuration` × 2 to run its course.
+            let wobbleDuration = Double(swings) * 2 * swingDuration
             if reduceMotion {
                 popped = true
                 resultRevealed = true
@@ -249,68 +205,51 @@ struct RevealCentrepiece: View {
                 withAnimation(.interpolatingSpring(stiffness: 170, damping: 14)) {
                     popped = true
                 }
-                withAnimation(.easeInOut(duration: 0.09).repeatCount(6, autoreverses: true)) {
+                withAnimation(.easeInOut(duration: swingDuration).repeatCount(swings, autoreverses: true)) {
                     wobbleAngle = 7
-                }
-                let rigid = UIImpactFeedbackGenerator(style: .rigid)
-                rigid.impactOccurred()
-                for tick in 1..<6 {
-                    afterDelay(Double(tick) * 0.09) {
-                        rigid.impactOccurred(intensity: 0.6)
-                    }
                 }
                 // Wait for the wobble to finish naturally instead of
                 // cutting it off mid-swing — this used to force
                 // `wobbleAngle` back to 0 at a fixed 0.6s, well before the
                 // 1.08s the animation above actually takes, producing a
-                // visible snap. It already ends back at 0 on its own (6 is
-                // a whole number of round trips), so this assignment is
+                // visible snap. It already ends back at 0 on its own (`swings`
+                // is a whole number of round trips), so this assignment is
                 // now just a harmless no-op safety net.
                 afterDelay(wobbleDuration) {
                     wobbleAngle = 0
-                    withAnimation(.easeIn(duration: 0.35)) {
+                    withAnimation(.easeIn(duration: answerFadeIn)) {
                         resultRevealed = true
                     }
                 }
             }
-            let revealDelay = reduceMotion ? 0 : wobbleDuration
-            afterDelay(revealDelay) {
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-            }
 
-        case .prizeWheel:
+        case let .spin(duration, turns, _):
             let target = wheelTargetSpinAngle(
                 wedgeCount: wedgeCount, winnerIndex: winnerWedgeIndex,
-                extraSpins: reduceMotion ? 0 : 4
+                extraSpins: reduceMotion ? 0 : turns
             )
             if reduceMotion {
                 popped = true
                 spinAngle = target
                 resultRevealed = true
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
             } else {
                 withAnimation(.easeOut(duration: 0.2)) {
                     popped = true
                 }
-                withAnimation(.timingCurve(0.15, 0.85, 0.25, 1, duration: 2.8)) {
+                withAnimation(.timingCurve(0.15, 0.85, 0.25, 1, duration: duration)) {
                     spinAngle = target
                 }
-                playWheelTickHaptics(duration: 2.8)
-                afterDelay(2.8) {
+                afterDelay(duration) {
                     withAnimation(.interpolatingSpring(stiffness: 170, damping: 14)) {
                         resultRevealed = true
                     }
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
                 }
             }
 
-        case .gashapon:
-            // The mockup's `pfm-pop`, then `pfm-lid` 0.25s later.
-            let lidDelay = 0.25
+        case let .popAndOpen(lidDelay, _):
             if reduceMotion {
                 popped = true
                 lidOpen = true
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
             } else {
                 withAnimation(.interpolatingSpring(stiffness: 170, damping: 14)) {
                     popped = true
@@ -320,37 +259,24 @@ struct RevealCentrepiece: View {
                         lidOpen = true
                     }
                 }
-                // Two crank ticks as the knob turns, a firmer bump as the lid
-                // pops, then the success tap once the prize is showing.
-                // Spaced apart: back-to-back haptics get swallowed.
-                let rigid = UIImpactFeedbackGenerator(style: .rigid)
-                rigid.impactOccurred()
-                afterDelay(0.1) {
-                    rigid.impactOccurred(intensity: 0.7)
-                }
-                afterDelay(lidDelay) {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                }
-                afterDelay(0.6) {
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
-                }
             }
         }
+
+        playHaptics()
     }
 
-    /// Fires `.selection` ticks with decreasing frequency over `duration`,
-    /// to feel like a wheel slowing down and crossing wedge boundaries —
-    /// an approximation of the motion, not tied to the exact wedge count.
-    private func playWheelTickHaptics(duration: Double) {
-        let generator = UISelectionFeedbackGenerator()
-        var elapsed = 0.0
-        var interval = 0.06
-        while elapsed < duration {
-            afterDelay(elapsed) {
-                generator.selectionChanged()
+    /// Schedules the skin's haptic beats. Under Reduce Motion the motion is
+    /// skipped, but the "you have your answer" tap still fires — at once.
+    private func playHaptics() {
+        let beats = skin.motion.revealHaptics
+        if reduceMotion {
+            if beats.contains(where: { $0.kind == .success }) {
+                haptics.play(.success)
             }
-            elapsed += interval
-            interval *= 1.18 // slows down, mimicking deceleration
+            return
+        }
+        for beat in beats {
+            afterDelay(beat.at) { haptics.play(beat.kind) }
         }
     }
 

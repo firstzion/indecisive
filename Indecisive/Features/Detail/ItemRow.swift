@@ -38,7 +38,7 @@ struct ItemRow: View {
             if isEditing {
                 Button(action: onDelete) {
                     Image(systemName: "minus.circle.fill")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(skin.palette.destructive)
                         .font(.system(size: deleteIconSize))
                 }
                 .buttonStyle(.plain)

@@ -20,13 +20,18 @@ struct SkinPalette: Sendable {
     let accent: Color
     /// Text/icon color to place *on* `accent`.
     let onAccent: Color
+    /// Fill for destructive controls: the swipe-to-delete backdrop, and the
+    /// edit-mode "minus" (which is drawn on `surface`, so it has to read there too).
+    let destructive: Color
+    /// Glyph color to place *on* `destructive`.
+    let onDestructive: Color
     /// The per-list "flavour" colors — 8-Ball diamonds, Wheel wedges.
     /// Cycled by `PickList.flavorIndex`.
     let flavors: [Color]
     /// The reveal screen's own background (often the accent, sometimes not).
     let revealBackground: Color
     /// Whether Home/Detail read as a light or dark screen, for
-    /// `.preferredColorScheme`. The reveal screen may pick its own scheme
-    /// independently once its own background is known (Phase 3).
+    /// `.preferredColorScheme`. The reveal screen sets its own —
+    /// `SkinRevealStyle.colorScheme` — since its background is often much louder.
     let colorScheme: ColorScheme
 }
