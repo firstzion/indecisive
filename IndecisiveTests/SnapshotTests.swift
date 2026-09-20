@@ -16,6 +16,15 @@ import SnapshotTesting
 /// which is inherently non-deterministic. Reduce Motion collapses each of
 /// them straight to its resting pose — which is also the correct pose to
 /// hold up against the mockups, since those are static images too.
+///
+/// The reference images were recorded on an **iPhone 17 Pro running iOS 26.5**
+/// (a 3× device: each PNG is 1179 × 2556). Run this on iOS 26.5 — see the
+/// README. Other 3× iPhones at 26.5 match (an iPhone 17 was checked); iOS 27.0
+/// does not: it lays out `NavigationStack` screens differently (Home and Detail
+/// sit ~50 pt lower and Detail draws its toolbar), so 17 of the 18 images fail
+/// there. If a UI change is deliberate, re-record the affected images in the
+/// same commit as the change (README: "Snapshot tests"); a suite left red can't
+/// tell an expected mismatch from a real regression.
 @MainActor
 final class SnapshotTests: XCTestCase {
 
@@ -28,6 +37,21 @@ final class SnapshotTests: XCTestCase {
 
     private func traits(_ category: UIContentSizeCategory) -> UITraitCollection {
         UITraitCollection(preferredContentSizeCategory: category)
+    }
+
+    /// The one image strategy every snapshot below goes through, so the
+    /// comparison tolerance is set in exactly one place.
+    ///
+    /// - `perceptualPrecision: 0.98` — a pixel matches if it is within ~2 ΔE
+    ///   of its reference, about the smallest colour difference an eye can see.
+    ///   That absorbs sub-visible anti-aliasing and gradient drift between
+    ///   Xcode or simulator builds without letting a real colour change through.
+    /// - `precision: 1` — every pixel must still clear that bar. Deliberately
+    ///   *not* the common `0.99`: letting 1 % of the frame differ would have
+    ///   passed the 8-Ball's row-index colour change, which touched only 0.11 %
+    ///   of its Detail screenshot.
+    private func screen<V: View>(_ category: UIContentSizeCategory) -> Snapshotting<V, UIImage> {
+        .image(precision: 1, perceptualPrecision: 0.98, layout: frame, traits: traits(category))
     }
 
     // MARK: Fixtures
@@ -103,7 +127,7 @@ final class SnapshotTests: XCTestCase {
                     .environment(\.indDisableIdleAnimationsForTesting, true)
                 assertSnapshot(
                     of: view,
-                    as: .image(layout: frame, traits: traits(category)),
+                    as: screen(category),
                     named: "\(skin.id.rawValue)-\(sizeName)"
                 )
             }
@@ -122,7 +146,7 @@ final class SnapshotTests: XCTestCase {
                     .environment(\.indDisableIdleAnimationsForTesting, true)
                 assertSnapshot(
                     of: view,
-                    as: .image(layout: frame, traits: traits(category)),
+                    as: screen(category),
                     named: "\(skin.id.rawValue)-\(sizeName)"
                 )
             }
@@ -141,7 +165,7 @@ final class SnapshotTests: XCTestCase {
                     .environment(\.indDisableIdleAnimationsForTesting, true)
                 assertSnapshot(
                     of: view,
-                    as: .image(layout: frame, traits: traits(category)),
+                    as: screen(category),
                     named: "\(skin.id.rawValue)-\(sizeName)"
                 )
             }

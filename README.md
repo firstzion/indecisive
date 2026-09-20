@@ -32,12 +32,52 @@ brew install xcodegen
 ## Build & test from the CLI
 
 ```bash
+# Build — any simulator will do, so don't name one.
 xcodebuild -project Indecisive.xcodeproj -scheme Indecisive \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+  -destination 'generic/platform=iOS Simulator' build
 
+# Test — pin the device *and* the OS.
 xcodebuild -project Indecisive.xcodeproj -scheme Indecisive \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' test
 ```
+
+Naming only the device (`name=iPhone 17 Pro`) means "on the newest OS installed",
+so on a Mac that also has a newer runtime — iOS 27 has no iPhone 17 Pro — it fails
+with *Unable to find a device matching the provided destination specifier* before
+anything compiles. `xcodebuild -showdestinations -project Indecisive.xcodeproj
+-scheme Indecisive` lists what your machine has.
+
+### Snapshot tests
+
+`SnapshotTests` renders Home, Detail and Reveal for every skin, at default and XXL
+Dynamic Type, and compares each against a PNG in `IndecisiveTests/__Snapshots__/`.
+Those were recorded on an **iPhone 17 Pro running iOS 26.5** (a 3× device: each image
+is 1179 × 2556), which is why the test destination above is pinned to it. Other 3×
+iPhones on iOS 26.5 match (an iPhone 17 was checked); **iOS 27.0 does not** — it lays
+out the navigation screens differently (Home and Detail render about 50 pt lower, and
+Detail draws its toolbar), so 17 of the 18 images fail there.
+
+A mismatch means a screen no longer looks like its reference. If the change is
+deliberate, re-record the image **in the same commit as the change**; if it isn't,
+you've found a regression. Keep the suite green before merging anything under
+`Skins/` or `Features/` — a suite that is already red can't tell an expected
+mismatch from a real one.
+
+To re-record, run the tests with recording turned on. Each image it writes is
+reported as a failure and the run exits non-zero; that is expected. Run again
+without the variable to confirm it is green.
+
+```bash
+TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed xcodebuild -project Indecisive.xcodeproj \
+  -scheme Indecisive -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+  -only-testing:IndecisiveTests/SnapshotTests test
+```
+
+`failed` re-records only the snapshots that currently mismatch (`all` redoes every
+one; the default, `missing`, only records images that don't exist yet). Look at the
+new images before you commit them — recording accepts whatever the app draws today.
+Add `TEST_RUNNER_SNAPSHOT_ARTIFACTS=<dir>` to a normal run to get the newly rendered
+images written to `<dir>/SnapshotTests/`, ready to compare side by side.
 
 ## Project layout
 
