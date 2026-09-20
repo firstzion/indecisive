@@ -21,7 +21,8 @@ references are `path:line` against `d576a23`.
 **Status:** Phases 0, 1 and 2 (§4) are done. A bare fourth `SkinID` case now costs **8 compiler
 errors across 8 files**, and a complete fourth skin — measured by writing one — **10 files**, with
 every value decision in a single token file (§2). Phase 3 (per-skin art) and the owner's calls —
-P1-10, P1-11, P2-7, P2-8, P2-10, P2-11 — are open.
+P1-10, P1-11, P2-7, P2-8, P2-10, P2-11 — are open. One bug found afterwards — the confetti
+never fell, it spiralled off the screen (P1-12) — is fixed as well.
 
 ---
 
@@ -486,6 +487,49 @@ flagged it because XCUITest taps element centres.
 controls would double the row's height. So this needs a layout decision — up and down side by
 side, or native drag-to-reorder (`onMove`), which `ItemRow`'s own header comment says was
 deferred — which is why it wasn't a quick win.
+
+---
+
+#### P1-12. The confetti spiralled off the screen instead of falling
+
+**Where:** `Confetti.swift` (`ConfettiPieceView`)
+
+Found after Phase 2, from the owner's report that it "doesn't really fall across the screen in the
+background". **Status: done.**
+
+**Cause.** The piece applied `.offset(y:)` and *then* `.rotationEffect(_:)`. Modifiers apply in
+sequence, so the rotation turned the already-offset piece about the point it had started from, and every
+piece swung round the top of the screen on a widening spiral: on screen for about its first 0.4 s, in the
+top ~40 pt, then off the left, top or right edge (a second brief pass through the lower half followed, at
+under half opacity). The mockup's `translateY(…) rotate(…)` is the other way round — spin about its own
+centre, then move. Measured on recordings of each skin's reveal, 2.5–10.5 s after the tap: **1.5–2.3
+pieces moving on screen at a time**, all but a handful in the top fifth of the screen (Gashapon:
+103 of 116 detections), and 0–3 straight-down steps. Swapping those two modifiers alone restored the fall.
+
+**Why nothing noticed.** The confetti is hidden under Reduce Motion, which is how the snapshot tests run,
+and an implicit `repeatForever` animation can't be inspected by a unit test. So for its whole life it had no
+coverage of any kind — this is the gap P0-3 noted for confetti, gestures and shake, in the one place where the
+missing test hid a real bug.
+
+**Fix.** A piece's position is now a pure function of the clock — `ConfettiMotion.pose(of:at:containerHeight:)`,
+the mockup's `pfm-fall` keyframes (fade in over the first 15 %, out over the rest, 520° of spin) — drawn by
+`ConfettiField` inside a `TimelineView`, which is what PLAN.md §4.4 specified. That also fixes a second
+deviation: `.delay(_:).repeatForever()` re-applied each piece's start delay on every cycle, leaving it out of
+sight between falls, where the mockup's CSS applies the delay to the first pass only. `ConfettiTests` (9)
+pin the path against the keyframes, that the shower covers every fifth of the screen at every moment, and —
+by rendering the real view — that a piece is drawn straight below its own column at the height the function
+says. With the original bug put back, the render test fails ("round piece nowhere on screen 20 % of the way
+through its fall"). Verified live on all three skins: **7.7–11.8 pieces moving at a time**, in every fifth of
+the screen, 510–850 straight-down steps, a median fall of 25 pt per 0.1 s (a ~3.75 s fall over the screen's
+954 pt predicts 25.4), steady from second to second. Snapshots are byte-identical (confetti is hidden in them),
+and the UI tests take the same 74 s as before, so the per-frame timeline doesn't upset XCUITest.
+
+**Left as it was, for a design call.** Against the mockup: the 8-Ball's has three colours (lime, pink, cyan)
+and dots and squares, where the app adds the card surface colour — `#241B52`, 1.28:1 on the reveal
+background, so roughly one piece in four barely shows — and draws 1 : 1.6 rounded rectangles. The Wheel's
+mockup pieces are red, teal and cream squares and circles; the app also includes yellow, which *is* the reveal
+background (only its outline shows), and white. The mockup's fall stops at `translateY(620px)` on an ~852 pt
+screen; the app's crosses the whole height, fading out at the bottom. The mockup has six pieces, the app ten.
 
 ---
 

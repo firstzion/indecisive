@@ -105,7 +105,8 @@ struct SkinRevealStyle: Sendable {
     }
 
     /// The falling confetti. Hidden under Reduce Motion — which is how the
-    /// snapshot tests run — so no image pins it; `SkinBehaviourTests` does.
+    /// snapshot tests run — so no image pins it: `SkinBehaviourTests` pins the look
+    /// and `ConfettiTests` the motion.
     struct ConfettiStyle: Sendable {
         /// The colours the pieces cycle through. Must not be empty.
         let colors: [Color]
