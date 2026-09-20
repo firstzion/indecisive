@@ -42,6 +42,14 @@ targets:
         # skips the export-compliance question instead of stopping to ask
         # it every time. Revisit if networking or crypto is ever added.
         ITSAppUsesNonExemptEncryption: false
+        # Both read from the build settings below rather than holding literals,
+        # so a release is bumped in `project.yml` — the file under source
+        # control — instead of in the generated (and gitignored) Info.plist,
+        # which is the only place they used to live. Keeping them as build
+        # settings also means Xcode's own version fields and `agvtool` see
+        # them.
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
           UIColorName: LaunchBackground
         # `armv7` is a 32-bit-CPU requirement left over from an old
@@ -64,8 +72,19 @@ targets:
           - "Nunito[wght].ttf"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app
+        # Set explicitly (so `bundleIdPrefix` above, which would otherwise
+        # derive `com.indecisive.Indecisive` from the target name, doesn't
+        # decide it) and deliberately matching the prefix and the README.
+        # This used to be `com.Randomatic.app`, which agreed with neither and
+        # isn't reverse-DNS-conventional. A bundle ID is effectively permanent
+        # from the first App Store Connect submission onward — don't churn it
+        # after that.
+        PRODUCT_BUNDLE_IDENTIFIER: com.indecisive.app
         PRODUCT_NAME: Indecisive
+        # The release version and build number. Bump these here; the
+        # Info.plist keys read them (see `CFBundleShortVersionString` above).
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SWIFT_EMIT_LOC_STRINGS: YES

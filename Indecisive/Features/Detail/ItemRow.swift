@@ -30,8 +30,19 @@ struct ItemRow: View {
     // the latter never grows with Dynamic Type, so these interactive icons
     // would stay pinned at the same physical size while every text label
     // around them scales up.
+    //
+    // These are the sizes of the *artwork*, not of the tap target. Every
+    // control below is framed out to at least 44 × 44 pt separately — see
+    // `minimumTapTarget`.
     @ScaledMetric private var deleteIconSize: CGFloat = 18
     @ScaledMetric private var reorderIconSize: CGFloat = 12
+
+    /// Apple's minimum tappable size. A hit area can't exceed its view's
+    /// frame in SwiftUI, so reaching 44 × 44 means actually laying out
+    /// 44 × 44 — `.contentShape` then makes the whole (otherwise mostly
+    /// empty) frame count as inside the control, the same trick
+    /// `SkinIconButton` uses for the reveal's 32 pt "✕".
+    private let minimumTapTarget: CGFloat = 44
 
     var body: some View {
         HStack(spacing: 12) {
@@ -40,6 +51,8 @@ struct ItemRow: View {
                     Image(systemName: "minus.circle.fill")
                         .foregroundStyle(skin.palette.destructive)
                         .font(.system(size: deleteIconSize))
+                        .frame(minWidth: minimumTapTarget, minHeight: minimumTapTarget)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Delete \(spokenName)")
@@ -67,9 +80,19 @@ struct ItemRow: View {
             Spacer(minLength: 8)
 
             if isEditing {
-                VStack(spacing: 2) {
+                // Side by side, not stacked. Stacked is where these started,
+                // and it is what made them dangerous: two 11 × 7 pt targets
+                // 2 pt apart meant a fingertip that missed "up" landed on
+                // "down" and silently reordered the *wrong way* — a wrong
+                // action, not a missed one. Two 44 pt targets stacked would
+                // instead make an edit-mode row 88 pt tall, so they go
+                // horizontal, which keeps the row its usual height and puts
+                // the separation along the axis the finger is least precise.
+                HStack(spacing: 4) {
                     Button(action: onMoveUp) {
                         Image(systemName: "chevron.up")
+                            .frame(minWidth: minimumTapTarget, minHeight: minimumTapTarget)
+                            .contentShape(Rectangle())
                     }
                     .disabled(!canMoveUp)
                     .accessibilityLabel("Move \(spokenName) up")
@@ -77,6 +100,8 @@ struct ItemRow: View {
 
                     Button(action: onMoveDown) {
                         Image(systemName: "chevron.down")
+                            .frame(minWidth: minimumTapTarget, minHeight: minimumTapTarget)
+                            .contentShape(Rectangle())
                     }
                     .disabled(!canMoveDown)
                     .accessibilityLabel("Move \(spokenName) down")
@@ -87,7 +112,12 @@ struct ItemRow: View {
                 .foregroundStyle(skin.palette.chevron)
             }
         }
-        .padding(.vertical, 12)
+        // The controls above already stand 44 pt tall, which is about what a
+        // non-editing row comes to in total (marker/name plus this padding).
+        // Adding the padding on top of them as well would make edit mode's
+        // rows half again as tall as the rows they replace, so it comes off
+        // while editing and the row keeps its height either way.
+        .padding(.vertical, isEditing ? 0 : 12)
     }
 
     /// What VoiceOver calls this item in a control's label. Falls back for the
