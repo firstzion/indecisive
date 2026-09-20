@@ -24,27 +24,25 @@ final class ContrastTests: XCTestCase {
         return (lighter + 0.05) / (darker + 0.05)
     }
 
-    private let allSkins = [Skin.eightBall, Skin.prizeWheel, Skin.gashapon]
-
     /// WCAG AA for normal-size body text: 4.5:1. This is where the design
     /// actually failed — see PLAN.md §4.4 for the one the plan itself
     /// flagged for the 8-Ball; the Wheel's was found the same way.
     func testTertiaryTextMeetsAANormalTextContrastOnBackground() {
-        for skin in allSkins {
+        for skin in Skin.all {
             let ratio = contrastRatio(skin.palette.tertiaryText, skin.palette.background)
             XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(skin.name) tertiaryText contrast is \(ratio), fails WCAG AA")
         }
     }
 
     func testSecondaryTextMeetsAANormalTextContrastOnBackground() {
-        for skin in allSkins {
+        for skin in Skin.all {
             let ratio = contrastRatio(skin.palette.secondaryText, skin.palette.background)
             XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(skin.name) secondaryText contrast is \(ratio), fails WCAG AA")
         }
     }
 
     func testPrimaryTextMeetsAANormalTextContrastOnBackground() {
-        for skin in allSkins {
+        for skin in Skin.all {
             let ratio = contrastRatio(skin.palette.primaryText, skin.palette.background)
             XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(skin.name) primaryText contrast is \(ratio), fails WCAG AA")
         }
@@ -57,7 +55,7 @@ final class ContrastTests: XCTestCase {
     /// this pair to a standard that doesn't apply to how it's actually
     /// used.)
     func testOnAccentMeetsAALargeTextContrastOnAccent() {
-        for skin in allSkins {
+        for skin in Skin.all {
             let ratio = contrastRatio(skin.palette.onAccent, skin.palette.accent)
             XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) onAccent-on-accent contrast is \(ratio), fails WCAG AA large text")
         }
@@ -69,7 +67,7 @@ final class ContrastTests: XCTestCase {
     /// is the right bar here; the 8-Ball's stricter text-only use is
     /// checked separately below.
     func testChevronMeetsAAUIComponentContrastOnSurface() {
-        for skin in allSkins {
+        for skin in Skin.all {
             let ratio = contrastRatio(skin.palette.chevron, skin.palette.surface)
             XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) chevron-on-surface contrast is \(ratio), fails WCAG AA for a UI component")
         }
@@ -90,7 +88,7 @@ final class ContrastTests: XCTestCase {
     /// otherwise checks anything against. 14pt extrabold / 16pt display
     /// both qualify as WCAG "large text", so 3:1 is the applicable bar.
     func testRevealKickerMeetsAALargeTextContrastOnRevealBackground() {
-        for skin in allSkins {
+        for skin in Skin.all {
             let kicker = RevealKicker(skin: skin)
             let ratio = contrastRatio(kicker.kickerColor, skin.palette.revealBackground)
             XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) reveal kicker contrast is \(ratio), fails WCAG AA large text")

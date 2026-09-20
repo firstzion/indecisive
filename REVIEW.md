@@ -118,6 +118,13 @@ failures plus a real regression". Every future skin inherits that blind spot.
 `SkinTypographyTests.swift:38`, `SkinCopyTests.swift:72`, `SkinCopyTests.swift:84`
 (and the explicit trio in `SkinCopyTests.swift:7-10`)
 
+**Status: done.** `Skin.all` is in `Skin.swift`; all five literals and the explicit trio now
+use it, and `testAllListsEverySkinIDExactlyOnceInOrder` pins its contract so it can't quietly
+turn back into a hand-written list. Verified with a negative control: a deliberately broken
+skin added to `Skin.all` in a scratch copy failed 13 test methods — contrast ×6, fonts ×1,
+copy ×3 (including the contract test), snapshots ×3 — each message naming the skin. The
+diagnosis below is the state before the fix.
+
 Five separate literal arrays:
 
 ```swift
@@ -660,7 +667,7 @@ green on iOS 27.0** (17 of 18 images fail) — see P2-8.
 
 ### Phase 1 — make the safety net skin-complete (~half a day, highest value)
 
-1. Add `Skin.all` derived from `SkinID.allCases`; replace all five hard-coded arrays
+1. ✅ Add `Skin.all` derived from `SkinID.allCases`; replace all five hard-coded arrays
    (P0-2).
 2. Delete every non-exhaustive skin branch (P0-3, Appendix A) — promote to a token where
    one exists, otherwise rewrite as an exhaustive `switch` with no `default:`.

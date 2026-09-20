@@ -20,4 +20,13 @@ struct Skin: Identifiable, Sendable {
         case .gashapon: return .gashapon
         }
     }
+
+    /// Every shipped skin, in `SkinID.allCases` order.
+    ///
+    /// Derived, never hand-listed: a new `SkinID` case shows up here on its
+    /// own, so everything that iterates this — chiefly the tests (contrast,
+    /// fonts, copy, snapshots) — covers a new skin without anyone remembering
+    /// to add it to a literal, which is how a new skin used to slip past them.
+    /// Iterate this, not `[Skin.eightBall, …]`.
+    static let all: [Skin] = SkinID.allCases.map(Skin.skin(for:))
 }

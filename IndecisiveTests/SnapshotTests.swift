@@ -28,7 +28,6 @@ import SnapshotTesting
 @MainActor
 final class SnapshotTests: XCTestCase {
 
-    private let allSkins = [Skin.eightBall, Skin.prizeWheel, Skin.gashapon]
     private let sizes: [(name: String, category: UIContentSizeCategory)] = [
         ("default", .large),
         ("xxl", .extraExtraExtraLarge),
@@ -118,7 +117,7 @@ final class SnapshotTests: XCTestCase {
     // MARK: Home
 
     func testHomeSnapshots() throws {
-        for skin in allSkins {
+        for skin in Skin.all {
             let container = try makeHomeContainer()
             for (sizeName, category) in sizes {
                 let view = HomeView()
@@ -137,7 +136,7 @@ final class SnapshotTests: XCTestCase {
     // MARK: Detail
 
     func testDetailSnapshots() throws {
-        for skin in allSkins {
+        for skin in Skin.all {
             let (container, list) = try makeDetailList()
             for (sizeName, category) in sizes {
                 let view = NavigationStack { ListDetailView(list: list) }
@@ -156,7 +155,7 @@ final class SnapshotTests: XCTestCase {
     // MARK: Reveal
 
     func testRevealSnapshots() throws {
-        for skin in allSkins {
+        for skin in Skin.all {
             let (container, model) = try makeRevealModel()
             for (sizeName, category) in sizes {
                 let view = RevealView(model: model)

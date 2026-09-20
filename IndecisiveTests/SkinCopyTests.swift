@@ -4,9 +4,15 @@ import XCTest
 final class SkinCopyTests: XCTestCase {
 
     func testSkinForIDReturnsTheMatchingSkin() {
-        XCTAssertEqual(Skin.skin(for: .eightBall).id, .eightBall)
-        XCTAssertEqual(Skin.skin(for: .prizeWheel).id, .prizeWheel)
-        XCTAssertEqual(Skin.skin(for: .gashapon).id, .gashapon)
+        for id in SkinID.allCases {
+            XCTAssertEqual(Skin.skin(for: id).id, id)
+        }
+    }
+
+    func testAllListsEverySkinIDExactlyOnceInOrder() {
+        // Every skin-coverage test iterates `Skin.all`, so a skin missing,
+        // duplicated or reordered here is missing from all of them at once.
+        XCTAssertEqual(Skin.all.map(\.id), SkinID.allCases)
     }
 
     func testCountLinePluralizes() {
@@ -69,7 +75,7 @@ final class SkinCopyTests: XCTestCase {
         // PLAN.md Phase 6: "Empty states per skin" — a regression test that
         // each skin has its own strings rather than one falling back to a
         // shared default that would defeat the point.
-        let all = [Skin.eightBall, Skin.prizeWheel, Skin.gashapon]
+        let all = Skin.all
         for skin in all {
             XCTAssertFalse(skin.copy.emptyStateTitle.isEmpty, "\(skin.name) has no empty-state title")
             XCTAssertFalse(skin.copy.emptyStateMessage.isEmpty, "\(skin.name) has no empty-state message")
@@ -81,7 +87,7 @@ final class SkinCopyTests: XCTestCase {
     func testEveryHomeEmptyStateCopyIsNonEmptyAndSkinFlavored() {
         // Home's own "no lists yet" state — same regression-test shape as
         // the list-detail one above.
-        let all = [Skin.eightBall, Skin.prizeWheel, Skin.gashapon]
+        let all = Skin.all
         for skin in all {
             XCTAssertFalse(skin.copy.homeEmptyStateTitle.isEmpty, "\(skin.name) has no home empty-state title")
             XCTAssertFalse(skin.copy.homeEmptyStateMessage.isEmpty, "\(skin.name) has no home empty-state message")
