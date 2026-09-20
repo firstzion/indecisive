@@ -6,8 +6,9 @@ the app and both test targets, plus `project.yml`, the README and the generated 
 **This file lists only what is still open.** Everything that has been fixed — the red snapshot
 suite, the 18 silent skin branches, the 112 Swift 6 concurrency warnings, the unlinked animation
 timings, the missing edit-mode accessibility labels, the spiralling confetti, the untested reveal
-button contrast, the Phase 0–2 architecture work, and (2026-09-20) all three P0 entries — has been
-removed rather than marked done. The full diagnosis of each is in this file's git history.
+button contrast, the Phase 0–2 architecture work, and (2026-09-20) all three P0 entries plus five
+of the six P1s — has been removed rather than marked done. The full diagnosis of each is in this
+file's git history.
 
 File references are `path:line` against the working tree.
 
@@ -16,23 +17,19 @@ File references are `path:line` against the working tree.
 ## 0. Verified baseline
 
 Measured on this machine, not inferred. Destination: `iPhone 17 Pro, OS=26.5`.
-Re-verified 2026-09-20 after the P0 fixes.
+Re-verified 2026-09-20 after the P0 and P1 fixes.
 
 | Check | Result |
 |---|---|
 | `xcodegen generate` | ✅ succeeds |
 | Clean `xcodebuild … build-for-testing` | ✅ **0 Swift warnings** (everything compiled) |
-| Unit tests (`IndecisiveTests`) | ✅ **125 executed, 0 failures** |
+| Unit tests (`IndecisiveTests`) | ✅ **139 executed, 0 failures** |
 | UI tests (`IndecisiveUITests`) | ✅ **4 executed, 0 failures** |
 
 An incremental build prints no warnings for files it skips, so only a clean `build-for-testing`
 gives an honest count. (Three `appintentsmetadataprocessor` notices are tool output, not Swift
 diagnostics, and are expected.) Pin `OS=26.5`: an unpinned destination resolves to 27.0 here, where
 17 of the 24 snapshots fail (see P2-9).
-
-One figure below was measured with a throwaway probe test that hosted the real views and read their
-accessibility frames rather than estimating: the fact that the write-after-delete in P1-4 does *not*
-currently crash.
 
 ---
 
@@ -46,73 +43,25 @@ history of this file for what they said, and `ItemRow.swift` / `project.yml` for
 
 ## P1 — bugs and real risks
 
-### P1-1. A cancelled swipe leaves a Home row permanently un-tappable
+### P1-1. Unit tests are app-hosted, and a full run occasionally traps inside SwiftData
 
-**Where:** [`SwipeToDeleteRow.swift:57`](Indecisive/Skins/Components/SwipeToDeleteRow.swift:57),
-[`:70`](Indecisive/Skins/Components/SwipeToDeleteRow.swift:70)
+**Mitigated 2026-09-20, not fixed.** The one lead this entry listed as untried has now been
+tried: while hosting unit tests the app no longer builds its UI or opens the real on-disk store
+at all (`IndecisiveApp.isHostingUnitTests` — XCTest sets `XCTestConfigurationFilePath` in the
+host process, and a UI test's target app doesn't get it, so `IndecisiveUITests` is unaffected).
+That removes the second, unasked-for set of live `@Query` save observers from the test process,
+which was the leading suspect. **40 consecutive unit-suite runs since were clean** — suggestive
+against a baseline of 3 in 69, but not proof, and nowhere near enough runs to call it closed.
 
-`isSwiping` is set in `onChanged` and cleared **only** in `onEnded`. SwiftUI does not guarantee
-`onEnded` fires when a simultaneous gesture wins or the system interrupts the drag — and this
-gesture is deliberately `.simultaneousGesture` alongside a `ScrollView`, which is precisely the
-arrangement where a drag gets taken away. If that happens, `.disabled(true)` sticks for the life of
-the row and `offset` freezes mid-swipe with the red backdrop showing; the row can no longer be
-tapped or navigated into.
+**The real fix is still the one this entry started with: don't host the unit tests in the app.**
+There is no smaller version of it. On iOS you cannot `@testable import` an app module without
+the test bundle being hosted by that app, so unhosting means moving the app's code into a
+framework target that both the app and the tests link: a new `IndecisiveKit` target, every
+`@testable import Indecisive` updated, and an access-level pass over anything the thin app shell
+still reaches for. That is a structural change, not a patch, which is why it hasn't been done
+along with the rest of P1.
 
-`@GestureState` resets automatically when a gesture is cancelled. `@State` doesn't. Both `offset`
-and `isSwiping` want to be `@GestureState` (or to be reset from an `onChange`/`.onDisappear` safety
-net) rather than hand-cleared in `onEnded`.
-
-### P1-2. Accept and re-roll aren't debounced
-
-**Where:** [`RevealActions.swift:15`](Indecisive/Skins/Components/RevealActions.swift:15),
-[`RevealView.swift:121`](Indecisive/Features/Reveal/RevealView.swift:121),
-[`RevealModel.swift:35`](Indecisive/Features/Reveal/RevealModel.swift:35)
-
-`accept()` records a `Pick` and *then* calls `dismiss()`, which is not instantaneous. A double-tap
-on "LOCK IT IN" records two accepted picks — inflating both the list's history and the 8-Ball's
-"THE BALL HAS SPOKEN *n* TIMES" counter — from one user action.
-
-Shake-to-reroll ([`RevealView.swift:59`](Indecisive/Features/Reveal/RevealView.swift:59)) has no
-guard at all while the intro animation is still playing, unlike the CTA on the detail screen, which
-checks `revealModel == nil`. A shaky hand stacks re-rolls behind the visible one, each recording a
-rejection. `RevealModel` should make both operations idempotent for the life of one session, or the
-buttons should disable themselves after the first hit.
-
-### P1-3. Home materialises every `Pick` ever made to render one line
-
-**Where:** [`HomeView.swift:16`](Indecisive/Features/Home/HomeView.swift:16),
-[`:160`](Indecisive/Features/Home/HomeView.swift:160)
-
-`@Query private var picks: [Pick]` loads the entire pick history into memory so that `picks.count`
-can render the footer. It was changed from `PickService.totalPickCount` (an untracked `fetchCount`)
-for a good reason — the footer has to update when a pick is recorded elsewhere — but the fix traded
-a correctness bug for an unbounded one.
-
-Nothing ever prunes `Pick` rows, either. There is no history UI, no retention policy and no cap, so
-both the store and this fetch grow for the life of the install, and every re-roll adds a row. Wants
-either a `fetchCount` behind something observable, or a `@Query` that doesn't materialise the rows.
-
-### P1-4. A write is ordered after a delete
-
-**Where:** [`ListDetailView.swift:336`](Indecisive/Features/Detail/ListDetailView.swift:336),
-[`:74`](Indecisive/Features/Detail/ListDetailView.swift:74),
-[`:326`](Indecisive/Features/Detail/ListDetailView.swift:326)
-
-`deleteList()` calls `dismiss()` and defers `context.delete(list)` by one run-loop turn, to keep
-`body` from re-evaluating against a deleted object. But `.onDisappear(perform: commitEdits)` fires
-*after* that — and `commitEdits()` reads **and writes** `list.name` and every `item.name` on the
-object that was just deleted.
-
-**Probed, and it does not currently crash**: against an in-memory store, reading and writing a
-deleted-then-saved `PickList` succeeded. So this is a latent hazard, not a reproduced failure — but
-ordering a write after a delete is still wrong, and it survives only on SwiftData's tolerance.
-
-Separately, and regardless of deletion: `commitEdits()` runs on **every** back-navigation, not just
-after an edit. Leaving a list you only looked at rewrites its name and every item name to the same
-values, dirtying the model and waking autosave and every `@Query` that observes it. Gate it on
-"was actually editing".
-
-### P1-5. Unit tests are app-hosted and intermittently trap inside SwiftData
+The diagnosis, and what has already been ruled out:
 
 `IndecisiveTests` is hosted by the real app, so its live `@Query` views coexist with the in-memory
 containers the tests create and save. **This recurs**: three crashes in 69 full runs on 2026-09-20,
@@ -130,27 +79,11 @@ Already ruled out: the cold start (four forced fresh installs, no crash; the sna
 none in 40 runs), and a hosted view merely outliving its container (a 25-round probe). **Retaining
 every test container does not fix it and is not safe to ship** — 100 runs were clean, but 300 crashed
 at run 180 inside Core Data's `notify_register_plain`, presumably resource exhaustion from thousands
-of retained containers. Not yet tried: the app keeps its own Home (a `@Query` on the *on-disk* store)
-alive inside the test process, and its observers are the likeliest callee, so suppressing the app's
-UI while it hosts unit tests would test that.
+of retained containers. The remaining lead — that the app keeps its own Home (a `@Query` on the
+*on-disk* store) alive inside the test process, and its observers are the likeliest callee — is what
+the mitigation above acts on.
 
-The real fix is the one this entry has always ended with: **don't host the unit tests in the app.**
 A suite that can fail without naming a test is one people learn to re-run instead of trust.
-
-### P1-6. The happy-path UI test mutates the machine's real `UserDefaults`
-
-**Where:** [`HappyPathTests.swift:54`](IndecisiveUITests/HappyPathTests.swift:54),
-[`:135`](IndecisiveUITests/HappyPathTests.swift:135)
-
-`testCreateListAddItemsPickRerollAcceptThenSwitchSkinAndStatePersists` deliberately omits `-skin`
-so the skin switch it performs is real — which means it **persists to the simulator's defaults**.
-It restores the Wheel at the end, but only on the pass path: a failure anywhere before the last
-block leaves the machine on the 8-Ball, and the next run starts from different state. The test also
-can't be run in parallel with itself or repeated safely.
-
-`IndecisiveApp`'s own doc comment promises a run "never touches, or depends on, real persisted app
-data". The store honours that; the skin doesn't. Either drive the switch through a launch argument
-the app re-reads, or restore in a `tearDown` that runs on failure too.
 
 ---
 
@@ -343,12 +276,14 @@ The motion is fixed and tested; the *contents* were left as they were:
 
 ## Suggested order
 
-1. **P1-1 and P1-2** — the two a real user actually hits: a row that stops responding, and one tap
-   recorded as two.
-2. **P1-5 and P2-3** — until the unit tests are unhosted and the CRUD is testable, a green run isn't
-   fully trustworthy evidence.
-3. **P2-1 and P2-2** — cheap, and they stop the suite rotting silently.
-4. **P1-3 and P1-4** — both grow worse the longer the app is used, but neither bites on day one.
+1. **P2-1 and P2-2** — cheap, and they stop the suite rotting silently. With no CI, the 24
+   pixel-exact snapshots protect nothing unless someone remembers to run them on a pinned OS.
+2. **P2-3** — the app's own CRUD still isn't reachable from a test. That's the largest remaining
+   hole in what a green run actually proves.
+3. **P1-1** — the structural fix (a framework target, so the unit tests need no host). Worth doing
+   *after* P2-3, since both touch how the tests are built, and worth watching the soak in the
+   meantime to see whether the mitigation held.
+4. **P2-5** — one contrast test away from covering the largest text in the app.
 5. Everything else as it comes up.
 
 ---
