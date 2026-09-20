@@ -6,9 +6,9 @@ the app and both test targets, plus `project.yml`, the README and the generated 
 **This file lists only what is still open.** Everything that has been fixed — the red snapshot
 suite, the 18 silent skin branches, the 112 Swift 6 concurrency warnings, the unlinked animation
 timings, the missing edit-mode accessibility labels, the spiralling confetti, the untested reveal
-button contrast, the Phase 0–2 architecture work, and (2026-09-20) all three P0 entries plus five
-of the six P1s — has been removed rather than marked done. The full diagnosis of each is in this
-file's git history.
+button contrast, the Phase 0–2 architecture work, and (2026-09-20) all three P0 entries and all
+six P1s — has been removed rather than marked done. The full diagnosis of each is in this file's
+git history.
 
 File references are `path:line` against the working tree.
 
@@ -17,7 +17,7 @@ File references are `path:line` against the working tree.
 ## 0. Verified baseline
 
 Measured on this machine, not inferred. Destination: `iPhone 17 Pro, OS=26.5`.
-Re-verified 2026-09-20 after the P0 and P1 fixes.
+Re-verified 2026-09-20 after the P0 and P1 fixes, including the `IndecisiveKit` split.
 
 | Check | Result |
 |---|---|
@@ -43,47 +43,20 @@ history of this file for what they said, and `ItemRow.swift` / `project.yml` for
 
 ## P1 — bugs and real risks
 
-### P1-1. Unit tests are app-hosted, and a full run occasionally traps inside SwiftData
+**Empty as of 2026-09-20.** The last entry — app-hosted unit tests — is fixed: the app's code
+moved into an `IndecisiveKit` framework, so `IndecisiveTests` links it directly and no longer runs
+inside the app. See the git history of this file for the investigation, and `project.yml` for the
+target layout.
 
-**Mitigated 2026-09-20, not fixed.** The one lead this entry listed as untried has now been
-tried: while hosting unit tests the app no longer builds its UI or opens the real on-disk store
-at all (`IndecisiveApp.isHostingUnitTests` — XCTest sets `XCTestConfigurationFilePath` in the
-host process, and a UI test's target app doesn't get it, so `IndecisiveUITests` is unaffected).
-That removes the second, unasked-for set of live `@Query` save observers from the test process,
-which was the leading suspect. **40 consecutive unit-suite runs since were clean** — suggestive
-against a baseline of 3 in 69, but not proof, and nowhere near enough runs to call it closed.
+Two things that change fell out of it and are worth knowing:
 
-**The real fix is still the one this entry started with: don't host the unit tests in the app.**
-There is no smaller version of it. On iOS you cannot `@testable import` an app module without
-the test bundle being hosted by that app, so unhosting means moving the app's code into a
-framework target that both the app and the tests link: a new `IndecisiveKit` target, every
-`@testable import Indecisive` updated, and an access-level pass over anything the thin app shell
-still reaches for. That is a structural change, not a patch, which is why it hasn't been done
-along with the rest of P1.
-
-The diagnosis, and what has already been ruled out:
-
-`IndecisiveTests` is hosted by the real app, so its live `@Query` views coexist with the in-memory
-containers the tests create and save. **This recurs**: three crashes in 69 full runs on 2026-09-20,
-none in ~20 the day before, and first seen 2026-09-19. My run for this review was clean.
-
-Every occurrence is `EXC_BREAKPOINT` on the main thread in `SnapshotTests.makeRevealModel()` or
-`makeHomeContainer()`, at the `context.save()`: the save posts a notification, a `_SwiftData_SwiftUI`
-observer calls into SwiftData, and SwiftData traps. XCTest then restarts the host and prints
-"Restarting after unexpected exit, crash, or test timeout" with **zero assertion failures** and exit
-code 65 — so the failed run names no test. `~/Library/Logs/DiagnosticReports/Indecisive-*.ips` is
-the only place that does. Re-run before investigating anything else; `-test-iterations` stops at the
-crash and reports partial totals.
-
-Already ruled out: the cold start (four forced fresh installs, no crash; the snapshot suite alone,
-none in 40 runs), and a hosted view merely outliving its container (a 25-round probe). **Retaining
-every test container does not fix it and is not safe to ship** — 100 runs were clean, but 300 crashed
-at run 180 inside Core Data's `notify_register_plain`, presumably resource exhaustion from thousands
-of retained containers. The remaining lead — that the app keeps its own Home (a `@Query` on the
-*on-disk* store) alive inside the test process, and its observers are the likeliest callee — is what
-the mitigation above acts on.
-
-A suite that can fail without naming a test is one people learn to re-run instead of trust.
+- **Fonts are registered in code now** (`FontRegistry.ensureRegistered()`), because `UIAppFonts`
+  only reads the *main* bundle and a test bundle no longer has one. Without it every snapshot
+  would render in the system font.
+- **A `NavigationStack` doesn't build its content** in a plain `UIWindow` with no host app — its
+  `UINavigationTransitionView` stays empty. Rendering is unaffected (the snapshot tests go through
+  the library's own hosting), but a test that walks a whole screen's *view hierarchy* can't host
+  one. `AccessibilityTests` now hosts the row it is actually asserting about.
 
 ---
 
@@ -110,8 +83,8 @@ it automatically, on a pinned destination, on every push.
 `createList` ([`HomeView.swift:164`](Indecisive/Features/Home/HomeView.swift:164)) are private
 methods on `View` structs.
 
-125 unit tests cover tokens, copy, motion, contrast, confetti maths and `PickService` — and not one
-list or item edit. Creating, renaming, reordering and deleting *is* the app. Only the UI tests touch
+139 unit tests cover tokens, copy, motion, contrast, confetti maths, the swipe thresholds and
+`PickService` — and not one list or item edit. Creating, renaming, reordering and deleting *is* the app. Only the UI tests touch
 it, at 74 s a run. `PickService.choose` is the pattern that works here: a pure function, injectable,
 tested directly. These want the same treatment.
 
@@ -190,7 +163,15 @@ also calls `.uppercased()` with no locale. `SWIFT_EMIT_LOC_STRINGS` is already o
 
 ### P2-9. The snapshot images only hold on iOS 26.5, and Detail's don't cover its toolbar
 
-On iOS 27.0, 17 of the 24 snapshots fail — on both devices tried (iPhone 18 Pro, iPhone 17) while an
+**The insets are now stated, at least.** The strategy used to be `.fixed(width:height:)`, which the
+library turns into a config with `safeArea: .zero` — and yet every recorded image had a device-sized
+inset at the top, because the unit tests ran inside the app and the host window's real safe area
+leaked in. Unhosting made that visible (every Home and Detail image shifted up by 107 pt), and the
+strategy now names the iPhone 17 Pro's insets explicitly, so the images depend on that number rather
+than on whether a host app exists. The images were re-recorded once, and are pixel-identical to the
+old ones apart from the inset.
+
+The OS dependence below is separate and still open. On iOS 27.0, 17 of the 24 snapshots fail — on both devices tried (iPhone 18 Pro, iPhone 17) while an
 iPhone 17 on 26.5 passes, so it is the OS, not the device. Reveal is near-identical (0.02–0.9 % of
 pixels); Home and Detail differ by 16–40 % because `NavigationStack` lays out differently: content
 sits ~50 pt lower, and Detail draws its toolbar.
@@ -279,12 +260,10 @@ The motion is fixed and tested; the *contents* were left as they were:
 1. **P2-1 and P2-2** — cheap, and they stop the suite rotting silently. With no CI, the 24
    pixel-exact snapshots protect nothing unless someone remembers to run them on a pinned OS.
 2. **P2-3** — the app's own CRUD still isn't reachable from a test. That's the largest remaining
-   hole in what a green run actually proves.
-3. **P1-1** — the structural fix (a framework target, so the unit tests need no host). Worth doing
-   *after* P2-3, since both touch how the tests are built, and worth watching the soak in the
-   meantime to see whether the mitigation held.
-4. **P2-5** — one contrast test away from covering the largest text in the app.
-5. Everything else as it comes up.
+   hole in what a green run actually proves, and the framework split has just made that kind of
+   test much cheaper to write.
+3. **P2-5** — one contrast test away from covering the largest text in the app.
+4. Everything else as it comes up.
 
 ---
 
