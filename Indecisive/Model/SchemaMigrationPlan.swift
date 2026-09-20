@@ -9,10 +9,10 @@ import SwiftData
 /// renamed/added/removed property, a new model type, …) has an actual
 /// migration path to slot into, instead of shipping against an unversioned
 /// store that SwiftData has no story for upgrading later.
-enum IndecisiveSchemaV1: VersionedSchema {
-    static let versionIdentifier = Schema.Version(1, 0, 0)
+public enum IndecisiveSchemaV1: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(1, 0, 0)
 
-    static var models: [any PersistentModel.Type] {
+    public static var models: [any PersistentModel.Type] {
         [PickList.self, PickItem.self, Pick.self]
     }
 }
@@ -20,12 +20,12 @@ enum IndecisiveSchemaV1: VersionedSchema {
 /// No stages yet — there's only one schema version so far. The next model
 /// change adds a `IndecisiveSchemaV2` and a `MigrationStage` here describing
 /// how to get from V1 to V2, rather than starting this file from scratch.
-enum IndecisiveMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] {
+public enum IndecisiveMigrationPlan: SchemaMigrationPlan {
+    public static var schemas: [any VersionedSchema.Type] {
         [IndecisiveSchemaV1.self]
     }
 
-    static var stages: [MigrationStage] {
+    public static var stages: [MigrationStage] {
         []
     }
 }

@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// Locks in PLAN.md Phase 6's contrast fixes as a regression test — a
 /// future token change that silently drops a color back below WCAG AA

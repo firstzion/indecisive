@@ -1,7 +1,7 @@
 import XCTest
 import SwiftUI
 import SwiftData
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// What assistive technology is offered, read from SwiftUI's own accessibility tree.
 ///
@@ -83,21 +83,36 @@ final class AccessibilityTests: XCTestCase {
 
     // MARK: Home
 
+    /// This hosts the row the way `HomeView` composes it, rather than hosting
+    /// `HomeView` itself.
+    ///
+    /// It used to host the whole screen, which worked only because the unit
+    /// tests ran inside the app. Now that they link `IndecisiveKit` directly
+    /// there is no host application, and a `NavigationStack` put into a
+    /// plain `UIWindow` never runs its appearance transition: its
+    /// `UINavigationTransitionView` stays empty, so Home's content is never
+    /// built and the tree comes back with nothing in it. (Rendering is
+    /// unaffected — the snapshot tests go through the library's own hosting
+    /// and still draw the full screen.) Forcing the transition by hand
+    /// doesn't help.
+    ///
+    /// What this test is actually about is the row: that the delete a swipe
+    /// offers is also offered as a named action, because swiping is a gesture
+    /// VoiceOver and Switch Control can't perform. That property belongs to
+    /// `SwipeToDeleteRow` + `ListCard`, and is tested here directly. That
+    /// `HomeView` really does wrap its rows this way is covered end to end by
+    /// `HappyPathTests.testSwipeToDeleteListAsksForConfirmationFirst`.
     func testHomeRowOffersADeleteActionToAssistiveTechnology() throws {
-        let container = try TestSupport.makeInMemoryContainer()
         let list = PickList(name: "Lunch Places", flavorIndex: 0, sortOrder: 0)
         list.items = [PickItem(name: "Pho Palace", sortOrder: 0)]
-        container.mainContext.insert(list)
-        try container.mainContext.save()
 
-        let home = HomeView()
-            .modelContainer(container)
-            .skin(.prizeWheel)
-            .environment(\.indDisableIdleAnimationsForTesting, true)
-        let nodes = accessibilityNodes(of: home) { $0.contains { $0.label.hasPrefix("Lunch Places") } }
+        let row = SwipeToDeleteRow(skin: .prizeWheel, onDeleteRequested: {}) {
+            ListCard(skin: .prizeWheel, list: list)
+        }
+        let nodes = accessibilityNodes(of: row) { $0.contains { $0.label.hasPrefix("Lunch Places") } }
 
-        let row = try XCTUnwrap(nodes.first { $0.label.hasPrefix("Lunch Places") }, "Home should expose the list's row")
-        XCTAssertEqual(row.actions, ["Delete"], "swiping is the only sighted way to delete a list here; VoiceOver and Switch Control need the same request as an action")
+        let card = try XCTUnwrap(nodes.first { $0.label.hasPrefix("Lunch Places") }, "the row should expose the list")
+        XCTAssertEqual(card.actions, ["Delete"], "swiping is the only sighted way to delete a list here; VoiceOver and Switch Control need the same request as an action")
     }
 
     // MARK: Item rows in edit mode

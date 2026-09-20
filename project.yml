@@ -20,17 +20,59 @@ packages:
     from: "1.17.0"
 
 targets:
-  Indecisive:
-    type: application
+  # Everything except the `@main` entry point. It lives in a framework so the
+  # unit tests can link it directly instead of being hosted by the app: on
+  # iOS you cannot `@testable import` an *app* module without the test bundle
+  # running inside that app, which meant every unit test run also launched the
+  # real app — seeding the real on-disk store and leaving Home's `@Query`
+  # observers live in the test process, alongside the in-memory containers the
+  # tests themselves create. That is what the intermittent `EXC_BREAKPOINT`
+  # inside a `_SwiftData_SwiftUI` save observer was blamed on (REVIEW.md).
+  #
+  # The source folders deliberately keep their paths. Moving them under
+  # `IndecisiveKit/` would be tidier, but the module boundary is what does the
+  # work here, and a rename of every file in the app buys nothing.
+  IndecisiveKit:
+    type: framework
     platform: iOS
     deploymentTarget: "17.0"
     sources:
       - path: Indecisive/App
+        excludes:
+          - IndecisiveApp.swift
       - path: Indecisive/Model
       - path: Indecisive/Logic
       - path: Indecisive/Skins
       - path: Indecisive/Features
-      - path: Indecisive/Resources
+      # The fonts come with the framework rather than the app, so a test
+      # bundle that never launches the app still has them. They are no longer
+      # registered by `UIAppFonts` (which only reads the *main* bundle) but by
+      # `FontRegistry.ensureRegistered()`, from this bundle, at launch.
+      - path: Indecisive/Resources/Fonts
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.indecisive.app.kit
+        PRODUCT_NAME: IndecisiveKit
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 29DR9P3A6R
+        DEFINES_MODULE: YES
+        # It ships inside the app; there is nothing to install on its own.
+        SKIP_INSTALL: YES
+
+  Indecisive:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    # Just the `@main` App struct and the asset catalog. The asset catalog
+    # stays here because all three of its entries are consumed by the app —
+    # `AppIcon` and `AccentColor` by build settings, `LaunchBackground` by
+    # `UILaunchScreen` — and no code looks anything up by name.
+    sources:
+      - path: Indecisive/App/IndecisiveApp.swift
+      - path: Indecisive/Resources/Assets.xcassets
+    dependencies:
+      - target: IndecisiveKit
     info:
       path: Indecisive/Info.plist
       properties:
@@ -58,18 +100,12 @@ targets:
         # rejects that mismatch.
         UIRequiredDeviceCapabilities: [arm64]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        UIAppFonts:
-          - "SpaceGrotesk[wght].ttf"
-          - "WorkSans[wght].ttf"
-          - "DMMono-Regular.ttf"
-          - "DMMono-Medium.ttf"
-          - "LilitaOne-Regular.ttf"
-          - "TitanOne-Regular.ttf"
-          - "MochiyPopOne-Regular-Latin.ttf"
-          - "MPLUSRounded1c-Medium-Latin.ttf"
-          - "MPLUSRounded1c-Bold-Latin.ttf"
-          - "BagelFatOne-Regular-Latin.ttf"
-          - "Nunito[wght].ttf"
+        # No `UIAppFonts` any more. It only registers fonts found in the
+        # *main* bundle, and the fonts now ship with `IndecisiveKit` so that
+        # a test bundle which never launches the app still gets them —
+        # without that, every snapshot would render in the system font.
+        # `FontRegistry.ensureRegistered()` registers them from the framework
+        # bundle instead, at launch and before any font lookup.
     settings:
       base:
         # Set explicitly (so `bundleIdPrefix` above, which would otherwise
@@ -113,8 +149,14 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: IndecisiveTests
+    # Depends on the framework, not the app — which is the whole point. A
+    # unit-test target that depends on an application target gets a
+    # `TEST_HOST`, and XCTest then launches the real app to run the tests
+    # inside it. Linking the framework directly means no host app, no second
+    # `ModelContainer` on the real on-disk store, and no live `@Query`
+    # observers belonging to a screen no test asked for.
     dependencies:
-      - target: Indecisive
+      - target: IndecisiveKit
       - package: SnapshotTesting
     settings:
       base:

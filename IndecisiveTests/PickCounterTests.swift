@@ -1,6 +1,6 @@
 import XCTest
 import SwiftData
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// `PickCounter` replaced a `@Query` that loaded every `Pick` ever recorded
 /// in order to count them. The count has to stay exactly as live as that

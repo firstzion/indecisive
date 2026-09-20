@@ -1,6 +1,6 @@
 import XCTest
 import SwiftData
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// Tests for the SwiftData-backed half of `PickService`: reading a real
 /// `PickList`, writing `Pick` history, and the global counter.

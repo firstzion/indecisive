@@ -2,7 +2,7 @@ import XCTest
 import SwiftUI
 import SwiftData
 import SnapshotTesting
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// PLAN.md Phase 7: {Home, Detail, Reveal} × {every skin} × {default, XXL Dynamic
 /// Type}, rendered at the design's own 393×852 frame so they can be compared
@@ -32,7 +32,28 @@ final class SnapshotTests: XCTestCase {
         ("default", .large),
         ("xxl", .extraExtraExtraLarge),
     ]
-    private let frame = SwiftUISnapshotLayout.fixed(width: 393, height: 852)
+    /// The design's own 393 × 852 frame, with the iPhone 17 Pro's safe-area
+    /// insets stated explicitly.
+    ///
+    /// It used to be `.fixed(width:height:)`, which the library turns into a
+    /// config with `safeArea: .zero` — and yet the recorded images all had a
+    /// device-sized inset at the top. That inset was never asked for: it
+    /// leaked in from the host application's real window, because the unit
+    /// tests ran inside the app. Once they stopped (they link `IndecisiveKit`
+    /// directly now), the zero the config had always specified was finally
+    /// honoured and every Home and Detail image shifted up by ~107 pt.
+    ///
+    /// Naming the insets here keeps the screens looking like screens — a
+    /// status bar's worth of room at the top, a home indicator's at the
+    /// bottom, which is what the mockups these are held up against show — and
+    /// makes the images depend on this number instead of on whether a host
+    /// app happens to exist.
+    private let frame = SwiftUISnapshotLayout.device(
+        config: ViewImageConfig(
+            safeArea: UIEdgeInsets(top: 59, left: 0, bottom: 34, right: 0),
+            size: CGSize(width: 393, height: 852)
+        )
+    )
 
     private func traits(_ category: UIContentSizeCategory) -> UITraitCollection {
         UITraitCollection(preferredContentSizeCategory: category)

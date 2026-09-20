@@ -1,6 +1,6 @@
 import XCTest
 import SwiftData
-@testable import Indecisive
+@testable import IndecisiveKit
 
 final class SeedDataTests: XCTestCase {
 

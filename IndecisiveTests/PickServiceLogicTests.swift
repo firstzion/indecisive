@@ -1,5 +1,5 @@
 import XCTest
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// Tests for `PickService.choose`, the pure random-selection algorithm.
 /// Uses `SeededGenerator` throughout so every run is bit-for-bit

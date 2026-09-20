@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// The reveal's timings, haptics and idle motions — what the snapshot tests
 /// can't see: they run under Reduce Motion, where every one of these collapses

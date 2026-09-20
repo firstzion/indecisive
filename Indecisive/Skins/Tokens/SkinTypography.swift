@@ -72,6 +72,14 @@ struct SkinTypography: Sendable {
     /// rather than silently dropping to the system font — a missing weight
     /// should be visibly wrong in a screenshot, not invisibly wrong.
     func name(for role: Role, weight: SkinFontWeight) -> String {
+        // Every custom font in the app is requested through here, which makes
+        // this the one place that can guarantee the files are registered
+        // before anyone asks for them by name. It matters for a test bundle,
+        // which links this framework but never launches the app and so never
+        // reaches `IndecisiveApp.init()`. Idempotent and effectively free
+        // after the first call — see `FontRegistry.ensureRegistered()`.
+        FontRegistry.ensureRegistered()
+
         let table: [SkinFontWeight: String]
         switch role {
         case .display: table = displayNames

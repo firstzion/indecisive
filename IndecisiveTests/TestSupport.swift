@@ -1,6 +1,6 @@
 import Foundation
 import SwiftData
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// A fresh, isolated in-memory SwiftData store for each test that needs one —
 /// nothing is written to disk and nothing leaks between tests.

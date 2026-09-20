@@ -1,5 +1,5 @@
 import XCTest
-@testable import Indecisive
+@testable import IndecisiveKit
 
 final class SkinTypographyTests: XCTestCase {
 

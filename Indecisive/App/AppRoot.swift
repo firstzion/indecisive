@@ -12,7 +12,7 @@ import SwiftUI
 /// chosen" from `skinIDRaw` itself — `@AppStorage` can't distinguish "never
 /// set" from "explicitly set to the same value as the default", so there's
 /// no way to tell those apart from `skinIDRaw` alone.
-struct AppRoot: View {
+public struct AppRoot: View {
     @AppStorage(SkinID.storageKey) private var skinIDRaw: String = SkinID.defaultID.rawValue
     @AppStorage(SkinID.hasChosenStorageKey) private var hasChosenSkin: Bool = true
 
@@ -20,7 +20,9 @@ struct AppRoot: View {
         Skin.skin(for: SkinID.resolving(skinIDRaw))
     }
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         Group {
             if hasChosenSkin {
                 RootView()

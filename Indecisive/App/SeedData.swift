@@ -6,8 +6,8 @@ import SwiftData
 /// Salads, Big Jim's Burgers, The Dumpling Cart) so the app is never empty
 /// on first launch. A no-op if any list already exists, so it's safe to
 /// call unconditionally at every launch.
-enum SeedData {
-    static func seedIfNeeded(context: ModelContext) {
+public enum SeedData {
+    public static func seedIfNeeded(context: ModelContext) {
         let existingCount = (try? context.fetchCount(FetchDescriptor<PickList>())) ?? 0
         guard existingCount == 0 else { return }
 

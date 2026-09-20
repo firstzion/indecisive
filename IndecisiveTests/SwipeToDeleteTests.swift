@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// The decisions a Home-row swipe makes. They used to live inline in
 /// `SwipeToDeleteRow`'s gesture callbacks, where nothing could reach them —

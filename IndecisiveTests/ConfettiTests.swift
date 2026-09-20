@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// The confetti's motion — what the snapshot tests can't see (Reduce Motion hides the
 /// confetti entirely) and what an implicit animation wouldn't let a test inspect. Its

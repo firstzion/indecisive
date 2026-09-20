@@ -1,10 +1,12 @@
+import CoreText
 import UIKit
 
 /// Central list of every custom font PostScript name the app expects to be able to load,
-/// plus a startup check (DEBUG only) that each one actually resolves.
+/// the code that registers the files themselves, and a startup check (DEBUG only) that
+/// each name actually resolves.
 ///
 /// Space Grotesk and Work Sans below are Google Fonts *variable* fonts bundled as a single
-/// `.ttf` per family (registered via `UIAppFonts` in Info.plist). iOS exposes each named
+/// `.ttf` per family (registered by `ensureRegistered()`). iOS exposes each named
 /// instance defined in the font's `fvar` table as its own usable font name, but the
 /// exact naming isn't always predictable from the source file alone — Space Grotesk's
 /// non-Regular-default instances come out as "SpaceGrotesk-Light_Medium" (base
@@ -22,7 +24,40 @@ import UIKit
 ///
 /// Nunito is a variable font like the two above, but its named instances declare their own
 /// PostScript names ("Nunito-SemiBold", …) — unlike Space Grotesk's — so they come out clean.
-enum FontRegistry {
+public enum FontRegistry {
+
+    /// Registers every bundled `.ttf` with Core Text, once per process.
+    ///
+    /// The fonts used to be listed in the app's `UIAppFonts`, which iOS reads
+    /// at launch — but only from the **main** bundle. Once the app's code moved
+    /// into `IndecisiveKit` so the unit tests could link it without a host app,
+    /// the fonts came with it, and a test bundle that never launches the app has
+    /// no main bundle to read them from. Every snapshot would have rendered in
+    /// the system font, which the suite would have caught, loudly and
+    /// confusingly, as 24 unrelated-looking image diffs.
+    ///
+    /// Registering from this framework's own bundle works for both: the app
+    /// calls it at launch, and anything else that asks for a skin font gets it
+    /// on the way through (`SkinTypography.name(for:weight:)`).
+    public static func ensureRegistered() {
+        _ = registered
+    }
+
+    /// The work itself, done once — a lazy `static let` is initialised exactly
+    /// once per process, and thread-safely.
+    private static let registered: Void = {
+        let bundle = Bundle(for: BundleToken.self)
+        for url in bundle.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? [] {
+            var error: Unmanaged<CFError>?
+            // `false` here is usually "this file is already registered",
+            // which is not a problem worth reporting. A genuinely broken
+            // font shows up in `verifyAllResolve()` instead, by name.
+            _ = CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error)
+        }
+    }()
+
+    /// Only here so `Bundle(for:)` has a class to find this framework by.
+    private final class BundleToken {}
 
     static let spaceGrotesk: [String] = [
         "SpaceGrotesk-Light", "SpaceGrotesk-Light_Regular", "SpaceGrotesk-Light_Medium", "SpaceGrotesk-Light_Bold",
@@ -58,8 +93,9 @@ enum FontRegistry {
     /// Runs only in debug builds; fails an assertion (and prints the real family
     /// listing) if any name is missing, so a naming mistake is caught immediately
     /// on first launch rather than showing up as silent system-font fallback.
-    static func verifyAllResolve() {
+    public static func verifyAllResolve() {
         #if DEBUG
+        ensureRegistered()
         var missing: [String] = []
         for name in all where UIFont(name: name, size: 12) == nil {
             missing.append(name)

@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// Per-skin decisions the snapshot tests can't see.
 ///

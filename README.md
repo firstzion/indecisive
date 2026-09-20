@@ -84,9 +84,10 @@ images written to `<dir>/SnapshotTests/`, ready to compare side by side.
 
 ```
 Indecisive/
-├─ App/            Entry point, root view, font registry
+├─ App/            Root view, seed data, font registry, UIKit bridges
+│  └─ IndecisiveApp.swift   The @main entry point — the app target's only source file
 ├─ Model/          SwiftData models (Phase 1)
-├─ Logic/          PickService — the random-pick logic (Phase 1)
+├─ Logic/          PickService, PickCounter — the pick logic (Phase 1)
 ├─ Skins/          Skin tokens (palette, type, shape, copy, motion, reveal, traits) + the components that draw them
 ├─ Features/       Home, Detail, Reveal, SkinPicker screens (Phase 3+)
 └─ Resources/
@@ -98,6 +99,28 @@ design/            Reference-only export of the Claude Design mockups (every ski
                     direction, including Gashapon and Crystal Ball) — not app code.
 ```
 
+### Targets
+
+Everything above except `IndecisiveApp.swift` and `Assets.xcassets` builds into
+**`IndecisiveKit`**, a framework; the **`Indecisive`** app target is the `@main`
+struct and the asset catalog, and links it. The folders keep their paths — the
+module boundary is what matters, not where the files sit.
+
+The split exists so **`IndecisiveTests` can link the framework instead of being
+hosted by the app**. On iOS you cannot `@testable import` an *app* module without
+the test bundle running inside that app, which meant every unit test run also
+launched the whole app — seeding the real on-disk store and leaving a second set
+of live `@Query` observers in the test process. See [REVIEW.md](REVIEW.md).
+
+Two consequences worth knowing:
+
+- **Fonts are registered in code**, not by `UIAppFonts`, which only reads the main
+  bundle. `FontRegistry.ensureRegistered()` registers them from the framework's own
+  bundle, so a test bundle that never launches the app still has them.
+- **A `NavigationStack` won't build its content** in a plain `UIWindow` without a
+  host app, so a test that needs a whole screen's view hierarchy (rather than its
+  rendering, which is fine) has to host the part it's actually testing.
+
 ## Adding a skin
 
 Everything a skin decides lives in one token file; the compiler and the tests do the checklist.
@@ -107,7 +130,9 @@ Everything a skin decides lives in one token file; the compiler and the tests do
    `PrimaryCTAGlyph`, `RevealGlow`, `RevealActionGlyph` and `RevealCentrepiece` — each need an arm.
 3. Write `Skins/<Name>.swift`. A `Skin` takes a `palette`, `type`, `shape`, `copy`, `motion`, `reveal` and
    `traits`, and none of their initialisers has a default: a decision you leave out doesn't compile.
-4. Add its fonts to `FontRegistry` and `project.yml`, then run `xcodegen generate`.
+4. Add its fonts to `Indecisive/Resources/Fonts/` and to `FontRegistry`, then run
+   `xcodegen generate`. (No `project.yml` font list any more — everything in that folder
+   ships with `IndecisiveKit` and is registered from there.)
 5. Run the tests. Contrast, fonts, copy and behaviour cover the new skin automatically (they iterate
    `Skin.all`); record its snapshot images (see [Snapshot tests](#snapshot-tests)).
 
@@ -122,8 +147,8 @@ Nunito) are variable fonts shipped as a single `.ttf`. Mochiy Pop One, M PLUS
 Rounded 1c and Bagel Fat One are trimmed to Latin characters (the `-Latin.ttf`
 files): the originals include Japanese or Korean and run 1.5–5 MB each, and the
 OFL reserves no font name for any of them, so trimming is allowed.
-`FontRegistry.swift` lists every
-PostScript name the app uses and asserts on launch (DEBUG only) that each one
-actually resolves — variable font named-instance naming isn't always
+`FontRegistry.swift` registers every
+bundled `.ttf` with Core Text at launch, lists every PostScript name the app uses,
+and asserts on launch (DEBUG only) that each one actually resolves — variable font named-instance naming isn't always
 predictable from the font file alone, so this check is the source of truth,
 not the table in PLAN.md.

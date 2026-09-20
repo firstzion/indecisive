@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import IndecisiveKit
 
 @main
 struct IndecisiveApp: App {
@@ -32,30 +33,15 @@ struct IndecisiveApp: App {
         ProcessInfo.processInfo.arguments.contains("-UITesting")
     }
 
-    /// `true` when this process is hosting a **unit** test run.
+    /// The app's store under test. Only UI tests launch the app at all now —
+    /// unit tests link `IndecisiveKit` directly and never come through here.
     ///
-    /// `IndecisiveTests` is hosted by the real app, so launching it also
-    /// launches the whole app: `SeedData` writes to the real on-disk store,
-    /// and Home's `@Query` views sit there live, observing it, for the
-    /// duration of the run — alongside every in-memory container the tests
-    /// themselves create and save. That is incidental state no test asked
-    /// for, and it is the leading suspect for the intermittent
-    /// `EXC_BREAKPOINT` inside a `_SwiftData_SwiftUI` save observer that a
-    /// full run hits every twenty-odd times (REVIEW.md, P1-5). So under a
-    /// unit test run the app stays out of the way entirely: a throwaway
-    /// in-memory store and no UI at all.
-    ///
-    /// XCTest sets this variable in the *host* app's environment. A UI
-    /// test's target app doesn't get it — only the runner does — so
-    /// `IndecisiveUITests` still launches the real app normally.
-    private static var isHostingUnitTests: Bool {
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-    }
-
-    /// Either flavour of test run, both of which want a throwaway store
-    /// rather than the user's real one.
+    /// (There used to be an `isHostingUnitTests` check beside this that
+    /// suppressed the UI and the on-disk store while the app was hosting a
+    /// unit test run. Splitting the code into `IndecisiveKit` removed the
+    /// host app entirely, so there is nothing left for it to suppress.)
     private static var isUnderTest: Bool {
-        isUITesting || isHostingUnitTests
+        isUITesting
     }
 
     /// Where every `@AppStorage` in the app reads and writes — injected in
@@ -92,6 +78,10 @@ struct IndecisiveApp: App {
     }
 
     init() {
+        // The fonts ship with `IndecisiveKit` now, not the app bundle, so
+        // nothing registers them for us at launch any more — see
+        // `FontRegistry.ensureRegistered()`.
+        FontRegistry.ensureRegistered()
         FontRegistry.verifyAllResolve()
 
         storage = Self.makeStorage()
@@ -148,31 +138,10 @@ struct IndecisiveApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if Self.isHostingUnitTests {
-                // Nothing at all while hosting unit tests — see
-                // `isHostingUnitTests`. The tests that exercise real screens
-                // host their own copies, with their own containers; the
-                // app's would only be a second, unasked-for set of live
-                // `@Query` observers in the same process.
-                Color.clear
-            } else {
-                AppRoot()
-                    .environment(\.didFailToLoadPersistedStore, didFailToLoadPersistedStore)
-                    .defaultAppStorage(storage)
-            }
+            AppRoot()
+                .environment(\.didFailToLoadPersistedStore, didFailToLoadPersistedStore)
+                .defaultAppStorage(storage)
         }
         .modelContainer(container)
-    }
-}
-
-private struct DidFailToLoadPersistedStoreKey: EnvironmentKey {
-    static let defaultValue = false
-}
-
-extension EnvironmentValues {
-    /// See `IndecisiveApp.didFailToLoadPersistedStore`.
-    var didFailToLoadPersistedStore: Bool {
-        get { self[DidFailToLoadPersistedStoreKey.self] }
-        set { self[DidFailToLoadPersistedStoreKey.self] = newValue }
     }
 }

@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import Indecisive
+@testable import IndecisiveKit
 
 /// Crystal Ball's moving parts — the twinkling stars and the drifting mist — and where they
 /// are actually drawn. The snapshots run under Reduce Motion, which freezes both at their first
