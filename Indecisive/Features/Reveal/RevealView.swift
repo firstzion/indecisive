@@ -122,7 +122,12 @@ struct RevealView: View {
     /// yellow or cyan), so the header label's color and the
     /// screen's overall color scheme aren't derivable from a single token —
     /// each skin picked its own readable combination in the source design.
-    private var headerTextColor: Color {
+    private var headerTextColor: Color { Self.headerTextColor(for: skin) }
+
+    /// Static and internal (not `private`) so `ContrastTests` can check it
+    /// against `revealBackground` without building a whole reveal screen. Pure
+    /// data, so `nonisolated`.
+    nonisolated static func headerTextColor(for skin: Skin) -> Color {
         switch skin.id {
         case .eightBall: return skin.palette.secondaryText
         case .prizeWheel: return skin.palette.primaryText

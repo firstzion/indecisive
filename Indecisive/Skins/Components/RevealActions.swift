@@ -97,7 +97,10 @@ struct RevealActionStyle: ButtonStyle {
         }
     }
 
-    private var foreground: Color {
+    // `foreground` and `background` are internal (not `private`) so
+    // `ContrastTests` can check each button's label against its own fill
+    // instead of duplicating these switches.
+    var foreground: Color {
         switch (skin.id, role) {
         case (.eightBall, .accept): return skin.palette.background
         case (.eightBall, .reroll): return skin.palette.primaryText
@@ -108,7 +111,7 @@ struct RevealActionStyle: ButtonStyle {
         }
     }
 
-    private var background: Color {
+    var background: Color {
         switch (skin.id, role) {
         case (.eightBall, .accept): return skin.palette.accent
         // A bespoke shade with no existing token match — distinct from

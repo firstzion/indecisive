@@ -37,6 +37,11 @@ Everything below was run with `…,name=iPhone 17 Pro,OS=26.5`.
 *After Phase 0 (§4): 55/55 unit and 3/3 UI tests pass on that destination. The table above
 is the state at `d576a23`.*
 
+*Warnings: the `build` row is the app target only. A clean `build-for-testing` — everything
+compiled — had **112**: 1 in the app (`ItemRow`), 1 in `ContrastTests` and 110 in the UI tests,
+all Swift 6 main-actor-isolation diagnostics. An incremental build prints none for the files
+it skips, so a clean one is the only reliable count. After P1-1: 0.*
+
 ---
 
 ## 1. Prioritized issues
@@ -201,9 +206,15 @@ skin has to make.
 
 ---
 
-#### P1-1. Swift 6 concurrency warning in `ItemRow`
+#### P1-1. Swift 6 concurrency warnings — 112 on a full compile
 
-**Where:** `Indecisive/Features/Detail/ItemRow.swift:54`
+**Where:** `Indecisive/Features/Detail/ItemRow.swift:54`, `ContrastTests.swift:93`, and both UI-test classes
+
+**Status: done.** All one family, main-actor isolation. `ItemRow` now binds through `@Bindable`
+(`$item.name`) instead of a non-`Sendable` rename closure, and `onRename` is gone;
+`ContrastTests` and both UI-test classes are `@MainActor` (which cleared the 110 UI-test
+warnings), with `HappyPathTests` moving to the async `setUp`, the main-actor-isolated variant.
+A clean `build-for-testing` of the final tree: 0 warnings. The diagnosis below is the state before.
 
 ```
 warning: converting non-Sendable function value to
@@ -224,10 +235,10 @@ the closure with a direct binding:
 TextField("Item name", text: $item.name)
 ```
 
-The test target has one of the same family: `ContrastTests.swift:93` reads the
-main-actor-isolated `RevealKicker.kickerColor` from a nonisolated test method (`@MainActor`
-on the class clears it, as `SnapshotTests` already does). Both only show up on a build that
-recompiles those files — an incremental build prints no warnings for files it skips.
+The test targets had the rest: `ContrastTests.swift:93` reads the main-actor-isolated
+`RevealKicker.kickerColor` from a nonisolated test method, and the two UI-test classes make
+110 calls into XCUITest's main-actor-isolated API from nonisolated ones. `@MainActor` on the
+class clears each, as `SnapshotTests` already had.
 
 ---
 
@@ -283,6 +294,15 @@ adds `CrystalBallPaint` and six more shared files gain a branch that reads it.
 
 **Where:** `ItemRow.swift:37-41` (delete), `ItemRow.swift:69-77` (reorder)
 
+**Status: done.** Delete and both reorder controls now carry labels that name the item
+("Delete Pho Palace", "Move Pho Palace up" / "down", with an "untitled item" fallback for the
+moment a field is empty mid-edit), plus identifiers (`deleteItemButton-N`, `moveItemUpButton-N`,
+`moveItemDownButton-N`, `itemNameField-N`, `editModeButton`).
+`HappyPathTests.testEditModeReordersDeletesAndRenamesItems` drives edit mode end to end —
+reorder, delete, rename, Done, back and reopen — and checks the labels; `AccessibilityTests`
+checks them in-process too, and both fail when a label is broken. The diagnosis below is the
+state before.
+
 The delete button and both reorder chevrons are bare `Image(systemName:)` inside
 `Button`s with no `accessibilityLabel`, so VoiceOver falls back to the symbols' generic
 descriptions instead of saying what the button does or which item it acts on. They also
@@ -297,6 +317,15 @@ rename, delete-item and reorder are entirely unexercised end-to-end.
 #### P1-5. Swipe-to-delete is unreachable without the gesture
 
 **Where:** `Indecisive/Skins/Components/SwipeToDeleteRow.swift`
+
+**Status: done.** The row now has `.accessibilityAction(named: "Delete")`, which still asks for
+confirmation rather than deleting outright. Verified by reading SwiftUI's accessibility tree
+in-process, because XCUITest can neither list nor invoke custom actions: the row
+`'Lunch Places, 2 wedges'` carries `["Delete"]` and no other node does.
+`AccessibilityTests.testHomeRowOffersADeleteActionToAssistiveTechnology` keeps it that way —
+removing the action fails it. It relies on a private libAccessibility symbol
+(`_AXSSetAutomationEnabled`, what UI automation sets); if a future OS drops it, the test skips
+with a message rather than failing.
 
 Deleting a list from Home is a custom `DragGesture` with no
 `.accessibilityAction(named:)`. VoiceOver and Switch Control users can't reach it.
@@ -397,6 +426,22 @@ Worth settling now rather than later: a bundle ID is effectively permanent once 
 is first submitted, and `com.Randomatic.app` is neither reverse-DNS-conventional
 (capital R) nor consistent with the stated prefix.
 
+#### P1-11. Edit-mode controls are far below the minimum tap target
+
+**Where:** `ItemRow.swift` (delete button, reorder chevrons)
+
+Measured from the accessibility frames, not estimated: the delete button is **18 × 18 pt** and
+each reorder chevron is **11 × 6 pt**, against Apple's 44 × 44 pt minimum. The two chevrons are
+stacked with 2 pt between them, so landing on the right one — or either — with a real fingertip
+is luck, and the same tiny targets make Switch Control and Voice Control fiddly. Nothing has
+flagged it because XCUITest taps element centres.
+
+`SkinIconButton` already shows how to enlarge the target without enlarging the artwork
+(`.frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())`), but two stacked 44 pt
+controls would double the row's height. So this needs a layout decision — up and down side by
+side, or native drag-to-reorder (`onMove`), which `ItemRow`'s own header comment says was
+deferred — which is why it wasn't a quick win.
+
 ---
 
 ### P2 — worth doing, not urgent
@@ -429,6 +474,17 @@ acceptable for a toy app, but it's an undocumented consequence and it gets worse
 skin that has a different palette length.
 
 #### P2-4. `RevealActions`' bespoke colour pairs aren't contrast-tested
+
+**Status: done.** Three new `ContrastTests`: the accept / re-roll labels against their own fills
+(translucency-aware — Gashapon's are blended over the reveal background first), the header
+title against `revealBackground` (held to 4.5:1, since 15 pt bold is too near the "large text"
+line to lean on it), and the "✕" glyph against its disc. So the tests can read the real values,
+`RevealActionStyle.foreground` / `background`, `SkinIconButton.foreground` / `background` and
+`RevealView.headerTextColor(for:)` are now internal. Checked two ways: all 12 ratios match an
+independent calculation to two decimals, and with three colours deliberately broken the new
+tests failed on exactly those (Wheel accept 1.97:1, 8-Ball header and dismiss 1.0:1) while all
+seven older contrast tests still passed — the gap this entry described. The diagnosis below is
+the state before.
 
 `ContrastTests` covers palette tokens but not the one-off literals at
 `RevealActions.swift:111` and `:115`. The Wheel's accept button — `#FBF3E4` on `#1F9E8E` —
@@ -488,6 +544,18 @@ the gitignored `*.xcodeproj/`), so a fresh clone resolves whatever is newest tha
 1.19.5 today. For a library whose whole job is pixel comparison, that's a way for the suite
 to go red with no code change. `exactVersion: "1.19.5"` in `project.yml` pins it (checked:
 XcodeGen emits `kind = exactVersion`).
+
+#### P2-11. Tapping Done with a text field focused logs "Modifying state during view update"
+
+Renaming an item (or the list title) and then tapping **Done** makes SwiftUI log `Modifying state
+during view update, this will cause undefined behavior.` It is pre-existing: the same line appears
+with the old closure-style binding, **0 times when nothing is focused** and once when a field is,
+and it was never seen because no earlier test tapped Done. The likely mechanism is that removing a
+focused `TextField` as `isEditing` flips makes SwiftUI commit its text into the model mid-update.
+It's a log line today — the value written is the one already there — but the message says
+"undefined behavior". The fix is probably to resign first responder before `commitEdits()` and the
+toggle in `editButton`. That's a focus-handling change, so it wasn't folded into the quick wins;
+the edit-mode UI test exercises exactly this path and says so in a comment.
 
 ---
 
@@ -683,19 +751,19 @@ literal destination string). 15 consecutive iterations of `SnapshotTests` gave 4
 and 0 failures, and an iPhone 17 at iOS 26.5 matches all 18 images. **The suite is not
 green on iOS 27.0** (17 of 18 images fail) — see P2-8.
 
-### Phase 1 — make the safety net skin-complete (~half a day, highest value)
+### Phase 1 — make the safety net skin-complete (~half a day, highest value) — ✅ done
 
 1. ✅ Add `Skin.all` derived from `SkinID.allCases`; replace all five hard-coded arrays
    (P0-2).
 2. ✅ Delete every non-exhaustive skin branch (P0-3, Appendix A) — promote to a token where
    one exists, otherwise rewrite as an exhaustive `switch` with no `default:`.
-3. Extend `ContrastTests` to the reveal action pairs and header text (P2-4).
-4. Fix the `ItemRow` Swift 6 warning (P1-1) and the accessibility gaps (P1-4, P1-5).
+3. ✅ Extend `ContrastTests` to the reveal action pairs and header text (P2-4).
+4. ✅ Fix the `ItemRow` Swift 6 warning (P1-1) and the accessibility gaps (P1-4, P1-5).
 
 **Exit:** adding a bare `SkinID` case produces a compiler error for *every* skin-dependent
 decision, and every existing test automatically covers the new skin. *Met after P0-2 +
 P0-3 (measured: a bare fourth case now gives 40 errors across 13 files and no silent site).
-Items 3 and 4 are still open; they don't gate adding a skin.*
+Items 3 and 4 are done too, so Phase 1 is complete.*
 
 This is the phase worth doing even if you do nothing else — it converts the 18 silent
 decisions into compiler errors, which is the difference between "Crystal Ball renders

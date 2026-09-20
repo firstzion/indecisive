@@ -63,7 +63,9 @@ struct SkinIconButton: View {
         }
     }
 
-    private var foreground: Color {
+    // `foreground` and `background` are internal (not `private`) so
+    // `ContrastTests` can check the reveal's "✕" against its own disc.
+    var foreground: Color {
         switch (skin.id, variant) {
         case (_, .primary): return skin.palette.onAccent
         case (.eightBall, .dismiss): return skin.palette.primaryText
@@ -73,7 +75,7 @@ struct SkinIconButton: View {
         }
     }
 
-    private var background: Color {
+    var background: Color {
         switch (skin.id, variant) {
         case (_, .primary): return skin.palette.accent
         case (.eightBall, .dismiss): return skin.palette.surface

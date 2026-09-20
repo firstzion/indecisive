@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 final class IndecisiveUITests: XCTestCase {
     func testAppLaunches() throws {
         let app = XCUIApplication()

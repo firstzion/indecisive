@@ -12,10 +12,13 @@ import XCTest
 /// rather than the store: the happy path really does switch it, so it starts
 /// by picking the Wheel and ends by putting the Wheel back (see
 /// `launchApp(pinningSkin:)` for why it can't just pin the skin instead).
+@MainActor
 final class HappyPathTests: XCTestCase {
     private var app: XCUIApplication!
 
-    override func setUpWithError() throws {
+    // The async `setUp` (not `setUpWithError`): XCTest runs it on the main
+    // actor, where `XCUIApplication` and `app` live.
+    override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
     }
@@ -180,9 +183,84 @@ final class HappyPathTests: XCTestCase {
             "confirming delete should remove the list from Home"
         )
     }
+
+    /// Edit mode end to end — nothing exercised it before. Reorders, deletes and
+    /// renames items through the real controls, then checks the changes stick
+    /// when the list is left and reopened. Also checks what VoiceOver is told:
+    /// each control names the item it acts on, not just "minus circle" or
+    /// "chevron up".
+    func testEditModeReordersDeletesAndRenamesItems() throws {
+        // Never touches the skin, so it can pin one for a uniform start.
+        // `-UITesting` seeds "Lunch Places": Taco Truck on 9th, Sushi Counter,
+        // Pho Palace, Green Bowl Salads, Big Jim's Burgers, The Dumpling Cart.
+        launchApp(pinningSkin: true)
+        app.buttons["listRow-Lunch Places"].tap()
+
+        let editButton = app.buttons["editModeButton"]
+        XCTAssertTrue(editButton.waitForExistence(timeout: 5))
+        editButton.tap()
+
+        func name(at index: Int) -> String? {
+            app.textFields["itemNameField-\(index)"].value as? String
+        }
+
+        // MARK: What VoiceOver hears
+
+        XCTAssertEqual(app.buttons["deleteItemButton-2"].label, "Delete Pho Palace")
+        XCTAssertEqual(app.buttons["moveItemUpButton-2"].label, "Move Pho Palace up")
+        XCTAssertEqual(app.buttons["moveItemDownButton-2"].label, "Move Pho Palace down")
+        XCTAssertFalse(app.buttons["moveItemUpButton-0"].isEnabled, "the first item can't move up")
+        XCTAssertFalse(app.buttons["moveItemDownButton-5"].isEnabled, "the last item can't move down")
+
+        // MARK: Reorder — move the first item down one
+
+        app.buttons["moveItemDownButton-0"].tap()
+        XCTAssertEqual(name(at: 0), "Sushi Counter")
+        XCTAssertEqual(name(at: 1), "Taco Truck on 9th")
+
+        // MARK: Delete — Pho Palace is now third
+
+        app.buttons["deleteItemButton-2"].tap()
+        XCTAssertEqual(name(at: 2), "Green Bowl Salads", "the items below should close up")
+        XCTAssertFalse(app.textFields["itemNameField-5"].exists, "six items minus one leaves five")
+
+        // MARK: Rename — the keyboard comes up, so this goes last
+
+        app.textFields["itemNameField-1"].clearAndTypeText("Taco Truck")
+        // Tapping Done with a field still focused makes SwiftUI log "Modifying state
+        // during view update" — a known, pre-existing quirk (REVIEW.md, P2-11) that
+        // this realistic rename-then-Done path exercises. It's a log line, not a failure.
+        editButton.tap() // now "Done"
+
+        // MARK: Out of edit mode, and again after leaving and coming back
+
+        func assertEditsShowing() {
+            let taco = app.staticTexts["Taco Truck"]
+            XCTAssertTrue(taco.waitForExistence(timeout: 5), "the renamed item should show")
+            XCTAssertFalse(app.staticTexts["Taco Truck on 9th"].exists, "the old name should be gone")
+            XCTAssertFalse(app.staticTexts["Pho Palace"].exists, "the deleted item should be gone")
+            XCTAssertLessThan(app.staticTexts["Sushi Counter"].frame.minY, taco.frame.minY, "the reorder should stick")
+        }
+        assertEditsShowing()
+
+        app.buttons["backToListsButton"].tap()
+        let row = app.buttons["listRow-Lunch Places"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue(row.label.contains("5 wedges"), "Home should show the five that are left — got '\(row.label)'")
+        row.tap()
+        assertEditsShowing()
+    }
 }
 
 private extension XCUIElement {
+    /// Replaces a text field's contents: tap at its far right end (so the caret
+    /// lands after whatever is there), delete that many characters, type the new text.
+    func clearAndTypeText(_ text: String) {
+        coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap()
+        let current = (value as? String) ?? ""
+        typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count) + text)
+    }
+
     /// The inverse of `waitForExistence` — waits until the element is
     /// gone rather than present, for asserting something was removed.
     func waitForNonExistence(timeout: TimeInterval) -> Bool {

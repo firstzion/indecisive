@@ -116,6 +116,7 @@ struct ListDetailView: View {
         }
         .font(skin.type.body(16, weight: .bold))
         .foregroundStyle(skin.palette.accent)
+        .accessibilityIdentifier("editModeButton")
     }
 
     // MARK: Content
@@ -153,7 +154,6 @@ struct ListDetailView: View {
                         isEditing: isEditing,
                         canMoveUp: index > 0,
                         canMoveDown: index < items.count - 1,
-                        onRename: { item.name = $0 },
                         onDelete: { deleteItem(item) },
                         onMoveUp: { moveItem(item, by: -1) },
                         onMoveDown: { moveItem(item, by: 1) }
@@ -314,7 +314,7 @@ struct ListDetailView: View {
     /// create flows, which simply refuse an empty name outright — falls
     /// back to something non-empty instead, since these are live two-way
     /// bindings straight into the model (`$list.name`, and `ItemRow`'s
-    /// per-row binding via `onRename`). Rejecting an empty value on every
+    /// `$item.name`). Rejecting an empty value on every
     /// keystroke there would make backspacing to fully clear a field (to
     /// retype it) impossible: the field would just snap back to the old
     /// text on the very last backspace. So instead, typing freely

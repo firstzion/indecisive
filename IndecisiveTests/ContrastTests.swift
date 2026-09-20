@@ -5,6 +5,7 @@ import SwiftUI
 /// Locks in PLAN.md Phase 6's contrast fixes as a regression test — a
 /// future token change that silently drops a color back below WCAG AA
 /// should fail a fast unit test, not wait for someone to eyeball it.
+@MainActor
 final class ContrastTests: XCTestCase {
 
     private func luminance(of color: Color) -> Double {
@@ -22,6 +23,23 @@ final class ContrastTests: XCTestCase {
         let l1 = luminance(of: a), l2 = luminance(of: b)
         let lighter = max(l1, l2), darker = min(l1, l2)
         return (lighter + 0.05) / (darker + 0.05)
+    }
+
+    /// The colour the eye actually sees when `color` — possibly translucent — is
+    /// painted over an opaque `backdrop`. Gashapon's frosted "✕" disc and cream
+    /// "One more turn" button are translucent, so their raw tint isn't what to test.
+    private func flattened(_ color: Color, over backdrop: Color) -> Color {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        UIColor(backdrop).getRed(&br, green: &bg, blue: &bb, alpha: &ba)
+        return Color(
+            .sRGB,
+            red: Double(r * a + br * (1 - a)),
+            green: Double(g * a + bg * (1 - a)),
+            blue: Double(b * a + bb * (1 - a)),
+            opacity: 1
+        )
     }
 
     /// WCAG AA for normal-size body text: 4.5:1. This is where the design
@@ -92,6 +110,49 @@ final class ContrastTests: XCTestCase {
             let kicker = RevealKicker(skin: skin)
             let ratio = contrastRatio(kicker.kickerColor, skin.palette.revealBackground)
             XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) reveal kicker contrast is \(ratio), fails WCAG AA large text")
+        }
+    }
+
+    // MARK: The rest of the reveal screen
+    //
+    // The kicker above is one of four things drawn straight onto
+    // `revealBackground`. The others use one-off colours — a bespoke fill for
+    // the Wheel's accept button, translucent whites for Gashapon's — that are
+    // not palette tokens, so the token tests above never see them.
+
+    /// The accept / re-roll labels are 18–22pt bold display type: WCAG "large
+    /// text", so 3:1. The Wheel's accept button (`#FBF3E4` on `#1F9E8E`) clears it
+    /// by less than 0.004 — this is what fails if either shade ever moves.
+    func testRevealActionLabelsMeetAALargeTextContrastOnTheirButtons() {
+        for skin in Skin.all {
+            for role in [RevealActionRole.accept, .reroll] {
+                let style = RevealActionStyle(skin: skin, role: role)
+                let fill = flattened(style.background, over: skin.palette.revealBackground)
+                let ratio = contrastRatio(style.foreground, fill)
+                XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) \(role) label contrast is \(ratio), fails WCAG AA large text")
+            }
+        }
+    }
+
+    /// The header shows the list's name in 15pt bold. That's close enough to the
+    /// "large text" line (WCAG measures it in points, not the pixels iOS points
+    /// resemble) that it's held to the stricter normal-text bar, 4.5:1, instead.
+    func testRevealHeaderTitleMeetsAANormalTextContrastOnRevealBackground() {
+        for skin in Skin.all {
+            let ratio = contrastRatio(RevealView.headerTextColor(for: skin), skin.palette.revealBackground)
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(skin.name) reveal header contrast is \(ratio), fails WCAG AA")
+        }
+    }
+
+    /// The "✕" glyph is a graphical control, so 3:1 (WCAG 1.4.11) against its disc.
+    func testRevealDismissGlyphMeetsAAUIComponentContrastOnItsDisc() {
+        for skin in Skin.all {
+            let button = SkinIconButton(
+                skin: skin, glyph: "✕", accessibilityLabel: "Close", variant: .dismiss, size: 32, action: {}
+            )
+            let disc = flattened(button.background, over: skin.palette.revealBackground)
+            let ratio = contrastRatio(button.foreground, disc)
+            XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) reveal dismiss glyph contrast is \(ratio), fails WCAG AA for a UI component")
         }
     }
 }

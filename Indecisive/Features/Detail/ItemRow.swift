@@ -14,12 +14,14 @@ import SwiftUI
 /// than the exact card shadow.
 struct ItemRow: View {
     let skin: Skin
-    let item: PickItem
+    /// `@Bindable` so edit mode's name field binds straight to the model
+    /// (`$item.name`) — the same live two-way binding `ListDetailView` uses for
+    /// the list's own title — instead of a rename closure threaded in from outside.
+    @Bindable var item: PickItem
     let index: Int
     let isEditing: Bool
     let canMoveUp: Bool
     let canMoveDown: Bool
-    let onRename: (String) -> Void
     let onDelete: () -> Void
     let onMoveUp: () -> Void
     let onMoveDown: () -> Void
@@ -40,6 +42,8 @@ struct ItemRow: View {
                         .font(.system(size: deleteIconSize))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Delete \(spokenName)")
+                .accessibilityIdentifier("deleteItemButton-\(index)")
             } else {
                 // `RowMarker` still takes position and flavour-color as two
                 // separate parameters (it's the more reusable primitive),
@@ -49,12 +53,10 @@ struct ItemRow: View {
             }
 
             if isEditing {
-                TextField(
-                    "Item name",
-                    text: Binding(get: { item.name }, set: onRename)
-                )
-                .font(skin.type.body(15, weight: .semibold))
-                .foregroundStyle(skin.palette.primaryText)
+                TextField("Item name", text: $item.name)
+                    .font(skin.type.body(15, weight: .semibold))
+                    .foregroundStyle(skin.palette.primaryText)
+                    .accessibilityIdentifier("itemNameField-\(index)")
             } else {
                 Text(item.name)
                     .font(skin.type.body(15, weight: .semibold))
@@ -70,11 +72,15 @@ struct ItemRow: View {
                         Image(systemName: "chevron.up")
                     }
                     .disabled(!canMoveUp)
+                    .accessibilityLabel("Move \(spokenName) up")
+                    .accessibilityIdentifier("moveItemUpButton-\(index)")
 
                     Button(action: onMoveDown) {
                         Image(systemName: "chevron.down")
                     }
                     .disabled(!canMoveDown)
+                    .accessibilityLabel("Move \(spokenName) down")
+                    .accessibilityIdentifier("moveItemDownButton-\(index)")
                 }
                 .buttonStyle(.plain)
                 .font(.system(size: reorderIconSize, weight: .bold))
@@ -82,5 +88,12 @@ struct ItemRow: View {
             }
         }
         .padding(.vertical, 12)
+    }
+
+    /// What VoiceOver calls this item in a control's label. Falls back for the
+    /// moment the field is empty mid-edit (backspacing to retype), so a label
+    /// never reads "Delete " with nothing after it.
+    private var spokenName: String {
+        item.name.isEmpty ? "untitled item" : item.name
     }
 }

@@ -77,6 +77,10 @@ struct SwipeToDeleteRow<Content: View>: View {
                             }
                         }
                 )
+                // The swipe is a gesture VoiceOver and Switch Control can't
+                // perform, so offer the same request as a named action on the
+                // row (it still asks for confirmation, never deletes outright).
+                .accessibilityAction(named: "Delete") { onDeleteRequested() }
         }
     }
 }
