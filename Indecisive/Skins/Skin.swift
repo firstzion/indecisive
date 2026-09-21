@@ -9,6 +9,10 @@ import SwiftUI
 struct Skin: Identifiable, Sendable {
     let id: SkinID
     let name: String
+    /// The one-liner under the skin's name in the picker: the skin's voice, not a
+    /// description of its artwork. It sits on one line at 12 pt, so keep it short
+    /// enough not to truncate — roughly 35 characters. Each skin file's own doc
+    /// comment still records what the design actually looks like.
     let tagline: String
     let palette: SkinPalette
     let type: SkinTypography

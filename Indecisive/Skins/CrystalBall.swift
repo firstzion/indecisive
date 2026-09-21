@@ -50,7 +50,7 @@ extension Skin {
         )
         // The ball pops in with its answer hidden; `partDelay` later the mist parts and the
         // name fades in over `nameFadeIn`. The mockup has only the pop (`pfm-pop`) and the
-        // mist's endless drift (`pfm-mist`) — this sequence is the tagline's "mist that parts to
+        // mist's endless drift (`pfm-mist`) — this sequence is the design's "mist that parts to
         // show your fate", and so is my choice. The animation, the haptics and VoiceOver's
         // announcement all run off these numbers.
         let partDelay = 0.5
@@ -77,7 +77,7 @@ extension Skin {
         return Skin(
             id: .crystalBall,
             name: "Crystal Ball",
-            tagline: "Fortune-teller parlour: plum velvet, gold trim, mist that parts to show your fate.",
+            tagline: "The mists know. You don't.",
             palette: palette,
             type: type,
             shape: SkinShape(

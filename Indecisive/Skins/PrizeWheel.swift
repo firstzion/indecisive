@@ -66,7 +66,7 @@ extension Skin {
         return Skin(
             id: .prizeWheel,
             name: "Prize Wheel",
-            tagline: "Fairground stickers, hard black outlines, wedges everywhere.",
+            tagline: "Loud, round, and never wrong.",
             palette: palette,
             type: type,
             shape: SkinShape(

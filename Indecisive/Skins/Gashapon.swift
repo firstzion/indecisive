@@ -94,7 +94,7 @@ extension Skin {
         return Skin(
             id: .gashapon,
             name: "Gashapon",
-            tagline: "Capsule machine, two-tone capsules, crank the knob and see what drops.",
+            tagline: "Whatever drops is yours now.",
             palette: palette,
             type: type,
             shape: SkinShape(

@@ -72,7 +72,7 @@ extension Skin {
         return Skin(
             id: .eightBall,
             name: "Midnight 8-Ball",
-            tagline: "Dark arcade cabinet, neon answers, the ball does the talking.",
+            tagline: "Shake it and do as you're told.",
             palette: palette,
             type: type,
             shape: SkinShape(
