@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "//": "Tuned to the code that exists, not the other way round: swift-format's defaults assume 2-space indentation and a 100-column limit, which together flagged 7,258 things in a codebase that is consistently 4-space and deliberately heavily commented. Lint is here to catch drift, not to reformat everything once.",
+  "indentation": { "spaces": 4 },
+  "lineLength": 140,
+  "respectsExistingLineBreaks": true,
+  "lineBreakBeforeEachArgument": false,
+  "lineBreakBeforeEachGenericRequirement": false,
+  "prioritizeKeepingFunctionOutputTogether": true,
+  "indentConditionalCompilationBlocks": false,
+  "rules": {
+    "AlwaysUseLowerCamelCase": true,
+    "AmbiguousTrailingClosureOverload": true,
+    "DoNotUseSemicolons": true,
+    "DontRepeatTypeInStaticProperties": true,
+    "FullyIndirectEnum": true,
+    "NoAssignmentInExpressions": true,
+    "NoCasesWithOnlyFallthrough": true,
+    "NoEmptyTrailingClosureParentheses": true,
+    "NoLabelsInCasePatterns": true,
+    "NoParensAroundConditions": true,
+    "NoVoidReturnOnFunctionSignature": true,
+    "OneVariableDeclarationPerLine": true,
+    "ReturnVoidInsteadOfEmptyTuple": true,
+    "UseEarlyExits": false,
+    "UseLetInEveryBoundCaseVariable": false,
+    "UseShorthandTypeNames": true,
+    "UseSingleLinePropertyGetter": true,
+    "UseSynthesizedInitializer": false,
+    "UseTripleSlashForDocumentationComments": true,
+    "ValidateDocumentationComments": false
+  }
+}

@@ -18,9 +18,8 @@ struct IndecisiveApp: App {
     /// persisted app data — including whatever's left over from manual
     /// testing in the simulator) seeded fresh every launch.
     ///
-    /// UI tests also pass `-skin prizeWheel -hasChosenSkin YES` so every run
-    /// starts on the same skin with onboarding already complete,
-    /// regardless of whatever was last selected. Those two are picked up
+    /// UI tests also pass `-skin prizeWheel` so every run starts on the same
+    /// skin, regardless of whatever was last selected. That is picked up
     /// automatically by `@AppStorage`/`UserDefaults` — a `-key value`
     /// launch argument lands in `UserDefaults`' argument domain, which
     /// outranks the real persisted value for the lifetime of the process
@@ -121,11 +120,13 @@ struct IndecisiveApp: App {
                 // `HomeView` tell them what happened instead of silently
                 // discarding their lists with no explanation.
                 print("⚠️ Indecisive: failed to open the persisted store (\(error)); falling back to a temporary in-memory store.")
-                guard let fallback = try? ModelContainer(
-                    for: schema,
-                    migrationPlan: IndecisiveMigrationPlan.self,
-                    configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                ) else {
+                guard
+                    let fallback = try? ModelContainer(
+                        for: schema,
+                        migrationPlan: IndecisiveMigrationPlan.self,
+                        configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                    )
+                else {
                     fatalError("Failed to create even a fallback in-memory ModelContainer: \(error)")
                 }
                 container = fallback

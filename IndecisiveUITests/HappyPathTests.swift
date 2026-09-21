@@ -26,19 +26,19 @@ final class HappyPathTests: XCTestCase {
         app = XCUIApplication()
     }
 
-    /// Launches the app on `-UITesting`'s fresh in-memory store, with
-    /// onboarding already complete (`-hasChosenSkin YES`).
+    /// Launches the app on `-UITesting`'s fresh in-memory store and its
+    /// throwaway `UserDefaults` suite.
     ///
     /// `pinningSkin` also passes `-skin prizeWheel`, so the run starts on the
-    /// same skin whatever was last selected. Both flags land in
-    /// `UserDefaults`' argument domain, which outranks anything the app
+    /// same skin whatever was last selected. That lands in `UserDefaults`'
+    /// argument domain, which outranks anything the app
     /// writes for the lifetime of the process — handy for a fixed starting
     /// point, but it also means the skin *cannot be changed from the UI*
     /// while it is pinned. A test that switches skins must therefore not
     /// pin, and gets its fixed starting point by picking a skin through the
     /// UI instead.
     private func launchApp(pinningSkin: Bool) {
-        var arguments = ["-UITesting", "-hasChosenSkin", "YES"]
+        var arguments = ["-UITesting"]
         if pinningSkin {
             arguments += ["-skin", "prizeWheel"]
         }
@@ -229,7 +229,7 @@ final class HappyPathTests: XCTestCase {
         // Tapping Done with a field still focused makes SwiftUI log "Modifying state
         // during view update" — a known, pre-existing quirk (REVIEW.md, P2-11) that
         // this realistic rename-then-Done path exercises. It's a log line, not a failure.
-        editButton.tap() // now "Done"
+        editButton.tap()  // now "Done"
 
         // MARK: Out of edit mode, and again after leaving and coming back
 

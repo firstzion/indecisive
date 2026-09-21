@@ -46,6 +46,23 @@ struct SkinRevealStyle: Sendable {
     /// skin with a card has the card draw the line inside itself, so this is `nil` there — every
     /// skin says it exactly once, and none says it twice.
     let supportLine: SupportLine?
+    /// The colour of the decoration behind the centrepiece — the 8-Ball's
+    /// glow, Gashapon's sunburst, Crystal Ball's haze. `nil` for a skin that
+    /// draws none (the Wheel), which is also how `RevealGlow` knows to draw
+    /// nothing rather than carrying a special case for it.
+    ///
+    /// A token because these were hardcoded in the component: the 8-Ball's
+    /// read `palette.accent`, Gashapon's a literal `.white`, and Crystal
+    /// Ball's reached into `CrystalPaint` — a skin-specific namespace that a
+    /// shared component shouldn't know exists.
+    let backdropTint: Color?
+    /// The colour of the little glyph beside the re-roll button's label.
+    /// `nil` for a skin whose re-roll button has no glyph (the Wheel).
+    ///
+    /// Also a token for the reason above: the 8-Ball's was a bare
+    /// `Color(hex: 0xFF4FD8)` sitting in `RevealActionGlyph`, and Crystal
+    /// Ball's came from `CrystalPaint`.
+    let rerollGlyphTint: Color?
     let actions: Actions
     let confetti: ConfettiStyle
 
@@ -79,6 +96,13 @@ struct SkinRevealStyle: Sendable {
         }
 
         let fill: Color
+        /// The small label above the winner's name (Gashapon's "YOU GOT"),
+        /// read against `fill`. Its own value rather than `palette.accent`,
+        /// which is chosen to sit on the app's *background*: Gashapon's accent
+        /// on its cream card measures 2.9:1, under the 4.5:1 this 13pt label
+        /// needs. Required even for a skin with no label, so a skin that adds
+        /// one later has already had to answer the question.
+        let labelColor: Color
         let border: SkinBorder?
         let shadow: SkinShadowStyle
         /// Space either side, narrowing the card from the full width.

@@ -138,6 +138,8 @@ extension Skin {
                     font: type.body(14),
                     color: palette.secondaryText
                 ),
+                backdropTint: palette.accent,
+                rerollGlyphTint: Color(hex: 0xFF4FD8),
                 actions: SkinRevealStyle.Actions(
                     axis: .vertical,
                     accept: SkinRevealStyle.ActionButton(
@@ -163,7 +165,13 @@ extension Skin {
                 ),
                 confetti: SkinRevealStyle.ConfettiStyle(
                     motion: .falling,
-                    colors: palette.flavors + [palette.surface],
+                    // Just the three flavours, as the mockup has it. The card
+                    // surface used to be in here as a fourth, and at 1.27:1 on
+                    // this reveal background it was invisible — roughly one
+                    // piece in four fell unseen, against 6.9:1, 12.7:1 and
+                    // 16.8:1 for the other three. These pieces carry no
+                    // outline, so the fill is all there is to see.
+                    colors: palette.flavors,
                     cornerRadius: 2,
                     outline: nil
                 )

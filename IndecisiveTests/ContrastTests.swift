@@ -9,7 +9,10 @@ import SwiftUI
 final class ContrastTests: XCTestCase {
 
     private func luminance(of color: Color) -> Double {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
         UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
         func linearize(_ c: CGFloat) -> Double {
             let c = Double(c)
@@ -20,8 +23,10 @@ final class ContrastTests: XCTestCase {
 
     /// WCAG 2.1 contrast ratio: (L1+0.05)/(L2+0.05), lighter over darker.
     private func contrastRatio(_ a: Color, _ b: Color) -> Double {
-        let l1 = luminance(of: a), l2 = luminance(of: b)
-        let lighter = max(l1, l2), darker = min(l1, l2)
+        let l1 = luminance(of: a)
+        let l2 = luminance(of: b)
+        let lighter = max(l1, l2)
+        let darker = min(l1, l2)
         return (lighter + 0.05) / (darker + 0.05)
     }
 
@@ -29,9 +34,15 @@ final class ContrastTests: XCTestCase {
     /// painted over an opaque `backdrop`. Gashapon's frosted "✕" disc and cream
     /// "One more turn" button are translucent, so their raw tint isn't what to test.
     private func flattened(_ color: Color, over backdrop: Color) -> Color {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
         UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
-        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        var br: CGFloat = 0
+        var bg: CGFloat = 0
+        var bb: CGFloat = 0
+        var ba: CGFloat = 0
         UIColor(backdrop).getRed(&br, green: &bg, blue: &bb, alpha: &ba)
         return Color(
             .sRGB,
@@ -87,7 +98,8 @@ final class ContrastTests: XCTestCase {
     func testChevronMeetsAAUIComponentContrastOnSurface() {
         for skin in Skin.all {
             let ratio = contrastRatio(skin.palette.chevron, skin.palette.surface)
-            XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) chevron-on-surface contrast is \(ratio), fails WCAG AA for a UI component")
+            XCTAssertGreaterThanOrEqual(
+                ratio, 3.0, "\(skin.name) chevron-on-surface contrast is \(ratio), fails WCAG AA for a UI component")
         }
     }
 
@@ -103,13 +115,96 @@ final class ContrastTests: XCTestCase {
     /// `RevealKicker`'s eyebrow line sits on the reveal screen's own
     /// background, which is its own token (`revealBackground`) — often much
     /// louder than `skin.palette.background` — not one `ContrastTests`
-    /// otherwise checks anything against. 14pt extrabold / 16pt display
-    /// both qualify as WCAG "large text", so 3:1 is the applicable bar.
-    func testRevealKickerMeetsAALargeTextContrastOnRevealBackground() {
+    /// otherwise checks anything against.
+    ///
+    /// Held to the **normal-text** 4.5:1, not the 3:1 this used to use. The
+    /// old bar was justified as "14pt extrabold / 16pt display both qualify
+    /// as WCAG large text", which was true of the two skins that existed
+    /// when it was written. Crystal Ball's kicker is 13pt semibold, which is
+    /// neither ≥18pt regular nor ≥14pt bold, so large-text never applied to
+    /// it. Every skin clears 4.5:1 today (5.8:1 to 16.8:1) — nothing was
+    /// broken, the bar simply wouldn't have caught it if a colour moved.
+    func testRevealKickerMeetsAANormalTextContrastOnRevealBackground() {
         for skin in Skin.all {
             let ratio = contrastRatio(skin.reveal.kicker.color, skin.palette.revealBackground)
-            XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) reveal kicker contrast is \(ratio), fails WCAG AA large text")
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(skin.name) reveal kicker contrast is \(ratio), fails WCAG AA")
         }
+    }
+
+    // MARK: Confetti
+
+    /// A falling piece with no outline is only visible by its fill, so a fill
+    /// close to the background it falls on is a piece nobody sees. (Outlined
+    /// confetti is exempt: the Wheel's fills are deliberately quiet and the
+    /// ink outline carries them.)
+    ///
+    /// Gashapon is a known exception, listed rather than hidden: its mint sits
+    /// at 1.21:1 on its cyan reveal background, unoutlined. That is the
+    /// mockup's own pastel-on-cyan palette, so changing it is a design call —
+    /// REVIEW.md P2-13.
+    func testUnoutlinedConfettiCanActuallyBeSeen() {
+        let knownExceptions: Set<SkinID> = [.gashapon]
+        for skin in Skin.all
+        where skin.reveal.confetti.motion == .falling
+            && skin.reveal.confetti.outline == nil
+            && !knownExceptions.contains(skin.id)
+        {
+            for colour in skin.reveal.confetti.colors {
+                let ratio = contrastRatio(colour, skin.palette.revealBackground)
+                XCTAssertGreaterThanOrEqual(
+                    ratio, 2.0,
+                    "\(skin.name) has an unoutlined confetti colour at \(ratio):1 on its reveal background — it will fall unseen"
+                )
+            }
+        }
+    }
+
+    // MARK: The winner's name — the largest text in the app
+
+    /// The reveal's name card: the winner's name, the little label above it
+    /// (Gashapon's "YOU GOT") and the support line under it, each against the
+    /// card's own fill.
+    ///
+    /// Nothing checked these before. `primaryText` was only ever tested
+    /// against `palette.background`, which is a different colour from
+    /// `card.fill` in both skins that have a card — so the single biggest
+    /// piece of text in the app was the one pair with no coverage.
+    func testNameCardTextMeetsContrastOnItsOwnCard() {
+        var checked = 0
+        for skin in Skin.all {
+            guard let card = skin.reveal.nameCard else { continue }
+            checked += 1
+
+            // The winner's name is 34pt bold — comfortably WCAG "large text".
+            let name = contrastRatio(skin.palette.primaryText, card.fill)
+            XCTAssertGreaterThanOrEqual(name, 3.0, "\(skin.name) winner name contrast is \(name), fails WCAG AA large text")
+
+            // The support line under it is 13pt: normal text.
+            let support = contrastRatio(skin.palette.secondaryText, card.fill)
+            XCTAssertGreaterThanOrEqual(support, 4.5, "\(skin.name) name-card support line contrast is \(support), fails WCAG AA")
+
+            // And the 13pt label above it. Checked for every card, not only
+            // the skins that show a label today: `labelColor` is required of
+            // all of them, so a value that would fail the moment someone adds
+            // the copy is worth catching now rather than then.
+            let label = contrastRatio(card.labelColor, card.fill)
+            XCTAssertGreaterThanOrEqual(label, 4.5, "\(skin.name) name-card label contrast is \(label), fails WCAG AA")
+        }
+        XCTAssertGreaterThan(checked, 0, "no skin has a name card to check")
+    }
+
+    /// The two skins that show the winner inside the centrepiece instead of on
+    /// a card (`nameCard == nil`) draw it straight onto the reveal background:
+    /// the 8-Ball's diamond window and Crystal Ball's orb. 30pt bold, so
+    /// large text.
+    func testInBallWinnerNameMeetsContrastOnTheRevealBackground() {
+        var checked = 0
+        for skin in Skin.all where skin.reveal.nameCard == nil {
+            checked += 1
+            let ratio = contrastRatio(skin.palette.accent, skin.palette.revealBackground)
+            XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) in-ball winner name contrast is \(ratio), fails WCAG AA large text")
+        }
+        XCTAssertGreaterThan(checked, 0, "no skin shows its winner without a card")
     }
 
     // MARK: The rest of the reveal screen
@@ -164,7 +259,8 @@ final class ContrastTests: XCTestCase {
             )
             let disc = flattened(button.background, over: skin.palette.revealBackground)
             let ratio = contrastRatio(button.foreground, disc)
-            XCTAssertGreaterThanOrEqual(ratio, 3.0, "\(skin.name) reveal dismiss glyph contrast is \(ratio), fails WCAG AA for a UI component")
+            XCTAssertGreaterThanOrEqual(
+                ratio, 3.0, "\(skin.name) reveal dismiss glyph contrast is \(ratio), fails WCAG AA for a UI component")
         }
     }
 

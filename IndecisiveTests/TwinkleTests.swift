@@ -10,7 +10,10 @@ import SwiftUI
 final class TwinkleTests: XCTestCase {
 
     private func alpha(of color: Color) -> Double {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
         UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
         return Double(a)
     }
@@ -114,7 +117,7 @@ final class TwinkleTests: XCTestCase {
     // MARK: The mist (the mockup's `pfm-mist`)
 
     func testAMistBandDriftsFromLeftToRightAndBack() {
-        let band = MistMotion.bands[0]   // 5s, no offset
+        let band = MistMotion.bands[0]  // 5s, no offset
         let start = MistMotion.pose(of: band, at: 0)
         XCTAssertEqual(start.offsetX, -14, accuracy: 1e-9)
         XCTAssertEqual(start.scaleY, 1, accuracy: 1e-9)
@@ -161,18 +164,25 @@ final class TwinkleTests: XCTestCase {
         let renderer = ImageRenderer(content: view)
         renderer.scale = 1
         let image = try XCTUnwrap(renderer.cgImage)
-        let width = image.width, rows = image.height
+        let width = image.width
+        let rows = image.height
         var pixels = [UInt8](repeating: 0, count: width * rows * 4)
-        let context = try XCTUnwrap(CGContext(
-            data: &pixels, width: width, height: rows, bitsPerComponent: 8, bytesPerRow: width * 4,
-            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ))
+        let context = try XCTUnwrap(
+            CGContext(
+                data: &pixels, width: width, height: rows, bitsPerComponent: 8, bytesPerRow: width * 4,
+                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ))
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: rows))
-        var minX = width, maxX = -1, minY = rows, maxY = -1
+        var minX = width
+        var maxX = -1
+        var minY = rows
+        var maxY = -1
         for y in 0..<rows {
             for x in 0..<width where pixels[(y * width + x) * 4 + 3] > 12 {
-                minX = min(minX, x); maxX = max(maxX, x)
-                minY = min(minY, y); maxY = max(maxY, y)
+                minX = min(minX, x)
+                maxX = max(maxX, x)
+                minY = min(minY, y)
+                maxY = max(maxY, y)
             }
         }
         guard maxX >= 0 else { return nil }
@@ -183,7 +193,7 @@ final class TwinkleTests: XCTestCase {
 
     /// A star at full size and brightness (its loop's midpoint), and one at its smallest and dimmest.
     func testAStarIsDrawnCentredWhereItsPositionSaysAndSwellsAboutItsCentre() throws {
-        let cases: [(elapsed: Double, scale: Double)] = [(2, 1), (0, 0.6)]   // `star` is 4s round
+        let cases: [(elapsed: Double, scale: Double)] = [(2, 1), (0, 0.6)]  // `star` is 4s round
         for (elapsed, scale) in cases {
             let field = TwinkleField(stars: [star], colors: [.red], size: screen, elapsed: elapsed)
             let bounds = try XCTUnwrap(try drawnBounds(of: field), "nothing drawn at \(elapsed)s")
@@ -223,9 +233,13 @@ final class TwinkleTests: XCTestCase {
                 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
             )!
             context.draw(cropped, in: CGRect(x: 0, y: 0, width: 1, height: 1))
-            return UIColor(red: CGFloat(data[0]) / 255, green: CGFloat(data[1]) / 255, blue: CGFloat(data[2]) / 255, alpha: CGFloat(data[3]) / 255)
+            return UIColor(
+                red: CGFloat(data[0]) / 255, green: CGFloat(data[1]) / 255, blue: CGFloat(data[2]) / 255, alpha: CGFloat(data[3]) / 255)
         }
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
         pixel(Int(0.1 * 400) + 10, 410).getRed(&r, green: &g, blue: &b, alpha: &a)
         XCTAssertGreaterThan(r, b, "the first star should be red")
         pixel(Int(0.8 * 400) + 10, 410).getRed(&r, green: &g, blue: &b, alpha: &a)

@@ -128,7 +128,8 @@ enum ConfettiMotion {
     static func pose(of piece: Confetti.Piece, at elapsed: Double, containerHeight: CGFloat) -> Pose? {
         guard elapsed >= piece.delay, piece.duration > 0 else { return nil }
         let phase = ((elapsed - piece.delay) / piece.duration).truncatingRemainder(dividingBy: 1)
-        let opacity = phase < fadeInFraction
+        let opacity =
+            phase < fadeInFraction
             ? phase / fadeInFraction
             : (1 - phase) / (1 - fadeInFraction)
         return Pose(

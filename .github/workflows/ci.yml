@@ -1,0 +1,107 @@
+name: CI
+
+# Build, test and lint on every push to main and every pull request.
+#
+# The point of having this at all: the main regression net for the skins is 24
+# pixel-exact snapshots, and they only protect anything if something actually
+# runs them. Locally that depends on someone remembering to pin the simulator.
+#
+# NOTE: this workflow has never run — there was no CI on this repo before, and
+# it can't be exercised from a developer machine. The runner label and the
+# Xcode path are the parts most likely to need a nudge on the first run; the
+# "Show available Xcodes / destinations" steps exist to make that a one-glance
+# fix rather than a guessing game.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: macos-26
+    timeout-minutes: 45
+
+    env:
+      # The OS the snapshot references were recorded on. `SnapshotTests` skips
+      # itself with an explanation on anything else (iOS 27 lays NavigationStack
+      # out differently), so a mismatch here quietly costs the rendering net —
+      # which is exactly why it's pinned.
+      SNAPSHOT_OS: "26.5"
+      SIMULATOR_NAME: "iPhone 17 Pro"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show available Xcodes
+        run: ls /Applications | grep -i '^Xcode' || true
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the Xcode project
+        # The project is generated, not committed — project.yml is the source
+        # of truth. See README.
+        run: xcodegen generate
+
+      - name: Show available destinations
+        run: |
+          xcodebuild -project Indecisive.xcodeproj -scheme Indecisive -showdestinations 2>&1 | sed -n '1,60p' || true
+
+      - name: Pick a destination
+        id: destination
+        run: |
+          set -euo pipefail
+          # Prefer the exact simulator the snapshots were recorded on. Falling
+          # back keeps the logic suite running on a runner image that hasn't
+          # got that runtime; the snapshot tests then skip themselves, loudly.
+          if xcrun simctl list runtimes | grep -q "iOS $SNAPSHOT_OS"; then
+            echo "value=platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SNAPSHOT_OS" >> "$GITHUB_OUTPUT"
+            echo "Using the pinned iOS $SNAPSHOT_OS runtime."
+          else
+            echo "value=platform=iOS Simulator,name=$SIMULATOR_NAME" >> "$GITHUB_OUTPUT"
+            echo "::warning::iOS $SNAPSHOT_OS is not installed on this runner — snapshot tests will skip themselves, so this run has no cross-skin rendering coverage."
+          fi
+
+      - name: Build for testing
+        # A clean build, deliberately: an incremental one prints no warnings
+        # for the files it skips, so it can't be trusted for a warning count.
+        run: |
+          xcodebuild -project Indecisive.xcodeproj -scheme Indecisive \
+            -destination '${{ steps.destination.outputs.value }}' \
+            clean build-for-testing
+
+      - name: Test
+        run: |
+          xcodebuild -project Indecisive.xcodeproj -scheme Indecisive \
+            -destination '${{ steps.destination.outputs.value }}' \
+            test-without-building
+
+  format:
+    name: Format
+    runs-on: macos-26
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
+
+      - name: Lint formatting
+        # swift-format ships with the Xcode toolchain, so there is nothing to
+        # install and nothing to keep in step with a separate version. The
+        # config is tuned to the code that exists (4-space indent, long
+        # comment lines) rather than the other way round — see `.swift-format`.
+        run: |
+          xcrun swift-format lint --recursive --strict \
+            --configuration .swift-format \
+            Indecisive IndecisiveTests IndecisiveUITests

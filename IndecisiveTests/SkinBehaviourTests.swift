@@ -13,7 +13,10 @@ import SwiftUI
 final class SkinBehaviourTests: XCTestCase {
 
     private func rgba(_ color: Color) -> [CGFloat] {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
         UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
         return [r, g, b, a]
     }
@@ -105,10 +108,12 @@ final class SkinBehaviourTests: XCTestCase {
 
     func testEightBallConfettiIsTightlyRoundedAndUnoutlined() {
         let style = Skin.eightBall.reveal.confetti
-        // Its three flavours, then the card surface.
+        // Its three flavours, as the mockup has them. The card surface used to
+        // be a fourth, at 1.27:1 on the reveal background — see
+        // `testUnoutlinedConfettiCanActuallyBeSeen`.
         XCTAssertEqual(
             style.colors.map(rgba),
-            [0xFF4FD8, 0x4DE1FF, 0xC8FF4D, 0x241B52].map { rgba(Color(hex: $0)) }
+            [0xFF4FD8, 0x4DE1FF, 0xC8FF4D].map { rgba(Color(hex: $0)) }
         )
         XCTAssertEqual(style.cornerRadius, 2)
         XCTAssertNil(style.outline)
@@ -116,10 +121,18 @@ final class SkinBehaviourTests: XCTestCase {
 
     func testWheelConfettiIsInkOutlined() {
         let style = Skin.prizeWheel.reveal.confetti
-        // Its four flavours, then the card surface.
+        // Its flavours except the yellow, then the card surface. These fills
+        // are low-contrast on the yellow reveal background by design — the ink
+        // outline is what makes them read — but the yellow flavour *was* that
+        // background exactly (1.00:1), so those pieces showed as nothing but
+        // an outline.
         XCTAssertEqual(
             style.colors.map(rgba),
-            [0xF0503C, 0xFFC93C, 0x1F9E8E, 0xFBF3E4, 0xFFFFFF].map { rgba(Color(hex: $0)) }
+            [0xF0503C, 0x1F9E8E, 0xFBF3E4, 0xFFFFFF].map { rgba(Color(hex: $0)) }
+        )
+        XCTAssertFalse(
+            style.colors.map(rgba).contains(rgba(Skin.prizeWheel.palette.revealBackground)),
+            "no piece should be painted in the very colour it falls against"
         )
         XCTAssertEqual(style.cornerRadius, 3)
         XCTAssertEqual(style.outline.map(rgba), rgba(Color(hex: 0x17130F)))

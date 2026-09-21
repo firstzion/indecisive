@@ -20,20 +20,22 @@ final class SeedDataTests: XCTestCase {
         let lists = try context.fetch(FetchDescriptor<PickList>())
         let lunch = try XCTUnwrap(lists.first { $0.name == "Lunch Places" })
 
-        XCTAssertEqual(lunch.orderedItems.map(\.name), [
-            "Taco Truck on 9th",
-            "Sushi Counter",
-            "Pho Palace",
-            "Green Bowl Salads",
-            "Big Jim's Burgers",
-            "The Dumpling Cart",
-        ])
+        XCTAssertEqual(
+            lunch.orderedItems.map(\.name),
+            [
+                "Taco Truck on 9th",
+                "Sushi Counter",
+                "Pho Palace",
+                "Green Bowl Salads",
+                "Big Jim's Burgers",
+                "The Dumpling Cart",
+            ])
     }
 
     func testSeedingTwiceDoesNotDuplicate() throws {
         let context = try TestSupport.makeInMemoryContext()
         SeedData.seedIfNeeded(context: context)
-        SeedData.seedIfNeeded(context: context) // simulates a second app launch
+        SeedData.seedIfNeeded(context: context)  // simulates a second app launch
 
         let lists = try context.fetch(FetchDescriptor<PickList>())
         XCTAssertEqual(lists.count, 1, "seeding must be a no-op once data already exists")

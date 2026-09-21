@@ -33,7 +33,8 @@ struct OpenCapsule: View {
             bottomTrailingRadius: 8, topTrailingRadius: 88,
             style: .continuous
         )
-        return shape
+        return
+            shape
             .fill(skin.palette.accent)
             .overlay {
                 // The mockup's `inset 10px 12px 12px -8px rgba(255,255,255,.85)`
@@ -66,7 +67,8 @@ struct OpenCapsule: View {
             bottomTrailingRadius: 88, topTrailingRadius: 8,
             style: .continuous
         )
-        return shape
+        return
+            shape
             .fill(CapsulePaint.shell)
             .overlay {
                 // The mockup's faint `inset 0 -10px 14px -10px` shade: a soft

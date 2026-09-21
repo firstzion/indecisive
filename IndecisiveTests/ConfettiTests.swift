@@ -90,9 +90,10 @@ final class ConfettiTests: XCTestCase {
             let pieces = Confetti.makePieces(for: skin, using: &generator)
             var perFifth = [Double](repeating: 0, count: 5)
             var samples = 0.0
-            var time = 6.0   // by 2.25s every piece has set off
+            var time = 6.0  // by 2.25s every piece has set off
             while time <= 30 {
-                let visible = pieces
+                let visible =
+                    pieces
                     .compactMap { ConfettiMotion.pose(of: $0, at: time, containerHeight: height) }
                     .filter { $0.y >= 0 && $0.y <= height && $0.opacity >= 0.15 }
                 XCTAssertGreaterThanOrEqual(visible.count, 5, "\(skin.name): only \(visible.count) pieces visible at \(time)s")
@@ -117,18 +118,25 @@ final class ConfettiTests: XCTestCase {
         let renderer = ImageRenderer(content: field)
         renderer.scale = 1
         let image = try XCTUnwrap(renderer.cgImage)
-        let width = image.width, rows = image.height
+        let width = image.width
+        let rows = image.height
         var pixels = [UInt8](repeating: 0, count: width * rows * 4)
-        let context = try XCTUnwrap(CGContext(
-            data: &pixels, width: width, height: rows, bitsPerComponent: 8, bytesPerRow: width * 4,
-            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ))
+        let context = try XCTUnwrap(
+            CGContext(
+                data: &pixels, width: width, height: rows, bitsPerComponent: 8, bytesPerRow: width * 4,
+                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ))
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: rows))
-        var minX = width, maxX = -1, minY = rows, maxY = -1
+        var minX = width
+        var maxX = -1
+        var minY = rows
+        var maxY = -1
         for y in 0..<rows {
             for x in 0..<width where pixels[(y * width + x) * 4 + 3] > 12 {
-                minX = min(minX, x); maxX = max(maxX, x)
-                minY = min(minY, y); maxY = max(maxY, y)
+                minX = min(minX, x)
+                maxX = max(maxX, x)
+                minY = min(minY, y)
+                maxY = max(maxY, y)
             }
         }
         guard maxX >= 0 else { return nil }

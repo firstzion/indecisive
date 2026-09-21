@@ -91,7 +91,7 @@ final class PickServiceIntegrationTests: XCTestCase {
 
         service.record(lunchItem, in: lunch, accepted: true)
         service.record(movieItem, in: movies, accepted: false)
-        service.record(lunchItem, in: lunch, accepted: false) // a re-roll still counts
+        service.record(lunchItem, in: lunch, accepted: false)  // a re-roll still counts
 
         XCTAssertEqual(service.totalPickCount, 3, "every pick counts, accepted or not")
     }

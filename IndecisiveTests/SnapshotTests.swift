@@ -28,6 +28,32 @@ import SnapshotTesting
 @MainActor
 final class SnapshotTests: XCTestCase {
 
+    /// The OS the reference images were recorded on. iOS 27.0 lays
+    /// `NavigationStack` screens out differently — content sits ~50 pt lower
+    /// and Detail draws its toolbar — so 17 of the 24 images fail there, and
+    /// an `xcodebuild` destination that doesn't pin the OS resolves to the
+    /// newest installed runtime.
+    private static let recordedOnSystemVersion = "26.5"
+
+    /// Skips, with an explanation, rather than producing 17 mystifying image
+    /// diffs when the simulator isn't the one these were recorded on.
+    ///
+    /// Skipping and not failing, because a newer OS isn't a regression in this
+    /// app. The cost is that a run on the wrong OS quietly has no cross-skin
+    /// rendering coverage at all — which is exactly why CI pins the
+    /// destination (`.github/workflows/ci.yml`).
+    override func setUp() async throws {
+        let running = UIDevice.current.systemVersion
+        guard running.hasPrefix(Self.recordedOnSystemVersion) else {
+            throw XCTSkip(
+                "Snapshot references were recorded on iOS \(Self.recordedOnSystemVersion), "
+                    + "but this simulator runs iOS \(running), which lays NavigationStack out differently. "
+                    + "Re-run with -destination 'platform=iOS Simulator,name=iPhone 17 Pro,"
+                    + "OS=\(Self.recordedOnSystemVersion)'."
+            )
+        }
+    }
+
     private let sizes: [(name: String, category: UIContentSizeCategory)] = [
         ("default", .large),
         ("xxl", .extraExtraExtraLarge),

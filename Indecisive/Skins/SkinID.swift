@@ -33,11 +33,8 @@ extension SkinID {
     /// launch arguments aren't Swift code) by the UI tests'
     /// `-skin prizeWheel` launch argument — keep that in sync if this ever
     /// changes. See `IndecisiveApp.isUITesting`.
+    ///
+    /// (There was a `hasChosenStorageKey` beside this, for a first-launch
+    /// onboarding screen that could never be reached. Both are gone.)
     static let storageKey = "skin"
-
-    /// `@AppStorage`/`UserDefaults` key for whether onboarding (or the
-    /// Skins sheet) has ever picked a skin — see `AppRoot`. Also
-    /// referenced by the UI tests' `-hasChosenSkin YES` launch argument;
-    /// keep that in sync if this ever changes.
-    static let hasChosenStorageKey = "hasChosenSkin"
 }

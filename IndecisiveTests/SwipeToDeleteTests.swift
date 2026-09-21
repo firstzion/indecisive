@@ -60,7 +60,7 @@ final class SwipeToDeleteTests: XCTestCase {
         // On the narrowest phone this app supports that is comfortably past
         // the threshold — if it weren't, the UI test that exercises this
         // gesture would commit only sometimes.
-        let narrowestRowWidth: CGFloat = 320 - 40   // iPhone SE, minus the screen's horizontal padding
+        let narrowestRowWidth: CGFloat = 320 - 40  // iPhone SE, minus the screen's horizontal padding
         XCTAssertTrue(
             SwipeToDelete.commits(drag(-0.8 * narrowestRowWidth, 0)),
             "a standard UI-test swipe must clear the commit threshold even on the narrowest supported screen"

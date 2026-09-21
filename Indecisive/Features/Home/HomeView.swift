@@ -42,7 +42,9 @@ struct HomeView: View {
                         }
                     }
 
-                    Button { showingNewList = true } label: {
+                    Button {
+                        showingNewList = true
+                    } label: {
                         DashedAddRow(skin: skin, label: skin.copy.newListRow)
                     }
                     .buttonStyle(.plain)
@@ -86,7 +88,8 @@ struct HomeView: View {
         .alert("Couldn't load your saved lists", isPresented: $showingStoreLoadFailureAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Something went wrong opening your saved data, so Rand-o-matic started fresh this launch. Your previous lists may be lost.")
+            Text(
+                "Something went wrong opening your saved data, so Rand-o-matic started fresh this launch. Your previous lists may be lost.")
         }
         .alert(
             "Delete list?",

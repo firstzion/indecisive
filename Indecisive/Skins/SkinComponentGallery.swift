@@ -1,4 +1,5 @@
 #if DEBUG
+#if DEBUG
 import SwiftUI
 
 /// A visual QA screen showing every shared component across every skin
@@ -93,4 +94,5 @@ private struct SkinSection: View {
 #Preview {
     SkinComponentGallery()
 }
+#endif
 #endif

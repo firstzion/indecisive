@@ -149,6 +149,11 @@ extension Skin {
                 ),
                 nameCard: SkinRevealStyle.NameCard(
                     fill: shell,
+                    // A deepened version of the accent. The accent itself is
+                    // chosen to sit on the app's background, and on this cream
+                    // card it measures 2.9:1 — under the 4.5:1 a 13pt label
+                    // needs. This reads at 5.5:1 in the same hue.
+                    labelColor: Color(hex: 0xC2185B),
                     border: nil,
                     // A flat shelf of teal under the card, like the mockup's
                     // `0 14px 0 rgba(11,61,76,.2)`.
@@ -159,6 +164,9 @@ extension Skin {
                 ),
                 // The card carries the support line itself.
                 supportLine: nil,
+                // The sunburst's rays are white; the glyph is a tiny accent capsule.
+                backdropTint: Color.white,
+                rerollGlyphTint: palette.accent,
                 actions: SkinRevealStyle.Actions(
                     axis: .vertical,
                     accept: SkinRevealStyle.ActionButton(

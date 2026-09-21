@@ -38,9 +38,15 @@ struct RevealActions: View {
         Group {
             switch skin.reveal.actions.axis {
             case .vertical:
-                VStack(spacing: 12) { accept; reroll }
+                VStack(spacing: 12) {
+                    accept
+                    reroll
+                }
             case .horizontal:
-                HStack(spacing: 12) { accept; reroll }
+                HStack(spacing: 12) {
+                    accept
+                    reroll
+                }
             }
         }
         .disabled(!isEnabled)

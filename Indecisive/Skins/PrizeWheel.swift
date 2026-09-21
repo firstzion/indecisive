@@ -118,6 +118,11 @@ extension Skin {
                 ),
                 nameCard: SkinRevealStyle.NameCard(
                     fill: palette.surface,
+                    // The Wheel shows no label above the winner today; this is
+                    // what one would be drawn in if it ever did. A deepened
+                    // accent, because the accent itself is only 3.55:1 on this
+                    // white card — under the 4.5:1 a 13pt label needs. 5.4:1.
+                    labelColor: Color(hex: 0xC0392B),
                     border: SkinBorder(color: palette.primaryText, width: 4),
                     shadow: .hard(offset: CGSize(width: 6, height: 6), color: palette.primaryText),
                     horizontalInset: 0,
@@ -126,6 +131,9 @@ extension Skin {
                 ),
                 // The card carries the support line itself.
                 supportLine: nil,
+                // The Wheel draws no backdrop and its "SPIN AGAIN" has no glyph.
+                backdropTint: nil,
+                rerollGlyphTint: nil,
                 actions: SkinRevealStyle.Actions(
                     axis: .horizontal,
                     accept: SkinRevealStyle.ActionButton(
@@ -152,7 +160,12 @@ extension Skin {
                 ),
                 confetti: SkinRevealStyle.ConfettiStyle(
                     motion: .falling,
-                    colors: palette.flavors + [palette.surface],
+                    // Every flavour except the yellow, which *is* this skin's
+                    // reveal background (1.00:1 — the same colour): those
+                    // pieces showed as nothing but their own outline. The
+                    // rest are deliberately low-contrast fills, which reads
+                    // here because these pieces are outlined in ink.
+                    colors: [palette.flavors[0], palette.flavors[2], palette.flavors[3], palette.surface],
                     cornerRadius: 3,
                     outline: palette.primaryText
                 )

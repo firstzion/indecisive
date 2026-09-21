@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 /// The list-detail screen: hero, items card, add row, and the pinned
 /// "Pick For Me" CTA. Also owns edit mode (rename items, delete items,
@@ -25,6 +26,12 @@ struct ListDetailView: View {
     /// `.font(.system(size: 24))` literal never grows, so the glyph would
     /// stay pinned at the same physical size while "Lists" next to it scales.
     @ScaledMetric private var backChevronSize: CGFloat = 24
+
+    /// Every change this screen makes to the list goes through here, so the
+    /// logic is reachable from a unit test rather than sealed inside a `View`.
+    private var editor: ListEditor {
+        ListEditor(context: modelContext)
+    }
 
     var body: some View {
         ScrollView {
@@ -118,6 +125,15 @@ struct ListDetailView: View {
     private var editButton: some View {
         Button(isEditing ? "Done" : "Edit") {
             if isEditing {
+                // Take focus off whatever field has it *before* the toggle
+                // below removes that field from the hierarchy. Without this,
+                // tapping "Done" mid-rename made SwiftUI commit the field's
+                // text into the model during its own view update and log
+                // "Modifying state during view update, this will cause
+                // undefined behavior." The value written was the one already
+                // there, so nothing visibly broke — but the message means
+                // what it says, and this is the ordering it's asking for.
+                endTextEditing()
                 commitEdits()
             } else {
                 nameBeforeEditing = list.name
@@ -280,67 +296,40 @@ struct ListDetailView: View {
 
     // MARK: Actions
 
+    /// Resigns first responder wherever it currently is, flushing any
+    /// in-progress text edit into its binding. There is no `@FocusState` to
+    /// clear instead: the editable fields are the list title in the toolbar
+    /// and `ItemRow`'s own `TextField`s, which bind straight to the model
+    /// from inside a child view.
+    private func endTextEditing() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
     private func startReveal() {
         let service = PickService(context: modelContext)
         revealModel = RevealModel(list: list, service: service)
     }
 
     private func commitNewItem() {
-        let trimmed = newItemName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        let nextOrder = (list.items.map(\.sortOrder).max() ?? -1) + 1
-        let item = PickItem(name: trimmed, sortOrder: nextOrder)
-        list.items.append(item)
-        modelContext.insert(item)
+        guard editor.addItem(named: newItemName, to: list) != nil else { return }
         newItemName = ""
-        isAddFieldFocused = true // stay focused for quickly adding several items
+        isAddFieldFocused = true  // stay focused for quickly adding several items
     }
 
     private func deleteItem(_ item: PickItem) {
-        list.items.removeAll { $0.id == item.id }
-        modelContext.delete(item)
-        renormalizeSortOrder()
+        editor.delete(item, from: list)
     }
 
     private func moveItem(_ item: PickItem, by offset: Int) {
-        var ordered = list.orderedItems
-        guard let index = ordered.firstIndex(where: { $0.id == item.id }) else { return }
-        let newIndex = index + offset
-        guard ordered.indices.contains(newIndex) else { return }
-        ordered.swapAt(index, newIndex)
-        for (i, orderedItem) in ordered.enumerated() {
-            orderedItem.sortOrder = i
-        }
+        editor.move(item, in: list, by: offset)
     }
 
-    private func renormalizeSortOrder() {
-        for (i, item) in list.orderedItems.enumerated() {
-            item.sortOrder = i
-        }
-    }
-
-    /// Cleans up whatever edit-mode left behind: trims stray whitespace
-    /// from every name, and — unlike `NewListSheet`'s and `commitNewItem`'s
-    /// create flows, which simply refuse an empty name outright — falls
-    /// back to something non-empty instead, since these are live two-way
-    /// bindings straight into the model (`$list.name`, and `ItemRow`'s
-    /// `$item.name`). Rejecting an empty value on every
-    /// keystroke there would make backspacing to fully clear a field (to
-    /// retype it) impossible: the field would just snap back to the old
-    /// text on the very last backspace. So instead, typing freely
-    /// (including through an empty in-between state) stays fully live,
-    /// and this only fixes up whatever's left once editing actually ends —
-    /// called both from "Done" and from `onDisappear`, so leaving the
-    /// screen mid-rename via the back button (or the swipe gesture) is
-    /// covered too, not just an explicit Done tap.
+    /// Cleans up whatever edit-mode left behind — see
+    /// `ListEditor.commitEdits(to:fallingBackTo:)`. Called both from "Done"
+    /// and from `onDisappear`, so leaving the screen mid-rename via the back
+    /// button (or the swipe gesture) is covered too.
     private func commitEdits() {
-        let trimmedTitle = list.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        list.name = trimmedTitle.isEmpty ? nameBeforeEditing : trimmedTitle
-
-        for item in list.items {
-            let trimmed = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
-            item.name = trimmed.isEmpty ? "Untitled" : trimmed
-        }
+        editor.commitEdits(to: list, fallingBackTo: nameBeforeEditing)
     }
 
     private func deleteList() {
@@ -359,10 +348,10 @@ struct ListDetailView: View {
         // can crash. Deferring the delete to the next run loop turn gives
         // the dismiss/pop transition a chance to start first.
         dismiss()
-        let context = modelContext
         let target = list
+        let editor = self.editor
         DispatchQueue.main.async {
-            context.delete(target)
+            editor.delete(target)
         }
     }
 }

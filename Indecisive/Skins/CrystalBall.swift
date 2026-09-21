@@ -141,6 +141,8 @@ extension Skin {
                     font: type.body(14, weight: .semibold),
                     color: palette.secondaryText
                 ),
+                backdropTint: CrystalPaint.pink,
+                rerollGlyphTint: CrystalPaint.pink,
                 actions: SkinRevealStyle.Actions(
                     axis: .vertical,
                     accept: SkinRevealStyle.ActionButton(

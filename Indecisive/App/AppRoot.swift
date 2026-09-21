@@ -1,20 +1,16 @@
 import SwiftUI
 
 /// Reads the user's chosen skin from `@AppStorage` and injects it into the
-/// environment for everything below it. Gates on `hasChosenSkin`: a fresh
-/// install starts "already chosen" (`SkinID.defaultID`, no onboarding
-/// step), so the app opens straight into `RootView`; `SkinOnboardingView`
-/// only ever runs if something explicitly sets `hasChosenSkin` back to
-/// `false`. Skins remain fully changeable afterwards via the Home "Skins"
-/// sheet either way.
+/// environment for everything below it.
 ///
-/// `hasChosenSkin` is a separate flag rather than inferring "already
-/// chosen" from `skinIDRaw` itself — `@AppStorage` can't distinguish "never
-/// set" from "explicitly set to the same value as the default", so there's
-/// no way to tell those apart from `skinIDRaw` alone.
+/// There used to be a `hasChosenSkin` flag here gating a first-launch
+/// `SkinOnboardingView` ("Choose your toy"). It defaulted to `true` and
+/// nothing in the app ever set it `false`, so that screen could not be
+/// reached in a shipping build — 41 lines with no entry point and no test.
+/// Both are gone; the Skins sheet on Home is how a skin gets chosen, and it
+/// always was.
 public struct AppRoot: View {
     @AppStorage(SkinID.storageKey) private var skinIDRaw: String = SkinID.defaultID.rawValue
-    @AppStorage(SkinID.hasChosenStorageKey) private var hasChosenSkin: Bool = true
 
     private var currentSkin: Skin {
         Skin.skin(for: SkinID.resolving(skinIDRaw))
@@ -23,15 +19,8 @@ public struct AppRoot: View {
     public init() {}
 
     public var body: some View {
-        Group {
-            if hasChosenSkin {
-                RootView()
-            } else {
-                SkinOnboardingView(skinIDRaw: $skinIDRaw, hasChosenSkin: $hasChosenSkin)
-            }
-        }
-        .skin(currentSkin)
-        .animation(.easeInOut, value: skinIDRaw)
-        .animation(.easeInOut, value: hasChosenSkin)
+        RootView()
+            .skin(currentSkin)
+            .animation(.easeInOut, value: skinIDRaw)
     }
 }

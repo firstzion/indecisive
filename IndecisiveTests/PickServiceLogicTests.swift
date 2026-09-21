@@ -46,7 +46,7 @@ final class PickServiceLogicTests: XCTestCase {
 
     func testRerollNeverReturnsAnExcludedID() {
         var rng = SeededGenerator(seed: 4)
-        let excluded: Set<Int> = [2] // "Pho Palace" was just rejected
+        let excluded: Set<Int> = [2]  // "Pho Palace" was just rejected
         for _ in 0..<200 {
             let result = PickService.choose(from: candidates, excluding: excluded, using: &rng)
             XCTAssertNotEqual(result?.id, 2)
@@ -79,8 +79,9 @@ final class PickServiceLogicTests: XCTestCase {
         let expected = Double(trials) / Double(candidates.count)
         for candidate in candidates {
             let count = Double(counts[candidate.id] ?? 0)
-            XCTAssertEqual(count, expected, accuracy: expected * 0.25,
-                            "candidate \(candidate.name) was picked \(Int(count)) times, expected ~\(Int(expected))")
+            XCTAssertEqual(
+                count, expected, accuracy: expected * 0.25,
+                "candidate \(candidate.name) was picked \(Int(count)) times, expected ~\(Int(expected))")
         }
     }
 }

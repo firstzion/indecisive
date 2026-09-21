@@ -17,7 +17,12 @@ settings:
 packages:
   SnapshotTesting:
     url: https://github.com/pointfreeco/swift-snapshot-testing
-    from: "1.17.0"
+    # Pinned exactly, not `from:`. The generated project — and with it the
+    # resolved `Package.resolved` — is gitignored, so `from:` means a fresh
+    # clone takes whatever is newest that day. For a library whose entire job
+    # is pixel comparison, that is a way for all 24 snapshots to go red with
+    # no code change. Bump this deliberately, and re-record if it moves them.
+    exactVersion: "1.19.5"
 
 targets:
   # Everything except the `@main` entry point. It lives in a framework so the

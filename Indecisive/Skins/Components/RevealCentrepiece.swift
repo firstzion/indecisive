@@ -170,7 +170,7 @@ struct RevealCentrepiece: View {
                 Text(label)
                     .font(skin.type.display(13))
                     .tracking(2)
-                    .foregroundStyle(skin.palette.accent)
+                    .foregroundStyle(card.labelColor)
             }
             Text(winnerName)
                 .font(skin.type.display(34))
@@ -211,7 +211,7 @@ struct RevealCentrepiece: View {
     // same numbers, so the two can't drift apart.
 
     private func startIntroAnimation() {
-        cancelScheduledWork() // defensive — see `scheduledWork`'s doc comment
+        cancelScheduledWork()  // defensive — see `scheduledWork`'s doc comment
 
         switch skin.motion.revealIntro {
         case let .wobble(swings, swingDuration, answerFadeIn):

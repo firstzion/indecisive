@@ -86,7 +86,7 @@ final class RevealModelTests: XCTestCase {
         context.insert(list)
 
         let model = try XCTUnwrap(RevealModel(list: list, service: PickService(context: context)))
-        model.reroll() // exhausts the pool immediately -> resets -> "Only" again
+        model.reroll()  // exhausts the pool immediately -> resets -> "Only" again
 
         XCTAssertEqual(model.winner.name, "Only")
     }
@@ -103,7 +103,7 @@ final class RevealModelTests: XCTestCase {
 
         let model = try XCTUnwrap(RevealModel(list: list, service: PickService(context: context)))
         let tokenBefore = model.rerollToken
-        model.reroll() // exhausts the pool immediately -> resets -> "Only" again
+        model.reroll()  // exhausts the pool immediately -> resets -> "Only" again
 
         XCTAssertEqual(model.winner.name, "Only", "sanity check: this reroll really did land on the same item")
         XCTAssertNotEqual(model.rerollToken, tokenBefore, "a same-winner reroll must still produce a fresh token")

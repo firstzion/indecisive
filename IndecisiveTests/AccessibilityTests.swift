@@ -21,7 +21,8 @@ final class AccessibilityTests: XCTestCase {
 
     private static let setAutomationEnabled: SetAutomationEnabled? = {
         guard let handle = dlopen("/usr/lib/libAccessibility.dylib", RTLD_NOW),
-              let symbol = dlsym(handle, "_AXSSetAutomationEnabled") else { return nil }
+            let symbol = dlsym(handle, "_AXSSetAutomationEnabled")
+        else { return nil }
         return unsafeBitCast(symbol, to: SetAutomationEnabled.self)
     }()
 
@@ -29,7 +30,9 @@ final class AccessibilityTests: XCTestCase {
     // the main actor, where this class and the views it hosts live.
     override func setUp() async throws {
         guard let set = Self.setAutomationEnabled else {
-            throw XCTSkip("libAccessibility's _AXSSetAutomationEnabled isn't available on this OS, so SwiftUI's accessibility tree can't be read in-process")
+            throw XCTSkip(
+                "libAccessibility's _AXSSetAutomationEnabled isn't available on this OS, so SwiftUI's accessibility tree can't be read in-process"
+            )
         }
         set(true)
     }
@@ -112,7 +115,9 @@ final class AccessibilityTests: XCTestCase {
         let nodes = accessibilityNodes(of: row) { $0.contains { $0.label.hasPrefix("Lunch Places") } }
 
         let card = try XCTUnwrap(nodes.first { $0.label.hasPrefix("Lunch Places") }, "the row should expose the list")
-        XCTAssertEqual(card.actions, ["Delete"], "swiping is the only sighted way to delete a list here; VoiceOver and Switch Control need the same request as an action")
+        XCTAssertEqual(
+            card.actions, ["Delete"],
+            "swiping is the only sighted way to delete a list here; VoiceOver and Switch Control need the same request as an action")
     }
 
     // MARK: Item rows in edit mode
