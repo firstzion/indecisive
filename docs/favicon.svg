@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Prize wheel">
+  <g stroke="#17130F" stroke-width="3" stroke-linejoin="round">
+    <path d="M50 50 L50 6 A44 44 0 0 1 88.1 28 Z" fill="#F0503C"/>
+    <path d="M50 50 L88.1 28 A44 44 0 0 1 88.1 72 Z" fill="#FFC93C"/>
+    <path d="M50 50 L88.1 72 A44 44 0 0 1 50 94 Z" fill="#1F9E8E"/>
+    <path d="M50 50 L50 94 A44 44 0 0 1 11.9 72 Z" fill="#FBF3E4"/>
+    <path d="M50 50 L11.9 72 A44 44 0 0 1 11.9 28 Z" fill="#F0503C"/>
+    <path d="M50 50 L11.9 28 A44 44 0 0 1 50 6 Z" fill="#FFC93C"/>
+  </g>
+  <circle cx="50" cy="50" r="45.5" fill="none" stroke="#17130F" stroke-width="5"/>
+</svg>

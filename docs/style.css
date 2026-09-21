@@ -1,0 +1,128 @@
+/* Rand-o-matic support site — the app's Prize Wheel skin, on the web.
+   Palette and fonts are lifted straight from Indecisive/Skins/PrizeWheel.swift
+   so the page and the app agree. The skin is light-only, hence the explicit
+   background and no dark-mode block. */
+:root {
+  --background: #FBF3E4;
+  --surface: #FFFFFF;
+  --ink: #17130F;
+  --secondary-text: #6E655B;
+  --tertiary-text: #726557;
+  --dashed-border: #C9B89C;
+  --accent: #F0503C;
+  --on-accent: #FBF3E4;
+  --yellow: #FFC93C;
+  --teal: #1F9E8E;
+  --display: "Titan One", "Arial Black", system-ui, sans-serif;
+  --body: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 16px 64px;
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+.page { max-width: 44rem; margin: 0 auto; }
+
+/* Header */
+header { padding: 48px 0 8px; display: flex; align-items: center; gap: 16px; }
+header svg { width: 64px; height: 64px; flex: none; }
+header h1 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 9vw, 3rem);
+  line-height: 1.05;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+header p { margin: 4px 0 0; color: var(--secondary-text); font-weight: 500; }
+
+/* Cards: white surface, hard black outline, offset shadow — the app's ListCard */
+.card {
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 0 5px 0 var(--ink);
+  padding: 24px;
+  margin: 28px 0;
+}
+.card h2 { font-family: var(--display); font-size: 1.35rem; margin: 0 0 12px; line-height: 1.25; }
+.card h3 { font-size: 1.05rem; font-weight: 700; margin: 24px 0 4px; }
+.card h3:first-of-type { margin-top: 0; }
+.card p { margin: 0 0 12px; }
+.card p:last-child, .card ul:last-child { margin-bottom: 0; }
+.card ul { margin: 0 0 12px; padding-left: 22px; }
+.card li { margin-bottom: 6px; }
+
+h2.section {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tertiary-text);
+  margin: 40px 0 -8px;
+}
+
+/* The accent button — the app's PRIMARY CTA */
+.button {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--display);
+  font-size: 1.05rem;
+  text-decoration: none;
+  padding: 14px 26px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 5px 0 var(--ink);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.button:hover { transform: translateY(2px); box-shadow: 0 3px 0 var(--ink); }
+.button:active { transform: translateY(5px); box-shadow: 0 0 0 var(--ink); }
+
+a { color: var(--ink); text-underline-offset: 3px; text-decoration-thickness: 2px; }
+a:hover { color: var(--accent); }
+
+/* Dashed row — the app's "Build a new wheel" */
+.dashed {
+  border: 3px dashed var(--dashed-border);
+  border-radius: 22px;
+  padding: 18px 24px;
+  text-align: center;
+  margin: 28px 0;
+  color: var(--tertiary-text);
+}
+.dashed a { font-weight: 700; }
+
+footer {
+  margin-top: 48px;
+  text-align: center;
+  color: var(--tertiary-text);
+  font-size: 0.9rem;
+}
+footer a { color: var(--tertiary-text); }
+
+/* Skip link, visible only when focused */
+.skip {
+  position: absolute; left: -9999px;
+  background: var(--surface); border: 3px solid var(--ink);
+  border-radius: 12px; padding: 10px 16px;
+}
+.skip:focus { left: 16px; top: 16px; z-index: 10; }
+
+@media (max-width: 420px) {
+  header { padding-top: 32px; gap: 12px; }
+  header svg { width: 48px; height: 48px; }
+  .card { padding: 20px; border-radius: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+}
