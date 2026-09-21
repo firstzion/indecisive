@@ -131,6 +131,24 @@ final class ContrastTests: XCTestCase {
         }
     }
 
+    /// The accent-coloured controls on Home and Detail: the "‹ Lists" back
+    /// button, "Edit"/"Done" and "Add", all set in `accentText` on
+    /// `background`. 15–16pt bold, so WCAG's large-text 3:1 applies.
+    ///
+    /// Nothing covered this pair before. `accent` was only ever checked as a
+    /// *fill* (`onAccent` on `accent`), and these are the same colour used as
+    /// type on the screen behind it — which for Gashapon measured 2.93:1,
+    /// failing AA on all three controls, on a toolbar that no snapshot drew
+    /// until recently either.
+    func testAccentTextMeetsAALargeTextContrastOnBackground() {
+        for skin in Skin.all {
+            let ratio = contrastRatio(skin.palette.accentText, skin.palette.background)
+            XCTAssertGreaterThanOrEqual(
+                ratio, 3.0,
+                "\(skin.name) accentText contrast is \(ratio), fails WCAG AA large text")
+        }
+    }
+
     // MARK: Confetti
 
     /// A falling piece with no outline is only visible by its fill, so a fill

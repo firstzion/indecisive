@@ -101,7 +101,7 @@ struct ListDetailView: View {
                 Text("‹").font(.system(size: backChevronSize, weight: .bold))
                 Text("Lists").font(skin.type.body(16, weight: .bold))
             }
-            .foregroundStyle(skin.palette.accent)
+            .foregroundStyle(skin.palette.accentText)
         }
         .accessibilityLabel("Lists")
         .accessibilityIdentifier("backToListsButton")
@@ -141,7 +141,7 @@ struct ListDetailView: View {
             isEditing.toggle()
         }
         .font(skin.type.body(16, weight: .bold))
-        .foregroundStyle(skin.palette.accent)
+        .foregroundStyle(skin.palette.accentText)
         .accessibilityIdentifier("editModeButton")
     }
 
@@ -223,7 +223,7 @@ struct ListDetailView: View {
                     .accessibilityIdentifier("newItemNameField")
                 Button("Add", action: commitNewItem)
                     .font(skin.type.body(15, weight: .bold))
-                    .foregroundStyle(skin.palette.accent)
+                    .foregroundStyle(skin.palette.accentText)
                     .disabled(newItemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .accessibilityIdentifier("addItemButton")
             }

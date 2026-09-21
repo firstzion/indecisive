@@ -30,6 +30,10 @@ extension Skin {
             onAccent: .white,
             // Today's look, made explicit: what `Color.red` resolves to in a light
             // scheme on iOS 26. 3.6:1 with white on it and on the white card surface.
+            // Deepened from the accent (`0xFA578B`), which is only 2.93:1 on
+            // this background and so failed AA for the back/Edit/Add controls.
+            // 5.6:1, and the same deep pink the name-card label uses.
+            accentText: Color(hex: 0xC2185B),
             destructive: Color(hex: 0xFF383C),
             onDestructive: .white,
             flavors: [0xFF5D8F, 0x21C7E8, 0x4BE0B0, 0xFFD23D, 0xFF9F4D].map { Color(hex: $0) },

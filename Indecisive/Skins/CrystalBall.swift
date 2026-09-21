@@ -19,6 +19,8 @@ extension Skin {
             onAccent: Color(hex: 0x2C1148),
             // What `Color.red` resolves to in a dark scheme on iOS 26, as on the 8-Ball: 4.1:1 on
             // this skin's card surface and 3.4:1 with white on it (`ContrastTests`).
+            // The gold reads at 10.4:1 on the deep purple background.
+            accentText: CrystalPaint.gold,
             destructive: Color(hex: 0xFF4245),
             onDestructive: .white,
             // The orbs' bright centres; their deeper rims are the art's (`CrystalPaint.tints`).

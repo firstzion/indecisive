@@ -119,12 +119,23 @@ not in pieces. The debt is larger than `SkinCopy` alone and grows with each skin
 `SnapshotTests` now **skips itself with an explanation** on any other OS instead of producing 17
 mystifying image diffs, and CI pins the destination so the coverage actually runs somewhere. The
 underlying dependence is unchanged: on iOS 27.0, Home and Detail differ by 16–40 % because
-`NavigationStack` lays out differently — content ~50 pt lower, and Detail draws its toolbar.
+`NavigationStack` lays out differently.
 
-Two things still open:
-- **Detail's toolbar has never been snapshot-tested.** The 26.5 renders don't draw it, so the
-  skinned back button, title and Edit button have no image coverage at all.
-- A second baseline will be needed whenever 27.x becomes the target.
+**Detail's toolbar is covered now** — and it turns out it already was, unnoticed. This entry said
+the 26.5 renders never drew the skinned back button, title or Edit button, which was true when it
+was written. Stating the safe-area insets explicitly (during the `IndecisiveKit` split, to stop
+them leaking in from a host window) also gave `NavigationStack` the inset it needed to lay its bar
+out, and all four skins now draw it. Verified by counting ink pixels in the toolbar band of each
+reference image, not by eye on one of them.
+
+That was worth chasing for a second reason: it exposed a pair nothing checked. The bar's controls
+are `accent` used as *text* on `background`, and `accent` had only ever been contrast-tested as a
+*fill*. Gashapon's measured **2.93:1**, under the 3:1 large text needs — so the back button, Edit
+and Add were all failing AA on a toolbar no image had ever shown. Hence `palette.accentText`
+(see `SkinPalette`), and `testAccentTextMeetsAALargeTextContrastOnBackground`.
+
+Still open: **a second baseline when 27.x becomes the target**. Note the Wheel's `accentText` sits
+at 3.22:1 — over the bar, but with little room; deepen it if that colour ever moves.
 
 ### P2-5. Gashapon's confetti is still hard to see
 

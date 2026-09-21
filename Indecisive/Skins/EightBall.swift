@@ -28,6 +28,8 @@ extension Skin {
             // Today's look, made explicit: what `Color.red` resolves to in a dark
             // scheme on iOS 26 (it was SwiftUI's own red before this was a token).
             // 3.4:1 with white on it, 4.5:1 on the card surface — `ContrastTests`.
+            // The lime reads at 15.7:1 on the deep violet background.
+            accentText: Color(hex: 0xC8FF4D),
             destructive: Color(hex: 0xFF4245),
             onDestructive: .white,
             flavors: [0xFF4FD8, 0x4DE1FF, 0xC8FF4D].map { Color(hex: $0) },

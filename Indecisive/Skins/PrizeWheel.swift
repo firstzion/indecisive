@@ -21,6 +21,9 @@ extension Skin {
             onAccent: Color(hex: 0xFBF3E4),
             // Today's look, made explicit: what `Color.red` resolves to in a light
             // scheme on iOS 26. 3.6:1 with white on it and on the white card surface.
+            // The red reads at 3.2:1 on the cream background — over the 3:1
+            // large-text bar, but without much room; deepen it if it moves.
+            accentText: Color(hex: 0xF0503C),
             destructive: Color(hex: 0xFF383C),
             onDestructive: .white,
             flavors: [0xF0503C, 0xFFC93C, 0x1F9E8E, 0xFBF3E4].map { Color(hex: $0) },

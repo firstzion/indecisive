@@ -23,6 +23,17 @@ struct SkinPalette: Sendable {
     let accent: Color
     /// Text/icon color to place *on* `accent`.
     let onAccent: Color
+    /// The accent used as *text* on `background` — the "‹ Lists" back button,
+    /// "Edit"/"Done", and "Add".
+    ///
+    /// A role of its own, because `accent` is chosen as a **fill** (things sit
+    /// on it; that is what `onAccent` is for) and a colour that reads well
+    /// filled doesn't necessarily read well as 16pt type on the screen behind
+    /// it. Gashapon's is the case in point: its accent measures 2.93:1 on its
+    /// own background, under the 3:1 that large text needs, so every one of
+    /// those three controls was failing AA. Deepening the accent itself would
+    /// have repainted the CTA and the "+" button too.
+    let accentText: Color
     /// Fill for destructive controls: the swipe-to-delete backdrop, and the
     /// edit-mode "minus" (which is drawn on `surface`, so it has to read there too).
     let destructive: Color
