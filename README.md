@@ -6,13 +6,20 @@ choice — currently Midnight 8-Ball, Prize Wheel, Gashapon and Crystal Ball.
 (PLAN.md also describes a third skin, Gumball, which has since been removed
 from the app.)
 
-(The app displays as "Rand-o-matic" on the home screen and in onboarding.
-Everything else — bundle ID, Xcode project/target/scheme, Swift module name,
-and source folders — uses the unrelated technical name "Indecisive"
-(`com.indecisive.app`), which only needs to stay internally consistent, not
-match the on-screen brand. Two earlier names — the internal codename
+(The app displays as "Rand-o-matic" on the home screen. The Xcode
+project/target/scheme, Swift module names and source folders use the unrelated
+technical name "Indecisive", which only needs to stay internally consistent,
+not match the on-screen brand. Two earlier names — the internal codename
 "PickForMe", then briefly "Wizard of Odds" — didn't clear trademark/App Store
-availability checks and still show up in PLAN.md's history.)
+availability checks and still show up in PLAN.md's history.
+
+The **bundle ID is `com.Randomatic.app`**, which matches neither of those. It
+was briefly changed to `com.indecisive.app` to line up with the module name,
+and that had to be undone: an App ID must be unique across *every* Apple
+developer account, not just within a team, and that generic name was already
+registered to someone else — archiving failed with *"cannot be registered to
+your development team because it is not available"*. Leave it alone; an App ID
+is effectively permanent once a build has been submitted.)
 
 ## Setup
 

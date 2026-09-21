@@ -1,6 +1,9 @@
 name: Indecisive
 options:
-  bundleIdPrefix: com.indecisive
+  # Matches the app's actual identifier below, so the two can't contradict
+  # each other. Nothing derives from it today — both targets set theirs
+  # explicitly — but a target added without one would inherit this.
+  bundleIdPrefix: com.Randomatic
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -56,7 +59,7 @@ targets:
       - path: Indecisive/Resources/Fonts
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.indecisive.app.kit
+        PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app.kit
         PRODUCT_NAME: IndecisiveKit
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_STYLE: Automatic
@@ -113,14 +116,21 @@ targets:
         # bundle instead, at launch and before any font lookup.
     settings:
       base:
-        # Set explicitly (so `bundleIdPrefix` above, which would otherwise
-        # derive `com.indecisive.Indecisive` from the target name, doesn't
-        # decide it) and deliberately matching the prefix and the README.
-        # This used to be `com.Randomatic.app`, which agreed with neither and
-        # isn't reverse-DNS-conventional. A bundle ID is effectively permanent
-        # from the first App Store Connect submission onward — don't churn it
-        # after that.
-        PRODUCT_BUNDLE_IDENTIFIER: com.indecisive.app
+        # Set explicitly, so `bundleIdPrefix` above can't quietly derive
+        # something else from the target name.
+        #
+        # This was briefly `com.indecisive.app`, to match the README and look
+        # more conventional. That was a mistake: an App ID has to be unique
+        # across *every* Apple developer account, not just within a team, and
+        # a generic name on a domain nobody here owns was already registered
+        # to someone else — archiving failed with "cannot be registered to
+        # your development team because it is not available". The README was
+        # changed to match this instead.
+        #
+        # An App ID is effectively permanent from the first App Store Connect
+        # submission onward. Don't churn it, and if it ever does have to
+        # change, pick something nobody else would plausibly claim.
+        PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app
         PRODUCT_NAME: Indecisive
         # The release version and build number. Bump these here; the
         # Info.plist keys read them (see `CFBundleShortVersionString` above).

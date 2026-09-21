@@ -18,7 +18,7 @@ import os
 /// default for a list of someone's lunch choices — but the rule only helps if
 /// no one hand-builds a message out of them first.
 public enum AppLog {
-    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.indecisive.app"
+    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.Randomatic.app"
 
     /// Opening, migrating and falling back on the SwiftData store.
     public static let store = Logger(subsystem: subsystem, category: "store")

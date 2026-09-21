@@ -40,9 +40,17 @@ but with no cross-skin rendering coverage, which is why CI pins it too.
 
 ## P0 — blocks shipping
 
-**Empty as of 2026-09-20.** Nothing currently blocks a submission. The three entries that were here
-— edit-mode tap targets, the bundle identifier, and version/build numbers — are fixed; see the git
-history of this file for what they said, and `ItemRow.swift` / `project.yml` for what changed.
+**Empty as of 2026-09-20.** Nothing currently blocks a submission — `xcodebuild archive` succeeds,
+signed, with the right identifier and version. The three entries that were here — edit-mode tap
+targets, the bundle identifier, and version/build numbers — are fixed; see the git history of this
+file for what they said, and `ItemRow.swift` / `project.yml` for what changed.
+
+One correction worth keeping: the bundle-identifier entry was closed by changing it to
+`com.indecisive.app`, and that had to be reverted. An App ID must be unique across **every** Apple
+developer account, not just within a team, and that generic name was already registered to someone
+else — archiving failed with "cannot be registered to your development team because it is not
+available". It is `com.Randomatic.app`, and the README now documents that rather than contradicting
+it, which is what the entry was actually about.
 
 ---
 

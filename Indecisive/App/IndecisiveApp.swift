@@ -47,7 +47,7 @@ struct IndecisiveApp: App {
     /// `body` with `.defaultAppStorage(_:)`, so no call site has to know.
     let storage: UserDefaults
 
-    private static let uiTestingSuiteName = "com.indecisive.app.uitesting"
+    private static let uiTestingSuiteName = "com.Randomatic.app.uitesting"
 
     /// The app's own defaults normally; under `-UITesting`, a separate suite
     /// emptied at every launch.
