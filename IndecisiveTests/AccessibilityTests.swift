@@ -120,6 +120,28 @@ final class AccessibilityTests: XCTestCase {
             "swiping is the only sighted way to delete a list here; VoiceOver and Switch Control need the same request as an action")
     }
 
+    // MARK: The store-failure banner
+
+    /// The banner shown for the whole session when the app is running on the
+    /// throwaway store it fell back to.
+    ///
+    /// It has to say both halves as one stop: *what* is wrong and *what that
+    /// costs you*. Read as two loose fragments under the title, "Not saving"
+    /// on its own is easy to take for a status word rather than a warning that
+    /// the work you are about to do will be thrown away.
+    func testStoreFailureBannerIsAnnouncedAsOnePieceOfBadNews() {
+        for skin in Skin.all {
+            let nodes = accessibilityNodes(of: StoreFailureBanner(skin: skin)) { !$0.isEmpty }
+            let combined = nodes.map(\.label).joined(separator: " ")
+            XCTAssertTrue(
+                combined.contains("Not saving"),
+                "\(skin.name): the banner should say what is wrong — got \(nodes.map(\.label))")
+            XCTAssertTrue(
+                combined.contains("gone when you quit"),
+                "\(skin.name): the banner should say what it costs — got \(nodes.map(\.label))")
+        }
+    }
+
     // MARK: Item rows in edit mode
 
     private func editModeRow(named name: String) -> ItemRow {

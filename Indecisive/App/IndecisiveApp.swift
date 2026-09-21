@@ -119,7 +119,9 @@ struct IndecisiveApp: App {
                 // working app; `didFailToLoadPersistedStore` lets
                 // `HomeView` tell them what happened instead of silently
                 // discarding their lists with no explanation.
-                print("⚠️ Indecisive: failed to open the persisted store (\(error)); falling back to a temporary in-memory store.")
+                AppLog.store.error(
+                    "Failed to open the persisted store; falling back to a temporary in-memory one: \(error.localizedDescription, privacy: .public)"
+                )
                 guard
                     let fallback = try? ModelContainer(
                         for: schema,

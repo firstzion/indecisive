@@ -29,6 +29,12 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     header
 
+                    // Stays for the whole session, unlike the alert below,
+                    // which fires once — see `StoreFailureBanner`.
+                    if didFailToLoadPersistedStore {
+                        StoreFailureBanner(skin: skin)
+                    }
+
                     if lists.isEmpty {
                         emptyStatePlaceholder
                     } else {

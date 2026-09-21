@@ -132,27 +132,25 @@ lists can collide under one skin but not another. Fine for a toy app; documented
 
 ## P3 — small
 
-1. **`print` on a release path** — [`IndecisiveApp.swift:72`](Indecisive/App/IndecisiveApp.swift:72).
-   There is no `os.Logger` anywhere in the app, so a store-open failure in the field is invisible.
-2. **The store-open fallback loses everything, silently, after the first alert.** The alert fires
-   once ([`HomeView.swift:80`](Indecisive/Features/Home/HomeView.swift:80)); the entire session then
-   runs against a throwaway in-memory store, so everything the user creates afterwards vanishes on
-   relaunch with nothing on screen saying so.
-3. **`orderedItems` uses an unstable sort** —
+The two that were worth doing are done: the release-path `print` (there was no logging at all, so a
+store failure in the field was invisible) and the silent data loss after the store-open fallback.
+Six left, none urgent.
+
+1. **`orderedItems` uses an unstable sort** —
    [`PickList.swift:44`](Indecisive/Model/PickList.swift:44). Tied `sortOrder`s would render in an
    unspecified order that can change between `body` evaluations. No app path creates ties today; test
    fixtures do.
-4. **A `.pill` radius is derived from `minHeight`** —
+2. **A `.pill` radius is derived from `minHeight`** —
    [`RevealActions.swift:83`](Indecisive/Skins/Components/RevealActions.swift:83). A button that
    grows at large Dynamic Type stops being a pill.
-5. **`nextFlavorIndex` is `max + 1`** — [`PickList.swift:38`](Indecisive/Model/PickList.swift:38).
+3. **`nextFlavorIndex` is `max + 1`** — [`PickList.swift:38`](Indecisive/Model/PickList.swift:38).
    Deleting every list restarts colours at 0, and lists can collide after deletions. Cosmetic.
-6. **`DEVELOPMENT_TEAM: 29DR9P3A6R` is committed to a public repo** —
+4. **`DEVELOPMENT_TEAM: 29DR9P3A6R` is committed to a public repo** —
    [`project.yml:103`](project.yml:103). There's no root `LICENSE` either. (The font OFL licences *are*
    present and correct in `Indecisive/Resources/Fonts/LICENSES/`.)
-7. **Focusing in `onAppear` on a sheet is a race** —
+5. **Focusing in `onAppear` on a sheet is a race** —
    [`NewListSheet.swift:58`](Indecisive/Features/Home/NewListSheet.swift:58).
-8. **The long-press skin-picker shortcut is unreachable to assistive tech** —
+6. **The long-press skin-picker shortcut is unreachable to assistive tech** —
    [`HomeView.swift:116`](Indecisive/Features/Home/HomeView.swift:116) puts it on a `Text`, which
    isn't a control. The 🎨 button covers the need, so this is a nicety.
 
@@ -160,14 +158,12 @@ lists can collide under one skin but not another. Fine for a toy app; documented
 
 ## Suggested order
 
-P0, P1 and effectively P2 are done. What's left is one deferral, eight small things, and a handful
-of decisions that only reopen if something changes.
+P0, P1 and P2 are done bar one deferral, and the two P3s worth doing are done.
 
-1. **The P3 list** — eight items, none urgent, several one-liners. The two worth doing first are
-   the release-path `print` (a store failure in the field is currently invisible, and there is no
-   logging anywhere in the app) and the silent data loss after the store-open fallback, where
-   everything a user creates that session disappears with nothing on screen saying so.
-2. **P2-1, localization** — when the copy settles, in one pass.
+1. **P2-1, localization** — the only remaining item that is real work. When the copy settles, in one
+   pass.
+2. **The six remaining P3s** — all small, none urgent. `orderedItems`' unstable sort is the one with
+   any teeth, and no app path creates the tie it needs today.
 3. Everything else only if its trigger fires (see Decisions).
 
 ---

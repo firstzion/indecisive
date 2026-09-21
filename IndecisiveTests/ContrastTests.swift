@@ -149,6 +149,26 @@ final class ContrastTests: XCTestCase {
         }
     }
 
+    /// Text on a card, which is every list row on Home, every item row in a
+    /// list, both empty states and the store-failure banner.
+    ///
+    /// Nothing covered this before: `primaryText` and `secondaryText` were
+    /// only ever checked against `palette.background`, and cards are drawn on
+    /// `palette.surface` — a different colour in all four skins.
+    func testCardTextMeetsAANormalTextContrastOnSurface() {
+        for skin in Skin.all {
+            let primary = contrastRatio(skin.palette.primaryText, skin.palette.surface)
+            XCTAssertGreaterThanOrEqual(
+                primary, 4.5,
+                "\(skin.name) primaryText on surface is \(primary), fails WCAG AA")
+
+            let secondary = contrastRatio(skin.palette.secondaryText, skin.palette.surface)
+            XCTAssertGreaterThanOrEqual(
+                secondary, 4.5,
+                "\(skin.name) secondaryText on surface is \(secondary), fails WCAG AA")
+        }
+    }
+
     // MARK: Confetti
 
     /// A falling piece with no outline is only visible by its fill, so a fill

@@ -101,7 +101,7 @@ public enum FontRegistry {
             missing.append(name)
         }
         if missing.isEmpty {
-            print("✅ FontRegistry: all \(all.count) custom fonts resolved.")
+            AppLog.fonts.debug("All \(all.count, privacy: .public) custom fonts resolved.")
         } else {
             for family in [
                 "Space Grotesk", "Work Sans", "Rounded Mplus 1c", "Nunito", "DM Mono", "Lilita One", "Titan One", "Mochiy Pop One",
@@ -109,7 +109,9 @@ public enum FontRegistry {
             ] {
                 let available = UIFont.fontNames(forFamilyName: family)
                 if !available.isEmpty {
-                    print("ℹ️ Family '\(family)' actually exposes: \(available)")
+                    AppLog.fonts.error(
+                        "Family '\(family, privacy: .public)' actually exposes: \(available, privacy: .public)"
+                    )
                 }
             }
             assertionFailure("FontRegistry: missing fonts \(missing) — see console for the real names available.")
