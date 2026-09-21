@@ -16,6 +16,14 @@ settings:
     TARGETED_DEVICE_FAMILY: "1"
     ENABLE_PREVIEWS: YES
     DEVELOPMENT_ASSET_PATHS: ""
+    # The release version and build number, set once for every target rather
+    # than per target. App Store Connect requires `CFBundleShortVersionString`
+    # and `CFBundleVersion` on **every** bundle in the payload, embedded
+    # frameworks included, and rejects the upload otherwise. These lived on the
+    # app target alone, so `IndecisiveKit` shipped without a short version
+    # string and the upload was refused. Bump them here.
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
 
 packages:
   SnapshotTesting:
@@ -62,6 +70,10 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app.kit
         PRODUCT_NAME: IndecisiveKit
         GENERATE_INFOPLIST_FILE: YES
+        # Pinned for the same reason the app target pins it — without an
+        # explicit target-level value xcodegen emits "1,2", and the framework
+        # was declaring iPad support the app doesn't have.
+        TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 29DR9P3A6R
         DEFINES_MODULE: YES
@@ -132,10 +144,6 @@ targets:
         # change, pick something nobody else would plausibly claim.
         PRODUCT_BUNDLE_IDENTIFIER: com.Randomatic.app
         PRODUCT_NAME: Indecisive
-        # The release version and build number. Bump these here; the
-        # Info.plist keys read them (see `CFBundleShortVersionString` above).
-        MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SWIFT_EMIT_LOC_STRINGS: YES

@@ -40,8 +40,14 @@ but with no cross-skin rendering coverage, which is why CI pins it too.
 
 ## P0 — blocks shipping
 
-**Empty as of 2026-09-20.** Nothing currently blocks a submission — `xcodebuild archive` succeeds,
-signed, with the right identifier and version. The three entries that were here — edit-mode tap
+**Empty as of 2026-09-21.** Nothing currently blocks a submission: `xcodebuild archive` succeeds,
+signed, and every bundle in the payload carries the keys App Store Connect validates.
+
+Both halves of that sentence had to be learned. A successful archive is **not** the same as an
+accepted upload — the app archived and signed perfectly while `IndecisiveKit`'s generated
+`Info.plist` had no `CFBundleShortVersionString`, and the upload was refused for it. Validation runs
+at the end of the longest loop this project has, so anything it checks is worth checking sooner:
+`BundleMetadataTests` now does, in milliseconds. The three entries that were here — edit-mode tap
 targets, the bundle identifier, and version/build numbers — are fixed; see the git history of this
 file for what they said, and `ItemRow.swift` / `project.yml` for what changed.
 
